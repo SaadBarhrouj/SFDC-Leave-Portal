@@ -1,0 +1,26 @@
+name: CD - Deploy to Integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'force-app/**'
+
+jobs:
+  deploy-to-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: |
+          npm install --global sfdx-cli
+          sfdx --version
+
+      - name: Authenticate Integration Org
+        run: echo "${{ secrets.INTEGRATION_AUTH_URL }}" > integration_auth.url && sfdx auth:sfdxurl:store -f integration_auth.url -a integrationOrg -d
+
+      - name: Deploy to Integration Org
+        run: sfdx force:source:deploy -p force-app -u integrationOrg --testlevel RunLocalTests

@@ -1,0 +1,36 @@
+name: CI - Pull Request Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'force-app/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: |
+          npm install --global sfdx-cli
+          sfdx --version
+
+      - name: Authenticate Dev Hub
+        run: echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx_auth.url && sfdx auth:sfdxurl:store -f sfdx_auth.url -a DevHub -d
+
+      - name: Create Scratch Org
+        run: sfdx force:org:create -f config/project-scratch-def.json -a scratch-org -s -d 1 -v DevHub
+
+      - name: Push Source to Scratch Org
+        run: sfdx force:source:push -u scratch-org
+
+      - name: Run Apex Tests
+        run: sfdx force:apex:test:run -u scratch-org --wait 10 --resultformat human
+
+      - name: Delete Scratch Org
+        if: always()
+        run: sfdx force:org:delete -u scratch-org -p
