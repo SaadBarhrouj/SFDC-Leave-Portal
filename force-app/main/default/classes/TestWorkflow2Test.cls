@@ -7,7 +7,7 @@ public class TestWorkflow2Test {
         String result = TestWorkflow2.displayMessage();
         Test.stopTest();
         
-        System.assertEquals('Bonjour, ceci est un test de workflow simple!!!', result, 'Le message devrait être correct');
+        System.assertEquals('Bonjour, ceci est un test de workflow simple!! !', result, 'Le message devrait être correct');
     }
     
     @IsTest
