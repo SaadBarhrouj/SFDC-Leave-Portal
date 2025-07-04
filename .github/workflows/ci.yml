@@ -20,7 +20,7 @@ jobs:
           sfdx --version
 
       - name: Authenticate Dev Hub
-        run: echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx_auth.url && sfdx auth:sfdxurl:store -f sfdx_auth.url -a DevHub -d
+        run: echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx_auth.url && sfdx force:auth:sfdxurl:store -f sfdx_auth.url -a DevHub -d
 
       - name: Create Scratch Org
         run: sfdx force:org:create -f config/project-scratch-def.json -a scratch-org -s -d 1 -v DevHub
