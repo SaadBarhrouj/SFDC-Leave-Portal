@@ -1,4 +1,4 @@
-name: 'CI - Pull Request Validation'
+name: CI - Pull Request Validation
 
 on:
   pull_request:
@@ -10,30 +10,27 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install Salesforce CLI
         run: |
-          npm install --global @salesforce/cli
-          sf --version
+          npm install --global sfdx-cli
+          sfdx --version
 
       - name: Authenticate Dev Hub
-        run: |
-          echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx_auth.url
-          sf org login sfdx-url --sfdx-url-file sfdx_auth.url --set-default-dev-hub --alias DevHub
+        run: echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx_auth.url && sfdx force:auth:sfdxurl:store -f sfdx_auth.url -a DevHub -d
 
       - name: Create Scratch Org
-        run: sf org create scratch -f config/project-scratch-def.json -a scratch-org -d 1 -v DevHub --set-default
+        run: sfdx force:org:create -f config/project-scratch-def.json -a scratch-org -s -d 1 -v DevHub
 
       - name: Push Source to Scratch Org
-        run: sf project deploy start -o scratch-org
+        run: sfdx force:source:push -u scratch-org
 
       - name: Run Apex Tests
-        run: sf apex test run -o scratch-org --wait 10 --result-format human
+        run: sfdx force:apex:test:run -u scratch-org --wait 10 --resultformat human
 
       - name: Delete Scratch Org
         if: always()
-        run: sf org delete scratch -o scratch-org --no-prompt
+        run: sfdx force:org:delete -u scratch-org -p
