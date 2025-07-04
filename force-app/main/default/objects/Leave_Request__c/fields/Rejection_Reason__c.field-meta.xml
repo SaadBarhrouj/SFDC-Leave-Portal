@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Rejection_Reason__c</fullName>
+    <description>The specific reason why the leave request was denied.</description>
+    <label>Rejection Reason</label>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Scheduling Conflict / Insufficient Team Coverage</fullName>
+                <default>false</default>
+                <label>Scheduling Conflict / Insufficient Team Coverage</label>
+            </value>
+            <value>
+                <fullName>Critical Project Deadline</fullName>
+                <default>false</default>
+                <label>Critical Project Deadline</label>
+            </value>
+            <value>
+                <fullName>Request Submitted Outside Policy Deadlines</fullName>
+                <default>false</default>
+                <label>Request Submitted Outside Policy Deadlines</label>
+            </value>
+            <value>
+                <fullName>Blackout Period</fullName>
+                <default>false</default>
+                <label>Blackout Period</label>
+            </value>
+            <value>
+                <fullName>Insufficient Leave Balance</fullName>
+                <default>false</default>
+                <label>Insufficient Leave Balance</label>
+            </value>
+            <value>
+                <fullName>Needs Discussion / Consult Me</fullName>
+                <default>false</default>
+                <label>Needs Discussion / Consult Me</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
