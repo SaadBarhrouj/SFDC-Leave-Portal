@@ -16,21 +16,22 @@ jobs:
 
       - name: Install Salesforce CLI
         run: |
-          npm install --global sfdx-cli
-          sfdx --version
+          npm install --global @salesforce/cli
 
       - name: Authenticate Dev Hub
-        run: echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx_auth.url && sfdx force:auth:sfdxurl:store -f sfdx_auth.url -a DevHub -d
+        run: |
+          echo "${{ secrets.SFDX_AUTH_URL }}" > sfdx_auth.url
+          sf org login sfdx-url --sfdx-url-file sfdx_auth.url --set-default-dev-hub --alias DevHub
 
       - name: Create Scratch Org
-        run: sfdx force:org:create -f config/project-scratch-def.json -a scratch-org -s -d 1 -v DevHub
+        run: sf org create scratch --definition-file config/project-scratch-def.json --alias scratch-org --set-default --duration-days 1
 
       - name: Push Source to Scratch Org
-        run: sfdx force:source:push -u scratch-org
+        run: sf project deploy start --target-org scratch-org
 
       - name: Run Apex Tests
-        run: sfdx force:apex:test:run -u scratch-org --wait 10 --resultformat human
+        run: sf apex run test --target-org scratch-org --wait 10 --result-format human
 
       - name: Delete Scratch Org
         if: always()
-        run: sfdx force:org:delete -u scratch-org -p
+        run: sf org delete scratch --target-org scratch-org --no-prompt
