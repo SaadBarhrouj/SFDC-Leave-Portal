@@ -1,7 +1,7 @@
 public class TestWorkflow2 {
     
     public static String displayMessage() {
-        String message = 'Bonjour, ceci est un test de workflow simple!!!';
+        String message = 'Bonjour, ceci est un test de workflow simple!! !';
         System.debug(message);
         return message;
     }
