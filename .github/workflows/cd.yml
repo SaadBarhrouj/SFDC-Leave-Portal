@@ -17,10 +17,10 @@ jobs:
       - name: Install Salesforce CLI
         run: |
           npm install --global @salesforce/cli
-          sfdx --version
+          sf --version
 
       - name: Authenticate Integration Org
-        run: echo "${{ secrets.INTEGRATION_AUTH_URL }}" > integration_auth.url && sfdx auth:sfdxurl:store -f integration_auth.url -a integrationOrg -d
+        run: echo "${{ secrets.INTEGRATION_AUTH_URL }}" > integration_auth.url && sf org login sfdx-url --sfdx-url-file integration_auth.url --alias integrationOrg --set-default
 
       - name: Deploy to Integration Org
-        run: sfdx force:source:deploy -p force-app -u integrationOrg --testlevel RunLocalTests
+        run: sf project deploy start --source-dir force-app --target-org integrationOrg --test-level RunLocalTests
