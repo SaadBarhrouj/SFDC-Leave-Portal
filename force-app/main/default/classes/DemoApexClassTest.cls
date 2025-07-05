@@ -17,7 +17,7 @@ public class DemoApexClassTest {
     
     @isTest
     static void testDisplayDemoMessage() {
-        // Test the display demo message method
+        // Test the display demo message method - Fixed Test methods
         Test.startTest();
         DemoApexClass.displayDemoMessage();
         Test.stopTest();
