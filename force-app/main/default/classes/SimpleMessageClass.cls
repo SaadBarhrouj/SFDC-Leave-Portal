@@ -11,4 +11,8 @@ public class SimpleMessageClass {
     public static String getCustomMessage(String name) {
         return 'Hello ' + name + ' from Apex!';
     }
+    
+    public static String getWorkflowTestMessage() {
+        return 'Testing new SF CLI workflow!';
+    }
 }

@@ -19,4 +19,10 @@ public class SimpleMessageClassTest {
         String result = SimpleMessageClass.getCustomMessage('Developer');
         System.assertEquals('Hello Developer from Apex!', result);
     }
+    
+    @isTest
+    static void testGetWorkflowTestMessage() {
+        String result = SimpleMessageClass.getWorkflowTestMessage();
+        System.assertEquals('Testing new SF CLI workflow!', result);
+    }
 }
