@@ -8,7 +8,7 @@
     
             <template if:false={hasRequests}>
                 <div class="slds-align_absolute-center slds-p-around_medium">
-                    No pending requests
+                    <c-no-data-svg></c-no-data-svg>
                 </div>
             </template>
     
@@ -18,7 +18,8 @@
                 data={requests}
                 columns={columns}
                 onrowaction={handleRowAction}
-                hide-checkbox-column>
+                hide-checkbox-column
+                resize-column-disabled="true">
                 </lightning-datatable>
             </template>
     

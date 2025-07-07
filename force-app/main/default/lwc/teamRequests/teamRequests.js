@@ -15,14 +15,7 @@ const COLUMNS = [
 ];
 
 export default class TeamRequests extends LightningElement {
-    requests = [{
-            Id: 1,
-            RequesterName: 'ELKIHAL Youness',
-            Leave_Type__c: 'Medical',
-            Start_Date__c: '2020-01-01',
-            End_Date__c: '2020-01-01',
-            Number_of_Days_Requested__c: 1
-    }];
+    requests = [];
 
     columns = COLUMNS;
 
