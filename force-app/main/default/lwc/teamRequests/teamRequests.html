@@ -1,3 +1,27 @@
 <template>
-    team requests are here
+        <lightning-card title="Team Requests" icon-name="utility:groups">
+            <lightning-button label="Refresh" slot="actions" icon-name="utility:refresh"></lightning-button>
+    
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+            </template>
+    
+            <template if:false={hasRequests}>
+                <div class="slds-align_absolute-center slds-p-around_medium">
+                    <c-no-data-svg></c-no-data-svg>
+                </div>
+            </template>
+    
+            <template if:true={hasRequests}>
+                <lightning-datatable
+                key-field="Id"
+                data={requests}
+                columns={columns}
+                onrowaction={handleRowAction}
+                hide-checkbox-column
+                resize-column-disabled="true">
+                </lightning-datatable>
+            </template>
+    
+        </lightning-card>
 </template>
