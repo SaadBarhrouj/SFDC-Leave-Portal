@@ -4,11 +4,11 @@ public class HolidayAPIServiceTest {
     @isTest
     static void testFetchHolidays_Success() {
         String successJson = '[{"date": "2025-01-01", "localName": "Jour de l\'An", "countryCode": "FR"}]';
-        Test.setMock(HttpCalloutMock.class, new HolidayAPIMock(200, successJson));
+        System.Test.setMock(HttpCalloutMock.class, new HolidayAPIMock(200, successJson));
 
-        Test.startTest();
+        System.Test.startTest();
         HolidayAPIService.fetchHolidaysForCountry('FR', 2025);
-        Test.stopTest();
+        System.Test.stopTest();
 
         List<Holiday__c> createdHolidays = [SELECT Name, Country_Code__c FROM Holiday__c];
         System.assertEquals(1, createdHolidays.size());
@@ -17,11 +17,11 @@ public class HolidayAPIServiceTest {
 
     @isTest
     static void testFetchHolidays_Failure() {
-        Test.setMock(HttpCalloutMock.class, new HolidayAPIMock(500, 'Server Error'));
+        System.Test.setMock(HttpCalloutMock.class, new HolidayAPIMock(500, 'Server Error'));
 
-        Test.startTest();
+        System.Test.startTest();
         HolidayAPIService.fetchHolidaysForCountry('DE', 2025);
-        Test.stopTest();
+        System.Test.stopTest();
 
         List<Holiday__c> createdHolidays = [SELECT Id FROM Holiday__c];
         System.assertEquals(0, createdHolidays.size());
