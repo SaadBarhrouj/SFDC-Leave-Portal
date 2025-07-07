@@ -2,7 +2,7 @@
 public class HolidayAPIServiceTest {
 
     @isTest
-    static void testFetchHolidays_Success() {
+    void testFetchHolidays_Success() {
         String successJson = '[{"date": "2025-01-01", "localName": "Jour de l\'An", "countryCode": "FR"}]';
         Test.setMock(HttpCalloutMock.class, new HolidayAPIMock(200, successJson));
 
@@ -16,7 +16,7 @@ public class HolidayAPIServiceTest {
     }
 
     @isTest
-    static void testFetchHolidays_Failure() {
+    void testFetchHolidays_Failure() {
         Test.setMock(HttpCalloutMock.class, new HolidayAPIMock(500, 'Server Error'));
 
         Test.startTest();
