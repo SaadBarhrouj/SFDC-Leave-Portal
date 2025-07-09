@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <logo>asset_2025_07_02_161235_jpg</logo>
+        <logoVersion>1</logoVersion>
+        <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
+    </brand>
+    <description>Your personalized gateway for managing all leave and absence requests. Easily submit new requests, track statuses, view your balances, and check your leave history.</description>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>Leave Portal</label>
+    <navType>Standard</navType>
+    <tabs>Leave_Balance__c</tabs>
+    <tabs>Leave_Requests</tabs>
+    <tabs>Leave_Request__c</tabs>
+    <tabs>Leave_Balance_History__c</tabs>
+    <tabs>Holiday__c</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>Leave_Portal_UtilityBar</utilityBar>
+</CustomApplication>
