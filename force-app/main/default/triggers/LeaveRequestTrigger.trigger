@@ -1,5 +1,9 @@
 trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update) {
 
+    // Step 1: Populate Leave Balance ID using LeaveBalanceHandler
+    LeaveBalanceHandler.populateLeaveBalanceId(Trigger.new);
+
+    // Step 2: Calculate requested days using existing logic
     Set<Id> requesterIds = new Set<Id>();
     for (Leave_Request__c request : Trigger.new) {
         if (request.Requester__c != null) {
