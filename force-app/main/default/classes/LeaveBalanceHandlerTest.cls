@@ -72,8 +72,6 @@ private class LeaveBalanceHandlerTest {
 
     @isTest
     static void testPopulateLeaveBalanceId_NullRequesterOrLeaveType() {
-        User testUser = TestDataFactory.createTestUser('tuser5', 'US');
-
         List<Leave_Request__c> requests = new List<Leave_Request__c>{
             new Leave_Request__c(
                 Requester__c = null, 
@@ -82,7 +80,7 @@ private class LeaveBalanceHandlerTest {
                 Leave_Type__c = 'Vacation'
             ),
             new Leave_Request__c(
-                Requester__c = testUser.Id,
+                Requester__c = null,
                 Start_Date__c = Date.today().addDays(7),
                 End_Date__c = Date.today().addDays(11),
                 Leave_Type__c = null 
