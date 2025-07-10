@@ -1,42 +1,17 @@
+
 @isTest
 private class LeaveRequestTriggerTest {
 
-    private static Leave_Balance__c createLeaveBalance(Id userId, String leaveType, Decimal allocatedDays) {
-        Leave_Balance__c lb = new Leave_Balance__c(
-            Employee__c = userId,
-            Leave_Type__c = leaveType,
-            Allocated_Days__c = allocatedDays,
-            Year__c = Date.today().year()
-        );
-        insert lb;
-        return lb;
-    }
-
     @isTest
     static void testLeaveRequestTrigger_Insert() {
-        Profile p = [SELECT Id FROM Profile WHERE Name='Standard User'];
-        User testUser = new User(
-            Alias = 'tstuser',
-            Email='testuser@test.com',
-            EmailEncodingKey='UTF-8',
-            LastName='Testing',
-            LanguageLocaleKey='en_US',
-            LocaleSidKey='en_US',
-            ProfileId = p.Id,
-            TimeZoneSidKey='America/Los_Angeles',
-            UserName='testuser@test.com' + System.currentTimeMillis(),
-            Country_Code__c = 'US'
-        );
-        insert testUser;
+        User testUser = TestDataFactory.createTestUser('tstuser', 'US');
+        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
 
-        Leave_Balance__c leaveBalance = createLeaveBalance(testUser.Id, 'Vacation', 20);
-
-        Leave_Request__c leaveRequest = new Leave_Request__c(
-            Requester__c = testUser.Id,
-            Start_Date__c = Date.newInstance(2025, 7, 14),
-            End_Date__c = Date.newInstance(2025, 7, 18),
-            Leave_Type__c = 'Vacation',
-            Leave_Balance__c = leaveBalance.Id
+        Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
+            testUser.Id, 'Vacation', 
+            Date.newInstance(2025, 7, 14), 
+            Date.newInstance(2025, 7, 18), 
+            null
         );
 
         Test.startTest();
@@ -44,39 +19,25 @@ private class LeaveRequestTriggerTest {
         Test.stopTest();
 
         Leave_Request__c updatedLeaveRequest = [
-            SELECT Number_of_Days_Requested__c 
+            SELECT Number_of_Days_Requested__c, Leave_Balance__c 
             FROM Leave_Request__c 
             WHERE Id = :leaveRequest.Id
         ];
 
         System.assertEquals(5, updatedLeaveRequest.Number_of_Days_Requested__c);
+        System.assertEquals(leaveBalance.Id, updatedLeaveRequest.Leave_Balance__c, 'Leave Balance ID should be automatically found and set by trigger');
     }
 
     @isTest
     static void testLeaveRequestTrigger_Update() {
-        Profile p = [SELECT Id FROM Profile WHERE Name='Standard User'];
-        User testUser = new User(
-            Alias = 'tstuser2',
-            Email='testuser2@test.com',
-            EmailEncodingKey='UTF-8',
-            LastName='Testing2',
-            LanguageLocaleKey='en_US',
-            LocaleSidKey='en_US',
-            ProfileId = p.Id,
-            TimeZoneSidKey='America/Los_Angeles',
-            UserName='testuser2@test.com' + System.currentTimeMillis(),
-            Country_Code__c = 'US'
-        );
-        insert testUser;
+        User testUser = TestDataFactory.createTestUser('tstuser2', 'US');
+        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
 
-        Leave_Balance__c leaveBalance = createLeaveBalance(testUser.Id, 'Vacation', 20);
-
-        Leave_Request__c leaveRequest = new Leave_Request__c(
-            Requester__c = testUser.Id,
-            Start_Date__c = Date.newInstance(2025, 8, 4),
-            End_Date__c = Date.newInstance(2025, 8, 8),
-            Leave_Type__c = 'Vacation',
-            Leave_Balance__c = leaveBalance.Id
+        Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
+            testUser.Id, 'Vacation', 
+            Date.newInstance(2025, 8, 4), 
+            Date.newInstance(2025, 8, 8), 
+            null
         );
         insert leaveRequest;
 
@@ -87,11 +48,14 @@ private class LeaveRequestTriggerTest {
         Test.stopTest();
 
         Leave_Request__c updatedLeaveRequest = [
-            SELECT Number_of_Days_Requested__c 
+            SELECT Number_of_Days_Requested__c, Leave_Balance__c 
             FROM Leave_Request__c 
             WHERE Id = :leaveRequest.Id
         ];
 
         System.assertEquals(6, updatedLeaveRequest.Number_of_Days_Requested__c);
+        System.assertEquals(leaveBalance.Id, updatedLeaveRequest.Leave_Balance__c, 'Leave Balance ID should remain correct after update');
     }
 }
+
+
