@@ -6,10 +6,7 @@ public with sharing class LeaveBalanceHandler {
         Set<String> leaveTypes = new Set<String>();
         
         for (Leave_Request__c request : requests) {
-            if (request.Requester__c != null && 
-                request.Leave_Type__c != null && 
-                request.Leave_Balance__c == null) {
-                    
+            if (request.Requester__c != null && request.Leave_Type__c != null) {
                 employeeIds.add(request.Requester__c);
                 leaveTypes.add(request.Leave_Type__c);
             }
@@ -33,14 +30,12 @@ public with sharing class LeaveBalanceHandler {
         }
         
         for (Leave_Request__c request : requests) {
-            if (request.Requester__c != null && 
-                request.Leave_Type__c != null && 
-                request.Leave_Balance__c == null) {
-                
+            if (request.Requester__c != null && request.Leave_Type__c != null) {
                 String key = request.Requester__c + '-' + request.Leave_Type__c + '-' + Date.today().year();
                 
                 if (balanceMap.containsKey(key)) {
-                    request.Leave_Balance__c = balanceMap.get(key);
+                    Id correctBalanceId = balanceMap.get(key);
+                    request.Leave_Balance__c = correctBalanceId;
                 } else {
                     request.addError('No Leave Balance found for ' + request.Leave_Type__c + ' for this employee in ' + Date.today().year());
                 }

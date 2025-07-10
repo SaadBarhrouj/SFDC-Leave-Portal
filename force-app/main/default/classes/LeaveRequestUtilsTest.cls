@@ -3,36 +3,33 @@ private class LeaveRequestUtilsTest {
 
     @TestSetup
     static void makeData(){
-        List<Holiday__c> holidays = new List<Holiday__c>();
-        holidays.add(new Holiday__c(
-            Name = 'MA Holiday',
-            Unique_ID__c = 'MAHOLIDAY01',
-            Holiday_Date__c = Date.newInstance(2024, 7, 4), // Thursday
-            Country_Code__c = 'MA',
-            Deduction_Value__c = 1
-        ));
-        holidays.add(new Holiday__c(
-            Name = 'MA Half Holiday',
-            Unique_ID__c = 'MAHOLIDAY02',
-            Holiday_Date__c = Date.newInstance(2024, 7, 5), // Friday
-            Country_Code__c = 'MA',
-            Deduction_Value__c = 0.5
-        ));
-        holidays.add(new Holiday__c(
-            Name = 'MA Weekend Holiday',
-            Unique_ID__c = 'MAHOLIDAY03',
-            Holiday_Date__c = Date.newInstance(2024, 7, 6), // Saturday
-            Country_Code__c = 'MA',
-            Deduction_Value__c = 1
-        ));
-        holidays.add(new Holiday__c(
-            Name = 'FR Holiday',
-            Unique_ID__c = 'FRHOLIDAY01',
-            Holiday_Date__c = Date.newInstance(2024, 7, 8), // Monday
-            Country_Code__c = 'FR',
-            Deduction_Value__c = 1
-        ));
-        insert holidays;
+        List<Map<String, Object>> holidayData = new List<Map<String, Object>>{
+            new Map<String, Object>{
+                'name' => 'MA Holiday',
+                'date' => Date.newInstance(2024, 7, 4),
+                'countryCode' => 'MA',
+                'deductionValue' => 1.0
+            },
+            new Map<String, Object>{
+                'name' => 'MA Half Holiday',
+                'date' => Date.newInstance(2024, 7, 5),
+                'countryCode' => 'MA',
+                'deductionValue' => 0.5
+            },
+            new Map<String, Object>{
+                'name' => 'MA Weekend Holiday',
+                'date' => Date.newInstance(2024, 7, 6),
+                'countryCode' => 'MA',
+                'deductionValue' => 1.0
+            },
+            new Map<String, Object>{
+                'name' => 'FR Holiday',
+                'date' => Date.newInstance(2024, 7, 8),
+                'countryCode' => 'FR',
+                'deductionValue' => 1.0
+            }
+        };
+        TestDataFactory.createHolidays(holidayData);
     }
 
     @isTest
