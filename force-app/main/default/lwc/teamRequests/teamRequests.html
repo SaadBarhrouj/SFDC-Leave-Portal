@@ -1,4 +1,5 @@
 <template>
+<<<<<<< Updated upstream
         <lightning-card title="Team Requests" icon-name="utility:groups">
             <lightning-button label="Refresh" slot="actions" icon-name="utility:refresh"></lightning-button>
     
@@ -20,6 +21,34 @@
                 onrowaction={handleRowAction}
                 hide-checkbox-column
                 resize-column-disabled="true">
+=======
+    <lightning-card title="Team Requests" icon-name="utility:groups">
+        <lightning-button label="Refresh" slot="actions" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
+
+        <div class="slds-var-p-around_medium slds-is-relative">
+            <!-- Loading Spinner Overlay -->
+            <template if:true={isLoading}>
+                <div class="spinner-overlay">
+                    <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+                </div>
+            </template>
+
+            <!-- Main Content -->
+            <template if:false={hasRequests}>
+                <div class="slds-align_absolute-center slds-var-p-around_medium">
+                    <c-no-data-svg message="There are no leave requests from your team at the moment."></c-no-data-svg>
+                </div>
+            </template>
+
+            <template if:true={hasRequests}>
+                <lightning-datatable
+                    key-field="Id"
+                    data={requests}
+                    columns={columns}
+                    onrowaction={handleRowAction}
+                    onrowselection={handleRowSelection}
+                    resize-column-disabled="true">
+>>>>>>> Stashed changes
                 </lightning-datatable>
             </template>
     
