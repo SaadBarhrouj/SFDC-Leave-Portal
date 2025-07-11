@@ -1,4 +1,3 @@
-
 @isTest
 private class LeaveRequestTriggerTest {
 
@@ -11,7 +10,7 @@ private class LeaveRequestTriggerTest {
             testUser.Id, 'Vacation', 
             Date.newInstance(2025, 7, 14), 
             Date.newInstance(2025, 7, 18), 
-            null
+            leaveBalance.Id
         );
 
         Test.startTest();
@@ -36,7 +35,7 @@ private class LeaveRequestTriggerTest {
             testUser.Id, 'Vacation', 
             Date.newInstance(2025, 8, 4), 
             Date.newInstance(2025, 8, 8), 
-            null
+            leaveBalance.Id
         );
         insert leaveRequest;
 
