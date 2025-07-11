@@ -1,8 +1,3 @@
-<<<<<<< Updated upstream
-import { LightningElement } from 'lwc';
-
-export default class MyRequests extends LightningElement {}
-=======
 import { LightningElement, track, wire } from 'lwc';
 import { publish, MessageContext } from 'lightning/messageService';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
@@ -222,4 +217,3 @@ export default class MyRequests extends LightningElement {
     
 
 }
->>>>>>> Stashed changes

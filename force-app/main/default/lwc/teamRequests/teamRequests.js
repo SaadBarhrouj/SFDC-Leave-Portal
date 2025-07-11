@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-import { LightningElement } from 'lwc';
-=======
 import { LightningElement, track, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
@@ -15,7 +12,6 @@ import REJECTION_REASON_FIELD from '@salesforce/schema/Leave_Request__c.Rejectio
 import getTeamRequests from '@salesforce/apex/TeamRequestsController.getTeamRequests';
 import approveLeaveRequest from '@salesforce/apex/TeamRequestsController.approveLeaveRequest';
 import rejectLeaveRequest from '@salesforce/apex/TeamRequestsController.rejectLeaveRequest';
->>>>>>> Stashed changes
 
 const ACTIONS = [
     { label: 'Approve', name: 'approve' },
@@ -23,14 +19,6 @@ const ACTIONS = [
 ];
 
 const COLUMNS = [
-<<<<<<< Updated upstream
-    { label: 'Requester', fieldName: 'RequesterName', type: 'text' },
-    { label: 'Leave Type', fieldName: 'Leave_Type__c', type: 'text' },
-    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local' },
-    { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },
-    { label: 'Days', fieldName: 'Number_of_Days_Requested__c', type: 'number', cellAttributes: { alignment: 'left' } },
-    { type: 'action', typeAttributes: { rowActions: ACTIONS } }
-=======
     { 
         label: 'Requester', 
         fieldName: 'requesterUrl', 
@@ -59,15 +47,13 @@ const COLUMNS = [
         type: 'action',
         typeAttributes: { rowActions: ACTIONS },
     },
->>>>>>> Stashed changes
 ];
 
 export default class TeamRequests extends LightningElement {
     requests = [];
 
-<<<<<<< Updated upstream
     columns = COLUMNS;
-=======
+
     isLoading = true;
     error;
 
@@ -90,7 +76,8 @@ export default class TeamRequests extends LightningElement {
             this.showToast('Error', 'Could not load rejection reasons.', 'error');
         }
     }
-    ""
+    
+
     @wire(getTeamRequests)
     wiredRequests(result) {
         this.isLoading = true;
@@ -112,19 +99,16 @@ export default class TeamRequests extends LightningElement {
         }
         this.isLoading = false;
     }
->>>>>>> Stashed changes
 
     get hasRequests() {
         return this.requests && this.requests.length > 0;
     }
-<<<<<<< Updated upstream
-=======
 
     handleRowSelection(event) {
         const selectedRows = event.detail.selectedRows;
         if (selectedRows.length > 0) {
             const payload = { 
-                recordId: selectedRows[0].Id,
+                recordId: selectedRows[-1].Id,
                 context: 'teamRequest'
             };
             publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
@@ -220,5 +204,4 @@ export default class TeamRequests extends LightningElement {
         });
         this.dispatchEvent(event);
     }
->>>>>>> Stashed changes
 }
