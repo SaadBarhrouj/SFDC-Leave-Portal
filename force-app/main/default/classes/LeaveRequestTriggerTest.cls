@@ -1,4 +1,3 @@
-
 @isTest
 private class LeaveRequestTriggerTest {
 
@@ -11,7 +10,7 @@ private class LeaveRequestTriggerTest {
             testUser.Id, 'Vacation', 
             Date.newInstance(2025, 7, 14), 
             Date.newInstance(2025, 7, 18), 
-            null
+            leaveBalance.Id
         );
 
         Test.startTest();
@@ -19,13 +18,12 @@ private class LeaveRequestTriggerTest {
         Test.stopTest();
 
         Leave_Request__c updatedLeaveRequest = [
-            SELECT Number_of_Days_Requested__c, Leave_Balance__c 
+            SELECT Number_of_Days_Requested__c
             FROM Leave_Request__c 
             WHERE Id = :leaveRequest.Id
         ];
 
-        System.assertEquals(5, updatedLeaveRequest.Number_of_Days_Requested__c);
-        System.assertEquals(leaveBalance.Id, updatedLeaveRequest.Leave_Balance__c, 'Leave Balance ID should be automatically found and set by trigger');
+        System.assertEquals(5, updatedLeaveRequest.Number_of_Days_Requested__c, 'Number of days should be calculated by trigger');
     }
 
     @isTest
@@ -37,7 +35,7 @@ private class LeaveRequestTriggerTest {
             testUser.Id, 'Vacation', 
             Date.newInstance(2025, 8, 4), 
             Date.newInstance(2025, 8, 8), 
-            null
+            leaveBalance.Id
         );
         insert leaveRequest;
 
@@ -48,13 +46,12 @@ private class LeaveRequestTriggerTest {
         Test.stopTest();
 
         Leave_Request__c updatedLeaveRequest = [
-            SELECT Number_of_Days_Requested__c, Leave_Balance__c 
+            SELECT Number_of_Days_Requested__c
             FROM Leave_Request__c 
             WHERE Id = :leaveRequest.Id
         ];
 
-        System.assertEquals(6, updatedLeaveRequest.Number_of_Days_Requested__c);
-        System.assertEquals(leaveBalance.Id, updatedLeaveRequest.Leave_Balance__c, 'Leave Balance ID should remain correct after update');
+        System.assertEquals(6, updatedLeaveRequest.Number_of_Days_Requested__c, 'Number of days should be recalculated by trigger on update');
     }
 }
 
