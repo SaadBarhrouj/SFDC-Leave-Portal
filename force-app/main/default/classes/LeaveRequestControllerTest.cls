@@ -48,6 +48,7 @@ private class LeaveRequestControllerTest {
                 Date.today().addDays(2), 
                 leaveBalance.Id
             );
+            leaveRequest.Status__c = 'Submitted';
             insert leaveRequest;
 
             Test.startTest();
