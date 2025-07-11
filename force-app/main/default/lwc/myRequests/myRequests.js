@@ -42,7 +42,7 @@ export default class MyRequests extends LightningElement {
     @track requests = [];
     @track isLoading = false;
     @track showCreateModal = false;
-    
+    @track recordIdToEdit = null; 
     columns = COLUMNS;
     wiredRequestsResult;
     
@@ -83,9 +83,11 @@ export default class MyRequests extends LightningElement {
                     break;
                 case 'Pending':
                 case 'Submitted':
+                case 'Pending Approval':
                     statusClass = 'slds-text-color_weak';
                     availableActions = [
                         { label: 'Show details', name: 'show_details' },
+                        { label: 'Edit', name: 'edit' },
                         { label: 'Cancel', name: 'cancel' }
                     ];
                     break;
@@ -109,12 +111,14 @@ export default class MyRequests extends LightningElement {
 
     handleNewRequest() {
         console.log('New Request clicked');
+        this.recordIdToEdit = null;
         this.showCreateModal = true;
     }
 
     closeCreateModal() {
         console.log('Create modal closed');
         this.showCreateModal = false;
+          this.recordIdToEdit = null;
     }
 
     handleRowAction(event) {
@@ -128,14 +132,27 @@ export default class MyRequests extends LightningElement {
             case 'cancel':
                 this.cancelRequest(row);
                 break;
+            case 'edit':
+                this.editRequest(row);
+                break;
             default:
         }
     }
 
+   get modalTitle() {
+        return this.recordIdToEdit ? 'Edit Leave Request' : 'New Leave Request';
+    }
+
+     editRequest(row) {
+        console.log('Edit request:', row);
+        this.recordIdToEdit = row.Id; // Stocker l'ID
+        this.showCreateModal = true;  // Ouvrir le modal (qui se pré-remplira)
+    }
+    
     cancelRequest(row) {
         console.log('Cancel request:', row);
-        if (row.Status__c !== 'Pending' && row.Status__c !== 'Submitted') {
-            this.showError('You can only cancel requests with Pending or Submitted status.');
+        if (row.Status__c !== 'Pending' && row.Status__c !== 'Submitted' && row.Status__c !== 'Pending Approval') {
+            this.showError('You can only cancel requests with Pending, Submitted, or Pending Approval status.');
             return;
         }
         
@@ -193,30 +210,28 @@ export default class MyRequests extends LightningElement {
         }
     }
 
-    handleSuccess(event) {
-        console.log('Leave request created successfully with ID:', event.detail.id);
+      handleSuccess(event) {
+        const message = this.recordIdToEdit 
+            ? 'Leave request updated successfully!' 
+            : 'Leave request created successfully!';
+        
+        console.log(message, 'ID:', event.detail.id);
         
         this.closeCreateModal();
-        this.showSuccess('Leave request created successfully!');
+        this.showSuccess(message);
         this.refreshRequests();
     }
+
 
     handleError(event) {
         console.error('Error creating leave request:', event.detail);
         
-        let errorMessage = 'Unknown error occurred';
-        
-        if (event.detail && event.detail.detail) {
-            errorMessage = event.detail.detail;
-        } else if (event.detail && event.detail.message) {
-            errorMessage = event.detail.message;
-        } else if (event.detail && event.detail.output && event.detail.output.errors) {
-            const errors = event.detail.output.errors;
-            if (errors.length > 0) {
-                errorMessage = errors[0].message;
-            }
-        }
-        
+        const errorMessage = 
+            event.detail?.detail ??
+            event.detail?.message ??
+            event.detail?.output?.errors?.[0]?.message ??
+            'Unknown error occurred';
+            
         this.showError('Error creating leave request: ' + errorMessage);
     }
 
