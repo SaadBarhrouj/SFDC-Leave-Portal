@@ -1,54 +1,24 @@
-import { LightningElement, track } from 'lwc';
-const DATA =[
-    {
-        Id: '1',
-        Name: 'REQ-001',
-        Leave_Type__c: 'Annual Leave',
-        Start_Date__c: '2024-02-15',
-        End_Date__c: '2024-02-19',
-        Number_of_Days_Requested__c: 5,
-        Status__c: 'Pending',
-        Employee_Comments__c: 'Family vacation',
-        Approver_Comments__c: null,
-        Rejection_Reason__c: null
-    },
-    {
-        Id: '2',
-        Name: 'REQ-002',
-        Leave_Type__c: 'Sick Leave',
-        Start_Date__c: '2024-02-10',
-        End_Date__c: '2024-02-12',
-        Number_of_Days_Requested__c: 3,
-        Status__c: 'Approved',
-        Employee_Comments__c: 'Medical appointment',
-        Approver_Comments__c: 'Approved for medical reasons',
-        Rejection_Reason__c: null
-    },
-    {
-        Id: '3',
-        Name: 'REQ-003',
-        Leave_Type__c: 'Personal Leave',
-        Start_Date__c: '2024-03-01',
-        End_Date__c: '2024-03-01',
-        Number_of_Days_Requested__c: 1,
-        Status__c: 'Rejected',
-        Employee_Comments__c: 'Personal matters',
-        Approver_Comments__c: 'Not enough notice provided',
-        Rejection_Reason__c: 'Insufficient advance notice'
-    }
-];
-
-const actions = [
-    { label: 'Show details', name: 'show_details' },
-    { label: 'Edit', name: 'edit' },
-    { label: 'Cancel', name: 'cancel' }
-];
+import { LightningElement, track, wire } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
+import userId from '@salesforce/user/Id';
+import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
+import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 
 const COLUMNS = [
-    { label: 'Request Number', fieldName: 'Name', sortable: true },
+    { 
+        label: 'Request Number', 
+        fieldName: 'Name', 
+        type: 'url',
+        typeAttributes: {
+            label: { fieldName: 'RequestNumber' },
+            target: '_blank'
+        },
+        sortable: true 
+    },
     { label: 'Leave Type', fieldName: 'Leave_Type__c', sortable: true },
-    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date', sortable: true },
-    { label: 'End Date', fieldName: 'End_Date__c', type: 'date', sortable: true },
+    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local', sortable: true },
+    { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local', sortable: true },
     { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true },
     { 
         label: 'Status', 
@@ -59,7 +29,7 @@ const COLUMNS = [
             class: { fieldName: 'statusClass' }
         }
     },
-    { label: 'My Comments', fieldName: 'Employee_Comments__c', wrapText: true },
+    { label: 'Comments', fieldName: 'Employee_Comments__c', wrapText: true },
     {
         type: 'action',
         typeAttributes: { 
@@ -70,67 +40,81 @@ const COLUMNS = [
 
 export default class MyRequests extends LightningElement {
     @track requests = [];
-    columns = COLUMNS;
+    @track isLoading = false;
+    @track showCreateModal = false;
     
-    connectedCallback() {
-        this.requests = this.processRequestsForDisplay(DATA);
+    columns = COLUMNS;
+    wiredRequestsResult;
+    
+    @wire(getMyLeaves)
+    wiredRequests(result) {
+        this.wiredRequestsResult = result;
+        
+        if (result.data) {
+            console.log('Data received:', result.data);
+            this.requests = this.processRequestsForDisplay(result.data);
+        } else if (result.error) {
+            console.error('Error loading requests:', result.error);
+        }
+    }
+    
+    get currentUserId() {
+        return userId;
+    }
+    
+    get hasRequests() {
+        return this.requests && this.requests.length > 0;
     }
 
     processRequestsForDisplay(rawData) {
         return rawData.map(request => {
-            let managerResponse = '';
+            const recordUrl = `/lightning/r/Leave_Request__c/${request.Id}/view`;
             let statusClass = '';
             let availableActions = [];
 
             switch(request.Status__c) {
-                case 'Pending':
-                    statusClass = 'slds-text-color_weak';
-                    managerResponse = 'Pending...';
-                    availableActions = [
-                        { label: 'Show details', name: 'show_details' },
-                        { label: 'Edit', name: 'edit' },
-                        { label: 'Cancel', name: 'cancel' }
-                    ];
-                    break;
                 case 'Approved':
                     statusClass = 'slds-text-color_success';
-                    managerResponse = request.Approver_Comments__c || 'Approved';
-                    availableActions = [
-                        { label: 'Show details', name: 'show_details' }
-                    ];
+                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
                     break;
                 case 'Rejected':
                     statusClass = 'slds-text-color_error';
-                    managerResponse = request.Rejection_Reason__c || request.Approver_Comments__c || 'Rejected';
+                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
+                    break;
+                case 'Pending':
+                case 'Submitted':
+                    statusClass = 'slds-text-color_weak';
                     availableActions = [
-                        { label: 'Show details', name: 'show_details' }
+                        { label: 'Show details', name: 'show_details' },
+                        { label: 'Cancel', name: 'cancel' }
                     ];
                     break;
                 case 'Cancelled':
                     statusClass = 'slds-text-color_weak';
-                    managerResponse = 'Cancelled by employee';
-                    availableActions = [
-                        { label: 'Show details', name: 'show_details' }
-                    ];
+                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
                     break;
                 default:
-                    statusClass = '';
-                    managerResponse = '';
-                    availableActions = [];
+                    statusClass = 'slds-text-color_default';
             }
 
             return {
                 ...request,
+                Name: recordUrl,
+                RequestNumber: request.Name,
                 statusClass: statusClass,
-                managerResponse: managerResponse,
                 availableActions: availableActions
             };
         });
     }
-    
 
-    get hasRequests() {
-        return this.requests && this.requests.length > 0;
+    handleNewRequest() {
+        console.log('New Request clicked');
+        this.showCreateModal = true;
+    }
+
+    closeCreateModal() {
+        console.log('Create modal closed');
+        this.showCreateModal = false;
     }
 
     handleRowAction(event) {
@@ -138,10 +122,8 @@ export default class MyRequests extends LightningElement {
         const row = event.detail.row;
         switch (actionName) {
             case 'show_details':
-                this.showRowDetails(row);
-                break;
-            case 'edit':
-                this.editRequest(row);
+                console.log('Showing details for:', JSON.stringify(row));
+                alert(`Details for ${row.Name}:\nStatus: ${row.Status__c}\nComments: ${row.Employee_Comments__c || 'N/A'}`);
                 break;
             case 'cancel':
                 this.cancelRequest(row);
@@ -150,71 +132,107 @@ export default class MyRequests extends LightningElement {
         }
     }
 
-    showRowDetails(row) {
-        console.log('Show details for:', row);
-        
-        let modalContent = `
-            Request: ${row.Name}
-            Type: ${row.Leave_Type__c}
-            Period: ${row.Start_Date__c} to ${row.End_Date__c}
-            Days: ${row.Number_of_Days_Requested__c}
-            Status: ${row.Status__c}
-            Your comments: ${row.Employee_Comments__c || 'None'}
-        `;
-
-        if (row.Status__c === 'Approved' && row.Approver_Comments__c) {
-            modalContent += `\nApproval comments: ${row.Approver_Comments__c}`;
-        } else if (row.Status__c === 'Rejected') {
-            if (row.Rejection_Reason__c) {
-                modalContent += `\nRejection reason: ${row.Rejection_Reason__c}`;
-            }
-            if (row.Approver_Comments__c) {
-                modalContent += `\nManager comments: ${row.Approver_Comments__c}`;
-            }
-        }
-
-        alert(modalContent);
-    }
-
-    editRequest(row) {
-        console.log('Edit request:', row);
-        if (row.Status__c !== 'Pending') {
-            alert('You can only edit requests with Pending status');
-            return;
-        }
-        alert('Edit functionality to be implemented');
-    }
-
     cancelRequest(row) {
         console.log('Cancel request:', row);
-        if (row.Status__c !== 'Pending') {
-            alert('You can only cancel requests with Pending status');
+        if (row.Status__c !== 'Pending' && row.Status__c !== 'Submitted') {
+            this.showError('You can only cancel requests with Pending or Submitted status.');
             return;
         }
         
-        if (confirm(`Are you sure you want to cancel request ${row.Name}?`)) {
-            this.updateRequestStatus(row.Id, 'Cancelled');
+        // Here you would typically call an Apex method to update the record
+        // For now, we'll just show a confirmation and refresh the data
+        if (confirm(`Are you sure you want to cancel request ${row.RequestNumber}?`)) {
+            console.log(`Request ${row.Id} cancellation initiated.`);
+            // In a real scenario, you would call an Apex method here, e.g.:
+            // cancelLeaveRequest({ requestId: row.Id })
+            //     .then(() => {
+            //         this.showSuccess('Request cancelled successfully.');
+            //         this.refreshRequests();
+            //     })
+            //     .catch(error => {
+            //         this.showError(error.body.message);
+            //     });
+            alert('Cancel functionality to be fully implemented with Apex. For now, refreshing list.');
+            this.refreshRequests();
         }
     }
 
-    updateRequestStatus(requestId, newStatus) {
-        this.requests = this.requests.map(request => {
-            if (request.Id === requestId) {
-                return { ...request, Status__c: newStatus };
+    async refreshRequests() {
+        console.log('Refreshing data');
+        this.isLoading = true;
+        try {
+            await refreshApex(this.wiredRequestsResult);
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async handleSubmit(event) {
+        event.preventDefault();
+        console.log('Submit form');
+        
+        const fields = event.detail.fields;
+        
+        try {
+            const leaveBalanceId = await getLeaveBalanceId({
+                employeeId: userId,
+                leaveType: fields.Leave_Type__c
+            });
+            
+            fields.Requester__c = userId;
+            fields.Leave_Balance__c = leaveBalanceId;
+            fields.Status__c = 'Submitted';
+            
+            this.refs.leaveRequestForm.submit(fields);
+            
+        } catch (error) {
+            console.error('Error finding leave balance:', error);
+            this.showError('Could not find leave balance for ' + fields.Leave_Type__c + '. Please contact your administrator.');
+        }
+    }
+
+    handleSuccess(event) {
+        console.log('Leave request created successfully with ID:', event.detail.id);
+        
+        this.closeCreateModal();
+        this.showSuccess('Leave request created successfully!');
+        this.refreshRequests();
+    }
+
+    handleError(event) {
+        console.error('Error creating leave request:', event.detail);
+        
+        let errorMessage = 'Unknown error occurred';
+        
+        if (event.detail && event.detail.detail) {
+            errorMessage = event.detail.detail;
+        } else if (event.detail && event.detail.message) {
+            errorMessage = event.detail.message;
+        } else if (event.detail && event.detail.output && event.detail.output.errors) {
+            const errors = event.detail.output.errors;
+            if (errors.length > 0) {
+                errorMessage = errors[0].message;
             }
-            return request;
-        });
+        }
         
-        this.requests = this.processRequestsForDisplay(this.requests);
-        
-        console.log(`Request ${requestId} status updated to ${newStatus}`);
+        this.showError('Error creating leave request: ' + errorMessage);
     }
 
-    handleNewRequest() {
-        console.log('New Request clicked');
-        alert('New Request functionality to be implemented');
+    showToast(title, message, variant) {
+        this.dispatchEvent(new ShowToastEvent({
+            title: title,
+            message: message,
+            variant: variant
+        }));
     }
 
-    
+    showSuccess(message) {
+        this.showToast('Success', message, 'success');
+    }
 
+    showError(message) {
+        this.showToast('Error', message, 'error');
+    }
 }
