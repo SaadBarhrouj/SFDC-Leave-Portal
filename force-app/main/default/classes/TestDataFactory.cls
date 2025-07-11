@@ -34,6 +34,37 @@ public class TestDataFactory {
     }
     
     /**
+     * Overloaded method to create a test user with specified profile
+     */
+    public static User createTestUser(String alias, String countryCode, String profileName) {
+        userCounter++;
+        if (alias == null) {
+            alias = 'tuser' + userCounter;
+        }
+        if (profileName == null) {
+            profileName = 'Standard User';
+        }
+        Profile p = [SELECT Id FROM Profile WHERE Name = :profileName LIMIT 1];
+        
+        User testUser = new User(
+            Alias = alias,
+            Email = 'testuser' + userCounter + '@test.com',
+            EmailEncodingKey = 'UTF-8',
+            LastName = 'TestUser' + userCounter,
+            FirstName = 'Test',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = p.Id,
+            TimeZoneSidKey = 'America/Los_Angeles',
+            UserName = 'testuser' + userCounter + '@test.com' + System.currentTimeMillis(),
+            Country_Code__c = countryCode != null ? countryCode : 'MA'
+        );
+        
+        insert testUser;
+        return testUser;
+    }
+    
+    /**
      * Creates a leave balance for a user
      */
     public static Leave_Balance__c createLeaveBalance(Id userId, String leaveType, Decimal allocatedDays) {

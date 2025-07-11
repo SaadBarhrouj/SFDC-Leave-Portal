@@ -5,6 +5,9 @@ import userId from '@salesforce/user/Id';
 import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 
+import { publish, MessageContext } from 'lightning/messageService';
+import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+
 const COLUMNS = [
     { 
         label: 'Request Number', 
@@ -44,6 +47,10 @@ export default class MyRequests extends LightningElement {
     @track showCreateModal = false;
     @track recordIdToEdit = null; 
     columns = COLUMNS;
+
+    @wire(MessageContext)
+    messageContext;
+
     wiredRequestsResult;
     
     @wire(getMyLeaves)
@@ -120,6 +127,17 @@ export default class MyRequests extends LightningElement {
         this.showCreateModal = false;
           this.recordIdToEdit = null;
     }
+    
+    handleRowSelection(event) {
+        const selectedRows = event.detail.selectedRows;
+        if (selectedRows.length > 0) {
+            const payload = { 
+                recordId: selectedRows[0].Id,
+                context: 'myRequest'
+            };
+            publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
+        }
+    }
 
     handleRowAction(event) {
         const actionName = event.detail.action.name;
@@ -139,7 +157,15 @@ export default class MyRequests extends LightningElement {
         }
     }
 
-   get modalTitle() {
+    showRowDetails(row) {
+        const payload = { 
+            recordId: row.Id,
+            context: 'myRequest'
+        };
+        publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
+    }
+
+    get modalTitle() {
         return this.recordIdToEdit ? 'Edit Leave Request' : 'New Leave Request';
     }
 

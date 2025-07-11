@@ -27,8 +27,11 @@
                 key-field="Id"
                 data={requests}
                 columns={columns}
+                show-row-number-column="true"
+                sorted-by={sortedBy}
+                sorted-direction={sortedDirection}
+                onsort={handleSort}
                 onrowaction={handleRowAction}
-                hide-checkbox-column="true"
                 resize-column-disabled="true">
             </lightning-datatable>
         </template>
