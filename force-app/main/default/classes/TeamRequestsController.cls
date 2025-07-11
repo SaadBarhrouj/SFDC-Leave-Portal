@@ -29,7 +29,6 @@ public with sharing class TeamRequestsController {
                 SELECT Id, Status__c 
                 FROM Leave_Request__c 
                 WHERE Id = :leaveRequestId 
-                WITH SECURITY_ENFORCED
             ];
             
             request.Status__c = 'Approved';
@@ -49,12 +48,11 @@ public with sharing class TeamRequestsController {
                 SELECT Id, Status__c, Rejection_Reason__c, Approver_Comments__c 
                 FROM Leave_Request__c 
                 WHERE Id = :leaveRequestId 
-                WITH SECURITY_ENFORCED
             ];
 
             request.Status__c = 'Rejected';
             request.Rejection_Reason__c = rejectionReason;
-            request.Approver_Comments__c = approverComment; // Save the comment
+            request.Approver_Comments__c = approverComment;
             update request;
 
         } catch (Exception e) {
