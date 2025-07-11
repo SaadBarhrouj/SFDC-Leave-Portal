@@ -4,7 +4,7 @@
             <lightning-button 
                 label="Refresh" 
                 icon-name="utility:refresh" 
-                onclick={handleRefresh}
+                onclick={refreshRequests}
                 disabled={isLoading}
                 class="slds-m-right_x-small">
             </lightning-button>
@@ -27,6 +27,7 @@
                 key-field="Id"
                 data={requests}
                 columns={columns}
+                onrowaction={handleRowAction}
                 hide-checkbox-column="true"
                 resize-column-disabled="true">
             </lightning-datatable>

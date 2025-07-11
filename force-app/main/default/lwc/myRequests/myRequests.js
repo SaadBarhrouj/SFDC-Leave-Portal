@@ -29,7 +29,13 @@ const COLUMNS = [
             class: { fieldName: 'statusClass' }
         }
     },
-    { label: 'Comments', fieldName: 'Employee_Comments__c', wrapText: true }
+    { label: 'Comments', fieldName: 'Employee_Comments__c', wrapText: true },
+    {
+        type: 'action',
+        typeAttributes: { 
+            rowActions: { fieldName: 'availableActions' }
+        }
+    }
 ];
 
 export default class MyRequests extends LightningElement {
@@ -64,20 +70,28 @@ export default class MyRequests extends LightningElement {
         return rawData.map(request => {
             const recordUrl = `/lightning/r/Leave_Request__c/${request.Id}/view`;
             let statusClass = '';
+            let availableActions = [];
 
             switch(request.Status__c) {
                 case 'Approved':
                     statusClass = 'slds-text-color_success';
+                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
                     break;
                 case 'Rejected':
                     statusClass = 'slds-text-color_error';
+                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
                     break;
                 case 'Pending':
                 case 'Submitted':
                     statusClass = 'slds-text-color_weak';
+                    availableActions = [
+                        { label: 'Show details', name: 'show_details' },
+                        { label: 'Cancel', name: 'cancel' }
+                    ];
                     break;
                 case 'Cancelled':
                     statusClass = 'slds-text-color_weak';
+                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
                     break;
                 default:
                     statusClass = 'slds-text-color_default';
@@ -87,7 +101,8 @@ export default class MyRequests extends LightningElement {
                 ...request,
                 Name: recordUrl,
                 RequestNumber: request.Name,
-                statusClass: statusClass
+                statusClass: statusClass,
+                availableActions: availableActions
             };
         });
     }
@@ -102,22 +117,48 @@ export default class MyRequests extends LightningElement {
         this.showCreateModal = false;
     }
 
-    async handleRefresh() {
-        console.log('Refresh data');
-        this.isLoading = true;
-        try {
-            await refreshApex(this.wiredRequestsResult);
-            this.showSuccess('Data refreshed successfully!');
-        } catch (error) {
-            console.error('Error refreshing data:', error);
-            this.showError('Failed to refresh data. Please try again.');
-        } finally {
-            this.isLoading = false;
+    handleRowAction(event) {
+        const actionName = event.detail.action.name;
+        const row = event.detail.row;
+        switch (actionName) {
+            case 'show_details':
+                console.log('Showing details for:', JSON.stringify(row));
+                alert(`Details for ${row.Name}:\nStatus: ${row.Status__c}\nComments: ${row.Employee_Comments__c || 'N/A'}`);
+                break;
+            case 'cancel':
+                this.cancelRequest(row);
+                break;
+            default:
         }
     }
 
-    async refreshData() {
-        console.log('Auto refresh data');
+    cancelRequest(row) {
+        console.log('Cancel request:', row);
+        if (row.Status__c !== 'Pending' && row.Status__c !== 'Submitted') {
+            this.showError('You can only cancel requests with Pending or Submitted status.');
+            return;
+        }
+        
+        // Here you would typically call an Apex method to update the record
+        // For now, we'll just show a confirmation and refresh the data
+        if (confirm(`Are you sure you want to cancel request ${row.RequestNumber}?`)) {
+            console.log(`Request ${row.Id} cancellation initiated.`);
+            // In a real scenario, you would call an Apex method here, e.g.:
+            // cancelLeaveRequest({ requestId: row.Id })
+            //     .then(() => {
+            //         this.showSuccess('Request cancelled successfully.');
+            //         this.refreshRequests();
+            //     })
+            //     .catch(error => {
+            //         this.showError(error.body.message);
+            //     });
+            alert('Cancel functionality to be fully implemented with Apex. For now, refreshing list.');
+            this.refreshRequests();
+        }
+    }
+
+    async refreshRequests() {
+        console.log('Refreshing data');
         this.isLoading = true;
         try {
             await refreshApex(this.wiredRequestsResult);
@@ -157,7 +198,7 @@ export default class MyRequests extends LightningElement {
         
         this.closeCreateModal();
         this.showSuccess('Leave request created successfully!');
-        this.refreshData();
+        this.refreshRequests();
     }
 
     handleError(event) {
