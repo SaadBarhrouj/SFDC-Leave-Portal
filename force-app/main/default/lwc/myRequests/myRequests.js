@@ -171,8 +171,8 @@ export default class MyRequests extends LightningElement {
 
      editRequest(row) {
         console.log('Edit request:', row);
-        this.recordIdToEdit = row.Id; // Stocker l'ID
-        this.showCreateModal = true;  // Ouvrir le modal (qui se pré-remplira)
+        this.recordIdToEdit = row.Id; 
+        this.showCreateModal = true;  
     }
     
     cancelRequest(row) {
