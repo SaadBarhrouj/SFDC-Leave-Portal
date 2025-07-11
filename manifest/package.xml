@@ -6,51 +6,50 @@
     </types>
     <types>
         <members>*</members>
-        <name>ApexComponent</name>
+        <name>LightningComponentBundle</name>
     </types>
     <types>
-        <members>*</members>
+        <members>Leave_Portal</members>
+        <name>CustomApplication</name>
+    </types>
+    <types>
+        <members>Holiday__c</members>
+        <members>Leave_Balance__c</members>
+        <members>Leave_Balance_History__c</members>
+        <members>Leave_Request__c</members>
         <name>CustomObject</name>
     </types>
     <types>
-        <members>*</members>
-        <name>Flow</name>
-    </types>
-    <types>
-        <members>*</members>
+        <members>Holiday__c</members>
+        <members>Leave_Balance__c</members>
+        <members>Leave_Balance_History__c</members>
+        <members>Leave_Request__c</members>
+        <members>Leave_Requests</members>
         <name>CustomTab</name>
     </types>
     <types>
-        <members>*</members>
+        <members>Leave_Portal_UtilityBar</members>
+        <members>Leave_Requests</members>
+        <name>FlexiPage</name>
+    </types>
+    <types>
+        <members>Holiday__c-Holiday Layout</members>
+        <members>Leave_Balance__c-Leave Balance Layout</members>
+        <members>Leave_Balance_History__c-Leave Balance History Layout</members>
+        <members>Leave_Request__c-Leave Request Layout</members>
         <name>Layout</name>
     </types>
     <types>
         <members>*</members>
-        <name>PermissionSet</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>ApexPage</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>ApexTestSuite</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>ApexTrigger</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>AuraDefinitionBundle</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>LightningComponentBundle</name>
-    </types>
-    <types>
-        <members>*</members>
         <name>StaticResource</name>
+    </types>
+    <types>
+        <members>asset_2025_07_02_161235_jpg</members>
+        <name>ContentAsset</name>
+    </types>
+    <types>
+        <members>*</members>
+        <name>PermissionSet</name>
     </types>
     <version>64.0</version>
 </Package>

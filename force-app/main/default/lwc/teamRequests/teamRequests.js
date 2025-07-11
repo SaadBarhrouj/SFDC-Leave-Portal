@@ -49,10 +49,52 @@ const COLUMNS = [
     },
 ];
 
-export default class TeamRequests extends LightningElement {
-    requests = [];
 
-    columns = COLUMNS;
+export default class TeamRequests extends LightningElement {
+    @track columns = COLUMNS;
+    @track requests = [];
+    @track rejectionReasonOptions = [];
+    wiredRequestsResult;
+
+    isLoading = true;
+    error;
+
+    showModal = false;
+    selectedRequestId;
+    rejectionReason = '';
+    approverComment = '';
+
+    @wire(getObjectInfo, { objectApiName: LEAVE_REQUEST_OBJECT })
+    objectInfo;
+
+    @wire(getPicklistValues, { recordTypeId: '$objectInfo.data.defaultRecordTypeId', fieldApiName: REJECTION_REASON_FIELD })
+    wiredPicklistValues({ error, data }) {
+        if (data) {
+            this.rejectionReasonOptions = data.values;
+        } else if (error) {
+            this.showToast('Error', 'Could not load rejection reasons.', 'error');
+        }
+    }
+    
+    @wire(getTeamRequests)
+    wiredRequests(result) {
+        this.isLoading = true;
+        this.wiredRequestsResult = result;
+        if (result.data) {
+            this.requests = result.data.map(req => {
+                return {
+                    ...req,
+                    RequesterName: req.Requester__r.Name
+                }
+            });
+            this.error = undefined;
+        } else if (result.error) {
+            this.error = result.error;
+            this.requests = [];
+            this.showToast('Error', 'Could not retrieve team requests.', 'error');
+        }
+        this.isLoading = false;
+    }
 
     isLoading = true;
     error;
