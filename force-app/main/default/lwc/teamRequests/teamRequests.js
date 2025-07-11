@@ -150,7 +150,7 @@ export default class TeamRequests extends LightningElement {
         const selectedRows = event.detail.selectedRows;
         if (selectedRows.length > 0) {
             const payload = { 
-                recordId: selectedRows[-1].Id,
+                recordId: selectedRows[selectedRows.length - 1].Id,
                 context: 'teamRequest'
             };
             publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
