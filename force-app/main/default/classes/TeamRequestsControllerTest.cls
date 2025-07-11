@@ -10,14 +10,23 @@ private class TeamRequestsControllerTest {
 
         Leave_Balance__c balance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Vacation', 20);
 
-        Leave_Request__c pendingRequest = TestDataFactory.createLeaveRequest(
+        Leave_Request__c pendingRequest1 = TestDataFactory.createLeaveRequest(
             teamMember.Id, 
             'Vacation', 
             Date.today(), 
             Date.today().addDays(1), 
             balance.Id
         );
-        pendingRequest.Status__c = 'Pending Approval';
+        pendingRequest1.Status__c = 'Pending Approval';
+
+        Leave_Request__c pendingRequest2 = TestDataFactory.createLeaveRequest(
+            teamMember.Id, 
+            'RTT', 
+            Date.today(), 
+            Date.today().addDays(2), 
+            balance.Id
+        );
+        pendingRequest2.Status__c = 'Pending Approval';
         
         Leave_Request__c approvedRequest = TestDataFactory.createLeaveRequest(
             teamMember.Id, 
@@ -28,7 +37,7 @@ private class TeamRequestsControllerTest {
         );
         approvedRequest.Status__c = 'Approved';
 
-        insert new List<Leave_Request__c>{pendingRequest, approvedRequest};
+        insert new List<Leave_Request__c>{pendingRequest1, pendingRequest2, approvedRequest};
         
     }
 
@@ -38,7 +47,7 @@ private class TeamRequestsControllerTest {
         Test.startTest();
         System.runAs(manager) {
             List<Leave_Request__c> requests = TeamRequestsController.getTeamRequests();
-            System.assertEquals(1, requests.size(), 'Should only return one pending request.');
+            System.assertEquals(2, requests.size(), 'Should only return two pending request.');
             System.assertEquals('Pending Approval', requests[0].Status__c, 'Status should be Pending Approval.');
         }
         Test.stopTest();
@@ -89,7 +98,7 @@ private class TeamRequestsControllerTest {
     static void testRejectLeaveRequest_Success() {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
         Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c = 'Pending Approval' LIMIT 1];
-        String reason = 'Not enough coverage.';
+        String reason = 'Blackout Period';
         String comment = 'Please reschedule.';
 
         Test.startTest();
