@@ -1,12 +1,9 @@
 <template>
-    <lightning-card>
         <div class="slds-is-relative">
             <template if:true={isLoading}>
                 <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
             </template>
-            
-            <lightning-tabset>
-                <lightning-tab label="Details">
+
                     <template if:false={hasRecord}>
                         <div class="slds-align_absolute-center slds-var-p-around_medium">
                             <c-no-data-svg message="Select a request to see details."></c-no-data-svg>
@@ -102,13 +99,5 @@
                             </div>
                         </div>
                     </template>
-                </lightning-tab>
-                <lightning-tab label="Calendar">
-                    <div class="slds-var-p-around_medium slds-align_absolute-center">
-                        <p>Calendar view coming soon.</p>
-                    </div>
-                </lightning-tab>
-            </lightning-tabset>
         </div>
-    </lightning-card>
 </template>

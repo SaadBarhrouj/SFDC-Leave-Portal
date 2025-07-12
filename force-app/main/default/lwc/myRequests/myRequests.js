@@ -7,7 +7,6 @@ import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 
 import { publish, MessageContext } from 'lightning/messageService';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
-
 const COLUMNS = [
     { 
         label: 'Request Number', 
@@ -60,6 +59,7 @@ export default class MyRequests extends LightningElement {
         if (result.data) {
             console.log('Data received:', result.data);
             this.requests = this.processRequestsForDisplay(result.data);
+
         } else if (result.error) {
             console.error('Error loading requests:', result.error);
         }
@@ -130,8 +130,8 @@ export default class MyRequests extends LightningElement {
     
     handleRowSelection(event) {
         const selectedRows = event.detail.selectedRows;
-        if (selectedRows.length > 0) {
-            const payload = { 
+        if (selectedRows.length === 1) {
+            const payload = {
                 recordId: selectedRows[0].Id,
                 context: 'myRequest'
             };
@@ -144,8 +144,7 @@ export default class MyRequests extends LightningElement {
         const row = event.detail.row;
         switch (actionName) {
             case 'show_details':
-                console.log('Showing details for:', JSON.stringify(row));
-                alert(`Details for ${row.Name}:\nStatus: ${row.Status__c}\nComments: ${row.Employee_Comments__c || 'N/A'}`);
+                this.showRowDetails(row);
                 break;
             case 'cancel':
                 this.cancelRequest(row);

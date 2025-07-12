@@ -133,6 +133,8 @@ export default class TeamRequests extends LightningElement {
                     requestUrl: `/lightning/r/Leave_Request__c/${req.Id}/view`
                 }
             });
+
+
             this.error = undefined;
         } else if (result.error) {
             this.error = result.error;
@@ -146,12 +148,12 @@ export default class TeamRequests extends LightningElement {
         return this.requests && this.requests.length > 0;
     }
 
-    handleRowSelection(event) {
+   handleRowSelection(event) {
         const selectedRows = event.detail.selectedRows;
-        if (selectedRows.length > 0) {
-            const payload = { 
-                recordId: selectedRows[selectedRows.length - 1].Id,
-                context: 'teamRequest'
+        if (selectedRows.length === 1) {
+            const payload = {
+                recordId: selectedRows[0].Id,
+                context: 'myRequest'
             };
             publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
         }
@@ -218,7 +220,7 @@ export default class TeamRequests extends LightningElement {
         .then(() => {
             this.showToast('Success', 'Request rejected successfully.', 'success');
             this.closeModal();
-            return this.refreshData(); // Refresh the datatable
+            return this.refreshData(); 
         })
         .catch(error => {
             this.showToast('Error', error.body.message, 'error');
