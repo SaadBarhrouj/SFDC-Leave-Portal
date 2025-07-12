@@ -1,14 +1,12 @@
 <template>
-    <lightning-card >
-        <lightning-tabset>
-            <lightning-tab label="My Requests">
+    <lightning-card>
+        <lightning-tabset onselect={handleTabSelect}>
+            <lightning-tab label="My Requests" value="my">
                 <c-my-requests></c-my-requests>
-                
             </lightning-tab>
-             <lightning-tab label="Team Requests">
+            <lightning-tab label="Team Requests" value="team">
                 <c-team-requests></c-team-requests> 
             </lightning-tab>
-            
         </lightning-tabset>
     </lightning-card>
 </template>

@@ -29,7 +29,8 @@
                 columns={columns}
                 onrowaction={handleRowAction}
                 onrowselection={handleRowSelection}
-                resize-column-disabled="true">
+                resize-column-disabled="true"
+                max-row-selection="1">
             </lightning-datatable>
         </template>
         <template if:false={hasRequests}>

@@ -16,8 +16,8 @@
     "precommit": "lint-staged"
   },
   "devDependencies": {
-    "@lwc/eslint-plugin-lwc": "^2.2.0",
     "@lwc/engine-dom": "^8.18.0",
+    "@lwc/eslint-plugin-lwc": "^2.2.0",
     "@lwc/jest-preset": "^19.1.0",
     "@prettier/plugin-xml": "^3.4.1",
     "@salesforce/eslint-config-lwc": "^3.7.2",
@@ -40,5 +40,9 @@
     "**/{aura,lwc}/**/*.js": [
       "eslint"
     ]
+  },
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.18",
+    "@fullcalendar/multimonth": "^6.1.18"
   }
 }
