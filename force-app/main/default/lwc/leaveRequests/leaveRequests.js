@@ -11,12 +11,12 @@ export default class LeaveRequests extends LightningElement {
     }
 
     handleTabSelect(event) {
-        const selectedTab = event.target.value;
+        const selectedTab = event.detail.value;
         this.publishContext(selectedTab);
     }
 
-    publishContext(tabName) {
-        const payload = { context: tabName };
+    publishContext(context) {
+        const payload = { context: context };
         publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
     }
 }
