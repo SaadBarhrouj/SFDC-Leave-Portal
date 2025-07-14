@@ -3,20 +3,17 @@ import { publish, MessageContext } from 'lightning/messageService';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 
 export default class LeaveRequests extends LightningElement {
+    activetabContent = 'my';
+
     @wire(MessageContext)
     messageContext;
 
-    connectedCallback() {
-        this.publishContext('my');
-    }
+    tabChangeHandler(event) {
+        this.activetabContent = event.target.value;
 
-    handleTabSelect(event) {
-        const selectedTab = event.detail.value;
-        this.publishContext(selectedTab);
-    }
-
-    publishContext(context) {
-        const payload = { context: context };
+        const payload = {
+            context: this.activetabContent
+        };
         publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
     }
 }

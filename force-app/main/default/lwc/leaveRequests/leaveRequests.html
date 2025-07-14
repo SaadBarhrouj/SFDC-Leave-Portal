@@ -1,10 +1,10 @@
 <template>
     <lightning-card>
-        <lightning-tabset onselect={handleTabSelect}>
-            <lightning-tab label="My Requests" value="my">
+        <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
+            <lightning-tab label="My Requests" value="my" default onactive={tabChangeHandler}>
                 <c-my-requests></c-my-requests>
             </lightning-tab>
-            <lightning-tab label="Team Requests" value="team">
+            <lightning-tab label="Team Requests" value="team" onactive={tabChangeHandler}>
                 <c-team-requests></c-team-requests> 
             </lightning-tab>
         </lightning-tabset>

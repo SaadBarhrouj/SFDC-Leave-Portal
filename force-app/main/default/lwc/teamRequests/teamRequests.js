@@ -3,6 +3,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import { publish, MessageContext } from 'lightning/messageService';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import { getPicklistValues, getObjectInfo } from 'lightning/uiObjectInfoApi';
 import LEAVE_REQUEST_OBJECT from '@salesforce/schema/Leave_Request__c';
 import REJECTION_REASON_FIELD from '@salesforce/schema/Leave_Request__c.Rejection_Reason__c';
@@ -16,32 +17,32 @@ const ACTIONS = [
 ];
 
 const COLUMNS = [
-    { 
-        label: 'Requester', 
-        fieldName: 'requesterUrl', 
-        type: 'url', 
-        sortable: true, 
-        typeAttributes: { 
-            label: { fieldName: 'RequesterName' }, 
-            target: '_self' 
+    {
+        label: 'Requester',
+        fieldName: 'requesterUrl',
+        type: 'url',
+        sortable: true,
+        typeAttributes: {
+            label: { fieldName: 'RequesterName' },
+            target: '_self'
         }
     },
-    { 
-        label: 'Request ID', 
-        fieldName: 'requestUrl', 
-        type: 'url', 
-        sortable: true, 
-        typeAttributes: { 
-            label: { fieldName: 'Name' }, 
-            target: '_self' 
+    {
+        label: 'Request ID',
+        fieldName: 'requestUrl',
+        type: 'url',
+        sortable: true,
+        typeAttributes: {
+            label: { fieldName: 'Name' },
+            target: '_self'
         }
     },
     { label: 'Leave Type', fieldName: 'Leave_Type__c', sortable: true },
     { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local', sortable: true },
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local', sortable: true },
-    { label: 'Total Days', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true, cellAttributes: { alignment: 'left' }},
-    { 
-        label: 'Status', 
+    { label: 'Total Days', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true, cellAttributes: { alignment: 'left' } },
+    {
+        label: 'Status',
         fieldName: 'Status__c',
         type: 'text',
         sortable: true
@@ -80,7 +81,7 @@ export default class TeamRequests extends LightningElement {
             this.showToast('Error', 'Could not load rejection reasons.', 'error');
         }
     }
-    
+
     @wire(getTeamRequests)
     wiredRequests(result) {
         this.isLoading = true;
@@ -150,7 +151,7 @@ export default class TeamRequests extends LightningElement {
     openRejectModal() {
         this.showModal = true;
     }
-    
+
     closeModal() {
         this.showModal = false;
         this.rejectionReason = '';
@@ -172,31 +173,36 @@ export default class TeamRequests extends LightningElement {
             return;
         }
         this.isLoading = true;
-        rejectLeaveRequest({ 
-            leaveRequestId: this.selectedRequestId, 
+        rejectLeaveRequest({
+            leaveRequestId: this.selectedRequestId,
             rejectionReason: this.rejectionReason,
             approverComment: this.approverComment
         })
-        .then(() => {
-            this.showToast('Success', 'Request rejected successfully.', 'success');
-            this.closeModal();
-            return this.refreshData(); 
-        })
-        .catch(error => {
-            this.showToast('Error', error.body.message, 'error');
-            this.isLoading = false;
-        });
+            .then(() => {
+                this.showToast('Success', 'Request rejected successfully.', 'success');
+                this.closeModal();
+                return this.refreshData();
+            })
+            .catch(error => {
+                this.showToast('Error', error.body.message, 'error');
+                this.isLoading = false;
+            });
     }
 
     handleRefresh() {
         this.refreshData();
     }
-    
+
     refreshData() {
         this.isLoading = true;
         return refreshApex(this.wiredRequestsResult).finally(() => {
             this.isLoading = false;
+            const payload = {
+                context: 'team'
+            };
+            publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
         });
+
     }
 
     showToast(title, message, type) {

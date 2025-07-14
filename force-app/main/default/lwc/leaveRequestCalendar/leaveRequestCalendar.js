@@ -40,7 +40,7 @@ export default class LeaveRequestCalendar extends LightningElement {
                 (message) => this.handleContextChange(message)
             );
         }
-        // this.loadMyRequestsData();
+        this.loadMyRequestsData();
     }
 
     disconnectedCallback() {
@@ -84,7 +84,7 @@ export default class LeaveRequestCalendar extends LightningElement {
 
 
     processAndDisplayEvents(requestsData) {
-        if (!this.calendar) return;
+        if (!this.calendar || !requestsData) return;
 
         const approvedLeaves = requestsData.filter(req => req.Status__c === 'Approved');
         
@@ -93,8 +93,14 @@ export default class LeaveRequestCalendar extends LightningElement {
             endDate.setDate(endDate.getUTCDate() + 1);
             let correctedEndDate = endDate.toISOString().slice(0, 10);
             
-            const requesterName = request.Requester__r ? request.Requester__r.Name : 'Unknown';
-            const title = `${requesterName}: ${request.Leave_Type__c}`;
+            // --- MODIFICATION : Le titre change en fonction du contexte ---
+            let title = '';
+            if (this.currentContext === 'team') {
+                const requesterName = request.Requester__r ? request.Requester__r.Name : 'Team';
+                title = `${requesterName} : ${request.Name} : ${request.Leave_Type__c}`;
+            } else { // Contexte 'my'
+                title = `${request.Name} : ${request.Leave_Type__c}`;
+            }
 
             return {
                 id: request.Id,
