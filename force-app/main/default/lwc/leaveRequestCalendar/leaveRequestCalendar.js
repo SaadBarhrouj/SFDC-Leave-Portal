@@ -93,7 +93,6 @@ export default class LeaveRequestCalendar extends LightningElement {
             endDate.setDate(endDate.getUTCDate() + 1);
             let correctedEndDate = endDate.toISOString().slice(0, 10);
             
-            // --- MODIFICATION : Le titre change en fonction du contexte ---
             let title = '';
             if (this.currentContext === 'team') {
                 const requesterName = request.Requester__r ? request.Requester__r.Name : 'Team';
