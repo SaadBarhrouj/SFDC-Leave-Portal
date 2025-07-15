@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Validate_Leave_Start_Date_By_Type</fullName>
+    <active>true</active>
+    <description>Ensure that the leave start date is not in the past for all leave types except Sick Leave, which can have a start date in the past or today to allow retroactive sick leave requests.</description>
+    <errorConditionFormula>AND(
+  NOT(ISPICKVAL(Leave_Type__c, &quot;Sick Leave&quot;)),
+  Start_Date__c &lt; TODAY()
+)</errorConditionFormula>
+    <errorDisplayField>Start_Date__c</errorDisplayField>
+    <errorMessage>Start date cannot be in the past for leave types other than Sick Leave.</errorMessage>
+</ValidationRule>

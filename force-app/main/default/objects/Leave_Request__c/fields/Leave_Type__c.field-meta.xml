@@ -21,6 +21,12 @@
                 <default>false</default>
                 <label>RTT</label>
             </value>
+            <value>
+                <fullName>Sick Leave</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Sick Leave</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>
