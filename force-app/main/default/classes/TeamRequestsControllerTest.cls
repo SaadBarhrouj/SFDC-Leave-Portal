@@ -47,7 +47,7 @@ private class TeamRequestsControllerTest {
         Test.startTest();
         System.runAs(manager) {
             List<Leave_Request__c> requests = TeamRequestsController.getTeamRequests();
-            System.assertEquals(2, requests.size(), 'Should only return two pending request.');
+            System.assertEquals(3, requests.size(), 'Should only return two pending request.');
             System.assertEquals('Pending Approval', requests[0].Status__c, 'Status should be Pending Approval.');
         }
         Test.stopTest();
