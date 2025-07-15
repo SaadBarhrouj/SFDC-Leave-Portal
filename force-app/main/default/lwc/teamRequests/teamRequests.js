@@ -230,7 +230,8 @@ export default class TeamRequests extends LightningElement {
         });
         this.dispatchEvent(event);
     }
-     clearSelection() {
+     
+    clearSelection() {
         const datatable = this.template.querySelector('lightning-datatable');
         if (datatable) {
             datatable.selectedRows = [];
