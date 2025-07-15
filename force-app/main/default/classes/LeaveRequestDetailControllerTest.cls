@@ -21,7 +21,6 @@ private class LeaveRequestDetailControllerTest {
     @isTest
     static void testGetLeaveRequestDetails_Success() {
         Leave_Request__c req = [SELECT Id FROM Leave_Request__c LIMIT 1];
-        // Create a user with System Administrator profile to ensure full FLS access
         User sysAdminUser = TestDataFactory.createTestUser('uAdmin', 'MA', 'System Administrator');
 
         Test.startTest();
