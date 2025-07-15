@@ -1,37 +1,71 @@
-// Get the ID of the user who will be the requester.
-Id requesterId = '005Sv00000AwZnkIAF';
-Decimal currentYear = Date.today().year();
+// 1. Get your user Id (the manager)
+Id managerId = UserInfo.getUserId(); // ou remplacez par votre Id si besoin
 
+// 2. Créer un nouvel utilisateur dont vous êtes le manager
+Profile userProfile = [SELECT Id FROM Profile WHERE Name = 'System Administrator' LIMIT 1];
 
-// Create a list to hold the new leave requests.
+User teamMember = new User(
+    Alias = 'tmember',
+    Email = 'team.member@example.com',
+    EmailEncodingKey = 'UTF-8',
+    LastName = 'ELKIHAL',
+    FirstName = 'Youness',
+    LanguageLocaleKey = 'en_US',
+    LocaleSidKey = 'en_US',
+    ProfileId = userProfile.Id,
+    TimeZoneSidKey = 'Europe/Paris',
+    UserName = 'team.member+' + System.currentTimeMillis() + '@example.com',
+    Country_Code__c = 'MR',
+    ManagerId = managerId
+);
+
+insert teamMember;
+
+// 3. Créer les soldes de congés pour ce nouvel utilisateur
+Integer currentYear = Date.today().year();
+
+Leave_Balance__c vacationBalance = new Leave_Balance__c(
+    Employee__c = teamMember.Id,
+    Leave_Type__c = 'Vacation',
+    Year__c = currentYear,
+    Allocated_Days__c = 25
+);
+
+Leave_Balance__c rttBalance = new Leave_Balance__c(
+    Employee__c = teamMember.Id,
+    Leave_Type__c = 'RTT',
+    Year__c = currentYear,
+    Allocated_Days__c = 10
+);
+
+insert new List<Leave_Balance__c>{vacationBalance, rttBalance};
+
+// 4. Créer des demandes de congé pour ce collaborateur
 List<Leave_Request__c> requestsToCreate = new List<Leave_Request__c>();
 
-// Request 1: Vacation
 Leave_Request__c vacationRequest = new Leave_Request__c(
-    Leave_Balance__c = 'a02Sv00000BcwajIAB',
-    Requester__c = requesterId,
+    Leave_Balance__c = vacationBalance.Id,
+    Requester__c = teamMember.Id,
     Status__c = 'Pending Approval',
     Leave_Type__c = 'Vacation',
     Start_Date__c = Date.today().addMonths(1),
-    End_Date__c = Date.today().addMonths(1).addDays(4) // 5 days total
+    End_Date__c = Date.today().addMonths(1).addDays(4)
 );
 requestsToCreate.add(vacationRequest);
 
-// Request 2: Sick Leave
-Leave_Request__c sickRequest = new Leave_Request__c(
-    Leave_Balance__c = 'a02Sv00000BcwakIAB',
-    Requester__c = requesterId,
+Leave_Request__c rttRequest = new Leave_Request__c(
+    Leave_Balance__c = rttBalance.Id,
+    Requester__c = teamMember.Id,
     Status__c = 'Pending Approval',
     Leave_Type__c = 'RTT',
     Start_Date__c = Date.today().addDays(7),
-    End_Date__c = Date.today().addDays(7) // 1 day total
+    End_Date__c = Date.today().addDays(7)
 );
-requestsToCreate.add(sickRequest);
+requestsToCreate.add(rttRequest);
 
-// Insert the list of new requests into the database.
 try {
     insert requestsToCreate;
-    System.debug(requestsToCreate.size() + ' leave requests created successfully.');
+    System.debug(requestsToCreate.size() + ' leave requests created for your team member.');
 } catch (DmlException e) {
     System.debug('An error occurred while creating requests: ' + e.getMessage());
 }

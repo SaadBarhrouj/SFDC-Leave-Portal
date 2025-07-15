@@ -51,5 +51,9 @@
         <members>*</members>
         <name>PermissionSet</name>
     </types>
+    <types>
+        <members>User.Country_Code__c</members>
+        <name>CustomField</name>
+    </types>
     <version>64.0</version>
 </Package>
