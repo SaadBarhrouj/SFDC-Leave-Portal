@@ -1,12 +1,12 @@
 <template>
     <lightning-card>
-        <lightning-tabset active-tab-value={activeTab}>
-            <lightning-tab label="Details" value="detail">
-                <c-leave-request-detail></c-leave-request-detail>
-            </lightning-tab>
-            <lightning-tab label="Calendar" value="calendar">
-                <c-leave-request-calendar></c-leave-request-calendar>
-            </lightning-tab>
-        </lightning-tabset>
+       <lightning-tabset active-tab-value={activeTab}>
+    <lightning-tab label="Details" value="detail" onactive={handleActive}>
+        <c-leave-request-detail record-id={selectedRecordId} context={selectedContext}></c-leave-request-detail>
+    </lightning-tab>
+    <lightning-tab label="Calendar" value="calendar" onactive={handleActive}>
+    <c-leave-request-calendar context={selectedContext}></c-leave-request-calendar>
+   </lightning-tab>
+</lightning-tabset>
     </lightning-card>
 </template>
