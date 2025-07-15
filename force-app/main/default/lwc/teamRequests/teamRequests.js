@@ -10,6 +10,8 @@ import REJECTION_REASON_FIELD from '@salesforce/schema/Leave_Request__c.Rejectio
 import getTeamRequests from '@salesforce/apex/TeamRequestsController.getTeamRequests';
 import approveLeaveRequest from '@salesforce/apex/TeamRequestsController.approveLeaveRequest';
 import rejectLeaveRequest from '@salesforce/apex/TeamRequestsController.rejectLeaveRequest';
+import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
+import { subscribe } from 'lightning/messageService';
 
 const ACTIONS = [
     { label: 'Approve', name: 'approve' },
@@ -58,6 +60,7 @@ export default class TeamRequests extends LightningElement {
     @track requests = [];
     @track rejectionReasonOptions = [];
     wiredRequestsResult;
+    subscriptionClearSelection;
 
     isLoading = true;
     error;
@@ -69,6 +72,20 @@ export default class TeamRequests extends LightningElement {
 
     @wire(MessageContext)
     messageContext;
+
+    connectedCallback() {
+            this.subscribeToClearSelection();
+        }
+    
+        subscribeToClearSelection() {
+            if (!this.subscriptionClearSelection) {
+                this.subscriptionClearSelection = subscribe(
+                    this.messageContext,
+                    CLEAR_SELECTION_CHANNEL,
+                    () => this.clearSelection()
+                );
+            }
+        }
 
     @wire(getObjectInfo, { objectApiName: LEAVE_REQUEST_OBJECT })
     objectInfo;
@@ -212,5 +229,11 @@ export default class TeamRequests extends LightningElement {
             variant: type
         });
         this.dispatchEvent(event);
+    }
+     clearSelection() {
+        const datatable = this.template.querySelector('lightning-datatable');
+        if (datatable) {
+            datatable.selectedRows = [];
+        }
     }
 }

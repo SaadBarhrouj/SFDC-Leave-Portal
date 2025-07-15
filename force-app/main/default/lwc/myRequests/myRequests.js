@@ -4,11 +4,11 @@ import { refreshApex } from '@salesforce/apex';
 import userId from '@salesforce/user/Id';
 import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
-
 import { publish, MessageContext } from 'lightning/messageService';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
-
+import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
+import { subscribe } from 'lightning/messageService';
 const COLUMNS = [
     {
         label: 'Request Number',
@@ -43,6 +43,7 @@ const COLUMNS = [
 ];
 
 export default class MyRequests extends LightningElement {
+    subscriptionClearSelection;
     @track requests = [];
     @track isLoading = false;
     @track showCreateModal = false;
@@ -51,6 +52,20 @@ export default class MyRequests extends LightningElement {
 
     @wire(MessageContext)
     messageContext;
+
+    connectedCallback() {
+        this.subscribeToClearSelection();
+    }
+
+    subscribeToClearSelection() {
+        if (!this.subscriptionClearSelection) {
+            this.subscriptionClearSelection = subscribe(
+                this.messageContext,
+                CLEAR_SELECTION_CHANNEL,
+                () => this.clearSelection()
+            );
+        }
+    }
 
     wiredRequestsResult;
 
@@ -137,7 +152,20 @@ export default class MyRequests extends LightningElement {
                 recordId: selectedRows[0].Id,
                 context: 'myRequest'
             };
+            console.log('[myRequests] Publishing row selection:', {
+                recordId: selectedRows[0].Id,
+                context: 'myRequest'
+            });
             publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
+        } else {
+            console.log('[myRequests] No row selected or multiple rows selected:', selectedRows);
+        }
+    }
+
+    clearSelection() {
+        const datatable = this.template.querySelector('lightning-datatable');
+        if (datatable) {
+            datatable.selectedRows = [];
         }
     }
 
@@ -163,6 +191,7 @@ export default class MyRequests extends LightningElement {
             recordId: row.Id,
             context: 'myRequest'
         };
+        console.log('[myRequests] Publishing show details:', payload);
         publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
     }
 

@@ -1,4 +1,4 @@
-import { LightningElement, wire } from 'lwc';
+import { LightningElement, wire, api } from 'lwc';
 import { loadScript, loadStyle } from 'lightning/platformResourceLoader';
 import fullCalendar from '@salesforce/resourceUrl/fullcalendar_v5';
 import { subscribe, unsubscribe, MessageContext } from 'lightning/messageService';
@@ -10,10 +10,26 @@ import getTeamRequests from '@salesforce/apex/TeamRequestsController.getTeamRequ
 export default class LeaveRequestCalendar extends LightningElement {
     calendar;
     isCalendarInitialized = false;
-    subscription = null;
     holidays = [];
     currentLeaveRequests = [];
-    currentContext = 'my';
+    _context = 'my'; 
+    currentContext = 'my'; 
+
+    @api
+    set context(value) {
+        if (value && value !== this._context) {
+            this._context = value;
+            this.currentContext = value;
+            if (value === 'my') {
+                this.loadMyRequestsData();
+            } else if (value === 'team') {
+                this.loadTeamRequestsData();
+            }
+        }
+    }
+    get context() {
+        return this._context;
+    }
 
     @wire(MessageContext)
     messageContext;
@@ -33,31 +49,13 @@ export default class LeaveRequestCalendar extends LightningElement {
     }
     
     connectedCallback() {
-        if (!this.subscription) {
-            this.subscription = subscribe(
-                this.messageContext,
-                LEAVE_DATA_FOR_CALENDAR_CHANNEL,
-                (message) => this.handleContextChange(message)
-            );
-        }
-        this.loadMyRequestsData();
-    }
-
-    disconnectedCallback() {
-        unsubscribe(this.subscription);
-        this.subscription = null;
-    }
-
-    handleContextChange(message) {
-        if (message.context) {
-            this.currentContext = message.context;
-            if (this.currentContext === 'my') {
-                this.loadMyRequestsData();
-            } else if (this.currentContext === 'team') {
-                this.loadTeamRequestsData();
-            }
+        if (this._context === 'team') {
+            this.loadTeamRequestsData();
+        } else {
+            this.loadMyRequestsData();
         }
     }
+
 
     loadMyRequestsData() {
         getMyLeaves()
@@ -97,7 +95,7 @@ export default class LeaveRequestCalendar extends LightningElement {
             if (this.currentContext === 'team') {
                 const requesterName = request.Requester__r ? request.Requester__r.Name : 'Team';
                 title = `${requesterName} : ${request.Name} : ${request.Leave_Type__c}`;
-            } else { // Contexte 'my'
+            } else { 
                 title = `${request.Name} : ${request.Leave_Type__c}`;
             }
 
