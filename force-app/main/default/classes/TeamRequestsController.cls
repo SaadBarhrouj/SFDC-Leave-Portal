@@ -13,11 +13,10 @@ public with sharing class TeamRequestsController {
         
         return [
             SELECT 
-                Id, Name, Start_Date__c, End_Date__c, Leave_Type__c, 
+                Id, Name, Start_Date__c, End_Date__c, Leave_Type__c,
                 Number_of_Days_Requested__c, Status__c, Requester__r.Name
             FROM Leave_Request__c
             WHERE Requester__c IN :teamMembersIds
-            AND Status__c = 'Pending Approval'
             ORDER BY Start_Date__c ASC
         ];
     }

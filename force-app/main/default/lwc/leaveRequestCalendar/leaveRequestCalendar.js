@@ -96,7 +96,7 @@ export default class LeaveRequestCalendar extends LightningElement {
             let title = '';
             if (this.currentContext === 'team') {
                 const requesterName = request.Requester__r ? request.Requester__r.Name : 'Team';
-                title = `${requesterName} : ${request.Leave_Type__c}`;
+                title = `${requesterName} : ${request.Name} : ${request.Leave_Type__c}`;
             } else { // Contexte 'my'
                 title = `${request.Name} : ${request.Leave_Type__c}`;
             }

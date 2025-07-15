@@ -1,10 +1,10 @@
 <template>
     <lightning-card>
-        <lightning-tabset>
-            <lightning-tab label="Details">
+        <lightning-tabset active-tab-value={activeTab}>
+            <lightning-tab label="Details" value="detail">
                 <c-leave-request-detail></c-leave-request-detail>
             </lightning-tab>
-            <lightning-tab label="Calendar">
+            <lightning-tab label="Calendar" value="calendar">
                 <c-leave-request-calendar></c-leave-request-calendar>
             </lightning-tab>
         </lightning-tabset>

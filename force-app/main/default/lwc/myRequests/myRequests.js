@@ -7,23 +7,25 @@ import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 
 import { publish, MessageContext } from 'lightning/messageService';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
+
 const COLUMNS = [
-    { 
-        label: 'Request Number', 
-        fieldName: 'Name', 
+    {
+        label: 'Request Number',
+        fieldName: 'Name',
         type: 'url',
         typeAttributes: {
             label: { fieldName: 'RequestNumber' },
             target: '_blank'
         },
-        sortable: true 
+        sortable: true
     },
     { label: 'Leave Type', fieldName: 'Leave_Type__c', sortable: true },
     { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local', sortable: true },
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local', sortable: true },
     { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true },
-    { 
-        label: 'Status', 
+    {
+        label: 'Status',
         fieldName: 'Status__c',
         type: 'text',
         sortable: true,
@@ -34,7 +36,7 @@ const COLUMNS = [
     { label: 'Comments', fieldName: 'Employee_Comments__c', wrapText: true },
     {
         type: 'action',
-        typeAttributes: { 
+        typeAttributes: {
             rowActions: { fieldName: 'availableActions' }
         }
     }
@@ -44,18 +46,18 @@ export default class MyRequests extends LightningElement {
     @track requests = [];
     @track isLoading = false;
     @track showCreateModal = false;
-    @track recordIdToEdit = null; 
+    @track recordIdToEdit = null;
     columns = COLUMNS;
 
     @wire(MessageContext)
     messageContext;
 
     wiredRequestsResult;
-    
+
     @wire(getMyLeaves)
     wiredRequests(result) {
         this.wiredRequestsResult = result;
-        
+
         if (result.data) {
             console.log('Data received:', result.data);
             this.requests = this.processRequestsForDisplay(result.data);
@@ -64,11 +66,11 @@ export default class MyRequests extends LightningElement {
             console.error('Error loading requests:', result.error);
         }
     }
-    
+
     get currentUserId() {
         return userId;
     }
-    
+
     get hasRequests() {
         return this.requests && this.requests.length > 0;
     }
@@ -79,14 +81,14 @@ export default class MyRequests extends LightningElement {
             let statusClass = '';
             let availableActions = [];
 
-            switch(request.Status__c) {
+            switch (request.Status__c) {
                 case 'Approved':
                     statusClass = 'slds-text-color_success';
-                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
+                    availableActions = [{ label: 'Show details', name: 'show_details' }];
                     break;
                 case 'Rejected':
                     statusClass = 'slds-text-color_error';
-                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
+                    availableActions = [{ label: 'Show details', name: 'show_details' }];
                     break;
                 case 'Pending':
                 case 'Submitted':
@@ -100,7 +102,7 @@ export default class MyRequests extends LightningElement {
                     break;
                 case 'Cancelled':
                     statusClass = 'slds-text-color_weak';
-                    availableActions = [ { label: 'Show details', name: 'show_details' } ];
+                    availableActions = [{ label: 'Show details', name: 'show_details' }];
                     break;
                 default:
                     statusClass = 'slds-text-color_default';
@@ -125,9 +127,9 @@ export default class MyRequests extends LightningElement {
     closeCreateModal() {
         console.log('Create modal closed');
         this.showCreateModal = false;
-          this.recordIdToEdit = null;
+        this.recordIdToEdit = null;
     }
-    
+
     handleRowSelection(event) {
         const selectedRows = event.detail.selectedRows;
         if (selectedRows.length === 1) {
@@ -157,7 +159,7 @@ export default class MyRequests extends LightningElement {
     }
 
     showRowDetails(row) {
-        const payload = { 
+        const payload = {
             recordId: row.Id,
             context: 'myRequest'
         };
@@ -168,19 +170,19 @@ export default class MyRequests extends LightningElement {
         return this.recordIdToEdit ? 'Edit Leave Request' : 'New Leave Request';
     }
 
-     editRequest(row) {
+    editRequest(row) {
         console.log('Edit request:', row);
-        this.recordIdToEdit = row.Id; 
-        this.showCreateModal = true;  
+        this.recordIdToEdit = row.Id;
+        this.showCreateModal = true;
     }
-    
+
     cancelRequest(row) {
         console.log('Cancel request:', row);
         if (row.Status__c !== 'Pending' && row.Status__c !== 'Submitted' && row.Status__c !== 'Pending Approval') {
             this.showError('You can only cancel requests with Pending, Submitted, or Pending Approval status.');
             return;
         }
-        
+
         // Here you would typically call an Apex method to update the record
         // For now, we'll just show a confirmation and refresh the data
         if (confirm(`Are you sure you want to cancel request ${row.RequestNumber}?`)) {
@@ -208,40 +210,44 @@ export default class MyRequests extends LightningElement {
             console.error('Error refreshing data:', error);
         } finally {
             this.isLoading = false;
+            const payload = {
+                context: 'my'
+            };
+            publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
         }
     }
 
     async handleSubmit(event) {
         event.preventDefault();
         console.log('Submit form');
-        
+
         const fields = event.detail.fields;
-        
+
         try {
             const leaveBalanceId = await getLeaveBalanceId({
                 employeeId: userId,
                 leaveType: fields.Leave_Type__c
             });
-            
+
             fields.Requester__c = userId;
             fields.Leave_Balance__c = leaveBalanceId;
             fields.Status__c = 'Submitted';
-            
+
             this.refs.leaveRequestForm.submit(fields);
-            
+
         } catch (error) {
             console.error('Error finding leave balance:', error);
             this.showError('Could not find leave balance for ' + fields.Leave_Type__c + '. Please contact your administrator.');
         }
     }
 
-      handleSuccess(event) {
-        const message = this.recordIdToEdit 
-            ? 'Leave request updated successfully!' 
+    handleSuccess(event) {
+        const message = this.recordIdToEdit
+            ? 'Leave request updated successfully!'
             : 'Leave request created successfully!';
-        
+
         console.log(message, 'ID:', event.detail.id);
-        
+
         this.closeCreateModal();
         this.showSuccess(message);
         this.refreshRequests();
@@ -250,13 +256,13 @@ export default class MyRequests extends LightningElement {
 
     handleError(event) {
         console.error('Error creating leave request:', event.detail);
-        
-        const errorMessage = 
+
+        const errorMessage =
             event.detail?.detail ??
             event.detail?.message ??
             event.detail?.output?.errors?.[0]?.message ??
             'Unknown error occurred';
-            
+
         this.showError('Error creating leave request: ' + errorMessage);
     }
 
