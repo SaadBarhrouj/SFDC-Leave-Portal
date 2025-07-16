@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Insufficient_Leave_Balance</fullName>
+    <active>true</active>
+    <description>Prevents submitting a leave request when the number of requested days exceeds the employee&apos;s remaining leave balance.</description>
+    <errorConditionFormula>Leave_Balance__r.Remaining_Days__c &lt; Number_of_Days_Requested__c</errorConditionFormula>
+    <errorMessage>The number of requested days exceeds your available leave balance.</errorMessage>
+</ValidationRule>

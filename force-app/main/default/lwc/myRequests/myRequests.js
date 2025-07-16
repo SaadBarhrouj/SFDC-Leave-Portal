@@ -25,7 +25,7 @@ const COLUMNS = [
     { label: 'Leave Type', fieldName: 'Leave_Type__c', sortable: true },
     { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local', sortable: true },
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local', sortable: true },
-    { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true },
+    { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true, cellAttributes: { alignment: 'left' } },
     {
         label: 'Status',
         fieldName: 'Status__c',
@@ -33,6 +33,7 @@ const COLUMNS = [
         sortable: true,
         cellAttributes: {
             class: { fieldName: 'statusClass' }
+            
         }
     },
     { label: 'Comments', fieldName: 'Employee_Comments__c', wrapText: true },

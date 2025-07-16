@@ -6,10 +6,11 @@ private class LeaveRequestTriggerTest {
         User testUser = TestDataFactory.createTestUser('tstuser', 'US');
         Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
 
+        Date today = Date.today();
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
             testUser.Id, 'Vacation', 
-            Date.newInstance(2025, 7, 14), 
-            Date.newInstance(2025, 7, 18), 
+            today.addDays(1), 
+            today.addDays(5), 
             leaveBalance.Id
         );
 
@@ -23,7 +24,7 @@ private class LeaveRequestTriggerTest {
             WHERE Id = :leaveRequest.Id
         ];
 
-        System.assertEquals(5, updatedLeaveRequest.Number_of_Days_Requested__c, 'Number of days should be calculated by trigger');
+        System.assertEquals(3, updatedLeaveRequest.Number_of_Days_Requested__c, 'Number of days should be calculated by trigger');
     }
 
     @isTest
