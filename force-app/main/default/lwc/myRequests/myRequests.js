@@ -9,6 +9,8 @@ import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequ
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import { subscribe } from 'lightning/messageService';
+import submitForApproval from '@salesforce/apex/LeaveRequestController.submitForApproval';
+
 const COLUMNS = [
     {
         label: 'Request Number',
@@ -277,11 +279,22 @@ export default class MyRequests extends LightningElement {
 
         console.log(message, 'ID:', event.detail.id);
 
-        this.closeCreateModal();
-        this.showSuccess(message);
-        this.refreshRequests();
-    }
+        if (!this.recordIdToEdit) {
+            submitForApproval({ requestId: event.detail.id })
+                .then(result => {
+                    this.showSuccess(result);
+                    this.refreshRequests();
+                })
+                .catch(error => {
+                    this.showError(error.body.message);
+                });
+        } else {
+            this.showSuccess(message);
+            this.refreshRequests();
+        }
 
+        this.closeCreateModal();
+    }
 
     handleError(event) {
         console.error('Error creating leave request:', event.detail);

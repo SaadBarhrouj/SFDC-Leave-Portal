@@ -46,7 +46,6 @@ List<Leave_Request__c> requestsToCreate = new List<Leave_Request__c>();
 Leave_Request__c vacationRequest = new Leave_Request__c(
     Leave_Balance__c = vacationBalance.Id,
     Requester__c = teamMember.Id,
-    Status__c = 'Pending Approval',
     Leave_Type__c = 'Vacation',
     Start_Date__c = Date.today().addMonths(1),
     End_Date__c = Date.today().addMonths(1).addDays(4)

@@ -1,0 +1,10 @@
+Hello {!Leave_Request__c.Requester__r.Name},
+
+We regret to inform you that your leave request #{!Leave_Request__c.Name} from {!Leave_Request__c.Start_Date__c} to {!Leave_Request__c.End_Date__c} has been rejected.
+
+Reason for rejection: {!Leave_Request__c.Rejection_Reason__c}
+Approver comments: {!Leave_Request__c.Approver_Comments__c}
+
+If you have questions, please contact your manager.
+
+Best regards,

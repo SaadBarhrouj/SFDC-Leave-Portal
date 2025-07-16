@@ -17,11 +17,6 @@
                 <label>Submitted</label>
             </value>
             <value>
-                <fullName>Pending Approval</fullName>
-                <default>false</default>
-                <label>Pending Approval</label>
-            </value>
-            <value>
                 <fullName>Approved</fullName>
                 <default>false</default>
                 <label>Approved</label>
@@ -30,6 +25,11 @@
                 <fullName>Rejected</fullName>
                 <default>false</default>
                 <label>Rejected</label>
+            </value>
+            <value>
+                <fullName>Pending Manager Approval</fullName>
+                <default>false</default>
+                <label>Pending Manager Approval</label>
             </value>
         </valueSetDefinition>
     </valueSet>
