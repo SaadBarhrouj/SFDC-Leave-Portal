@@ -14,7 +14,7 @@ private class LeaveRequestDetailControllerTest {
             Date.today().addDays(2), 
             balance.Id
         );
-        request.Status__c = 'Pending Approval';
+        request.Status__c = 'Pending Manager Approval';
         insert request;
     }
 

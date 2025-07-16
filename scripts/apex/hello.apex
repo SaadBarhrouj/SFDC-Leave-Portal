@@ -55,7 +55,7 @@ requestsToCreate.add(vacationRequest);
 Leave_Request__c rttRequest = new Leave_Request__c(
     Leave_Balance__c = rttBalance.Id,
     Requester__c = teamMember.Id,
-    Status__c = 'Pending Approval',
+    Status__c = 'Pending Manager Approval',
     Leave_Type__c = 'RTT',
     Start_Date__c = Date.today().addDays(7),
     End_Date__c = Date.today().addDays(7)

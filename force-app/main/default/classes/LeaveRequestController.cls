@@ -51,7 +51,7 @@ public with sharing class LeaveRequestController {
         List<ProcessInstance> existingInstances = [
             SELECT Id 
             FROM ProcessInstance 
-            WHERE TargetObjectId = :requestId AND Status = 'Pending Approval'
+            WHERE TargetObjectId = :requestId AND Status = 'Pending'
         ];
 
         if (!existingInstances.isEmpty()) {
