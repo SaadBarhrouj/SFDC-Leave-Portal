@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Used_Days__c</fullName>
-    <description>The number of days already consumed.</description>
+    <externalId>false</externalId>
     <label>Used Days</label>
-    <summarizedField>Leave_Request__c.Number_of_Days_Requested__c</summarizedField>
-    <summaryFilterItems>
-        <field>Leave_Request__c.Status__c</field>
-        <operation>equals</operation>
-        <value>Approved</value>
-    </summaryFilterItems>
-    <summaryForeignKey>Leave_Request__c.Leave_Balance__c</summaryForeignKey>
-    <summaryOperation>sum</summaryOperation>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
-    <type>Summary</type>
+    <type>Number</type>
+    <unique>false</unique>
 </CustomField>

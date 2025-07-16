@@ -1,0 +1,8 @@
+Hello {!Leave_Request__c.Requester__r.Name},
+
+Good news! Your request #{!Leave_Request__c.Name} has been approved.
+You may now proceed with the next steps as needed.
+
+Thank you for your submission.
+
+Best regards,
