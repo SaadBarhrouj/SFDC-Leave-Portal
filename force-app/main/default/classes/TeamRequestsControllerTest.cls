@@ -17,7 +17,7 @@ private class TeamRequestsControllerTest {
             Date.today().addDays(1), 
             balance.Id
         );
-        pendingRequest1.Status__c = 'Pending Approval';
+        pendingRequest1.Status__c = 'Pending Manager Approval';
 
         Leave_Request__c pendingRequest2 = TestDataFactory.createLeaveRequest(
             teamMember.Id, 
@@ -26,7 +26,7 @@ private class TeamRequestsControllerTest {
             Date.today().addDays(2), 
             balance.Id
         );
-        pendingRequest2.Status__c = 'Pending Approval';
+        pendingRequest2.Status__c = 'Pending Manager Approval';
         
         Leave_Request__c approvedRequest = TestDataFactory.createLeaveRequest(
             teamMember.Id, 
@@ -48,7 +48,7 @@ private class TeamRequestsControllerTest {
         System.runAs(manager) {
             List<Leave_Request__c> requests = TeamRequestsController.getTeamRequests();
             System.assertEquals(3, requests.size(), 'Should only return two pending request.');
-            System.assertEquals('Pending Approval', requests[0].Status__c, 'Status should be Pending Approval.');
+            System.assertEquals('Pending Manager Approval', requests[0].Status__c, 'Status should be Pending Manager Approval.');
         }
         Test.stopTest();
     }
@@ -67,7 +67,7 @@ private class TeamRequestsControllerTest {
     @isTest
     static void testApproveLeaveRequest_Success() {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c = 'Pending Approval' LIMIT 1];
+        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c = 'Pending Manager Approval' LIMIT 1];
 
         Test.startTest();
         System.runAs(manager) {
@@ -97,7 +97,7 @@ private class TeamRequestsControllerTest {
     @isTest
     static void testRejectLeaveRequest_Success() {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c = 'Pending Approval' LIMIT 1];
+        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c = 'Pending Manager Approval' LIMIT 1];
         String reason = 'Blackout Period';
         String comment = 'Please reschedule.';
 
@@ -116,7 +116,7 @@ private class TeamRequestsControllerTest {
     @isTest
     static void testRejectLeaveRequest_NoReason() {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c = 'Pending Approval' LIMIT 1];
+        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c = 'Pending Manager Approval' LIMIT 1];
 
         Test.startTest();
         System.runAs(manager) {
