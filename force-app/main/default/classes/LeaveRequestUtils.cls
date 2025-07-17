@@ -36,4 +36,30 @@ public class LeaveRequestUtils {
         }
         return requestedDays;
     }
+
+    public static void updateUsedDays(Set<Id> leaveBalanceIds) {
+        if(leaveBalanceIds == null || leaveBalanceIds.isEmpty()) return;
+        Map<Id, Decimal> usedDaysMap = new Map<Id, Decimal>();
+        for(AggregateResult ar : [
+            SELECT Leave_Balance__c lbId, SUM(Number_of_Days_Requested__c) total
+            FROM Leave_Request__c
+            WHERE Leave_Balance__c IN :leaveBalanceIds
+            AND Status__c = 'Approved'
+            GROUP BY Leave_Balance__c
+        ]) {
+            usedDaysMap.put((Id)ar.get('lbId'), (Decimal)ar.get('total'));
+        }
+        List<Leave_Balance__c> balancesToUpdate = new List<Leave_Balance__c>();
+        for(Leave_Balance__c lb : [
+            SELECT Id
+            FROM Leave_Balance__c
+            WHERE Id IN :leaveBalanceIds
+        ]) {
+            lb.Used_Days__c = usedDaysMap.containsKey(lb.Id) ? usedDaysMap.get(lb.Id) : 0;
+            balancesToUpdate.add(lb);
+        }
+        if(!balancesToUpdate.isEmpty()) {
+            update balancesToUpdate;
+        }
+    }
 }
