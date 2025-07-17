@@ -10,13 +10,43 @@
     </approvalPageFields>
     <approvalStep>
         <allowDelegate>false</allowDelegate>
+        <approvalActions>
+            <action>
+                <name>Update_Status_to_Pending_HR</name>
+                <type>FieldUpdate</type>
+            </action>
+        </approvalActions>
         <assignedApprover>
             <approver>
-                <type>userHierarchyField</type>
+                <name>Approver__c</name>
+                <type>relatedUserField</type>
             </approver>
+            <whenMultipleApprovers>FirstResponse</whenMultipleApprovers>
         </assignedApprover>
         <label>Manager Approval</label>
         <name>Manager_Approval</name>
+    </approvalStep>
+    <approvalStep>
+        <allowDelegate>false</allowDelegate>
+        <assignedApprover>
+            <approver>
+                <name>HR_Approvals</name>
+                <type>queue</type>
+            </approver>
+            <whenMultipleApprovers>FirstResponse</whenMultipleApprovers>
+        </assignedApprover>
+        <entryCriteria>
+            <criteriaItems>
+                <field>Leave_Request__c.Number_of_Days_Requested__c</field>
+                <operation>greaterThan</operation>
+                <value>15</value>
+            </criteriaItems>
+        </entryCriteria>
+        <label>Step 2: HR Validation (Long Duration)</label>
+        <name>Step_2_HR_Validation_Long_Duration</name>
+        <rejectBehavior>
+            <type>RejectRequest</type>
+        </rejectBehavior>
     </approvalStep>
     <enableMobileDeviceAccess>false</enableMobileDeviceAccess>
     <entryCriteria>

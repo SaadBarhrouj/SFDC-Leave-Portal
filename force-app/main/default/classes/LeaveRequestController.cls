@@ -40,7 +40,7 @@ public with sharing class LeaveRequestController {
         Leave_Request__c requestToSubmit = [
             SELECT Id, Requester__c, Requester__r.ManagerId 
             FROM Leave_Request__c 
-            WHERE Id = :requestId
+            WHERE Id = :requestId 
             LIMIT 1
         ];
 
@@ -79,6 +79,34 @@ public with sharing class LeaveRequestController {
             }
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+     @InvocableMethod(label='Reassign Approval Process to New Approver' description='Reassigns the approval process to the new approver after Approver__c is changed.')
+    public static void reassignApproval(List<Id> leaveRequestIds) {
+        List<ProcessInstanceWorkitem> workItemsToUpdate = new List<ProcessInstanceWorkitem>();
+        List<Leave_Request__c> requests = [SELECT Id, Approver__c FROM Leave_Request__c WHERE Id IN :leaveRequestIds];
+        Map<Id, Id> requestToApprover = new Map<Id, Id>();
+        for (Leave_Request__c req : requests) {
+            if (req.Approver__c != null) {
+                requestToApprover.put(req.Id, req.Approver__c);
+            }
+        }
+        List<ProcessInstanceWorkitem> workItems = [
+            SELECT Id, ProcessInstance.TargetObjectId 
+            FROM ProcessInstanceWorkitem 
+            WHERE ProcessInstance.TargetObjectId IN :leaveRequestIds
+        ];
+        for (ProcessInstanceWorkitem wi : workItems) {
+            Id newApproverId = requestToApprover.get(wi.ProcessInstance.TargetObjectId);
+            if (newApproverId != null) {
+                wi.ActorId = newApproverId;
+                workItemsToUpdate.add(wi);
+            }
+        }
+        if (!workItemsToUpdate.isEmpty()) {
+            update workItemsToUpdate;
         }
     }
 }

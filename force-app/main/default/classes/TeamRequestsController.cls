@@ -3,11 +3,23 @@ public with sharing class TeamRequestsController {
     @AuraEnabled(cacheable=true)
     public static List<Leave_Request__c> getTeamRequests() {
         Id currentUserId = UserInfo.getUserId();
+        Set<Id> actorIds = new Set<Id>();
+        actorIds.add(currentUserId);
+
+        // Récupérer les queues dont l'utilisateur est membre
+        for (GroupMember gm : [
+            SELECT GroupId
+            FROM GroupMember
+            WHERE UserOrGroupId = :currentUserId
+        ]) {
+            actorIds.add(gm.GroupId);
+        }
+
         Set<Id> leaveRequestIds = new Set<Id>();
         for (ProcessInstanceWorkitem workItem : [
-            SELECT ProcessInstance.TargetObjectId
+            SELECT ProcessInstance.TargetObjectId, ActorId
             FROM ProcessInstanceWorkitem
-            WHERE ActorId = :currentUserId AND ProcessInstance.Status = 'Pending'
+            WHERE ActorId IN :actorIds AND ProcessInstance.Status = 'Pending'
         ]) {
             if (String.valueOf(workItem.ProcessInstance.TargetObjectId).startsWith(Leave_Request__c.SObjectType.getDescribe().getKeyPrefix())) {
                 leaveRequestIds.add(workItem.ProcessInstance.TargetObjectId);
@@ -46,14 +58,28 @@ public with sharing class TeamRequestsController {
     
     private static void processApprovalRequest(String leaveRequestId, String action, String comment) {
         try {
+            Id currentUserId = UserInfo.getUserId();
+            // Récupérer les queues dont l'utilisateur est membre
+            Set<Id> actorIds = new Set<Id>();
+            actorIds.add(currentUserId);
+            for (GroupMember gm : [
+                SELECT GroupId
+                FROM GroupMember
+                WHERE UserOrGroupId = :currentUserId
+            ]) {
+                actorIds.add(gm.GroupId);
+            }
+
+            // Chercher le workitem assigné à l'utilisateur OU à une queue dont il est membre
             ProcessInstanceWorkitem workItem = [
-                SELECT Id 
-                FROM ProcessInstanceWorkitem 
-                WHERE ProcessInstance.TargetObjectId = :leaveRequestId 
-                  AND ActorId = :UserInfo.getUserId()
+                SELECT Id, ActorId
+                FROM ProcessInstanceWorkitem
+                WHERE ProcessInstance.TargetObjectId = :leaveRequestId
+                  AND ActorId IN :actorIds
                   AND ProcessInstance.Status = 'Pending'
                 LIMIT 1
             ];
+
             Approval.ProcessWorkitemRequest req = new Approval.ProcessWorkitemRequest();
             req.setWorkitemId(workItem.Id);
             req.setAction(action);

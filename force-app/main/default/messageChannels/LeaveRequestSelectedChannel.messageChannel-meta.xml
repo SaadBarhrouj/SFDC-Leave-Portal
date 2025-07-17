@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
-    <masterLabel>LeaveRequestSelectedChannel</masterLabel>
-    <isExposed>true</isExposed>
     <description>This channel is used to notify components when a leave request is selected.</description>
+    <isExposed>true</isExposed>
     <lightningMessageFields>
-        <fieldName>recordId</fieldName>
         <description>The ID of the selected Leave Request record.</description>
+        <fieldName>recordId</fieldName>
     </lightningMessageFields>
     <lightningMessageFields>
+        <description>The context from which the request was selected (e.g., &apos;myRequest&apos;, &apos;teamRequest&apos;).</description>
         <fieldName>context</fieldName>
-        <description>The context from which the request was selected (e.g., 'myRequest', 'teamRequest').</description>
     </lightningMessageFields>
+    <masterLabel>LeaveRequestSelectedChannel</masterLabel>
 </LightningMessageChannel>

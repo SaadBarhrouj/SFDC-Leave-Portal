@@ -110,7 +110,7 @@ export default class MyRequests extends LightningElement {
                     break;
                 case 'Pending':
                 case 'Submitted':
-                case 'Pending Approval':
+                case 'Pending Manager Approval':
                     statusClass = 'slds-text-color_weak';
                     availableActions = [
                         { label: 'Show details', name: 'show_details' },
