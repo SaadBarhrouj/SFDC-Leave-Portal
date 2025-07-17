@@ -121,6 +121,16 @@
         <reevaluateOnChange>false</reevaluateOnChange>
     </fieldUpdates>
     <fieldUpdates>
+        <fullName>Update_Status_to_Pending_HR</fullName>
+        <field>Status__c</field>
+        <literalValue>Pending HR Approval</literalValue>
+        <name>Update Status to Pending HR</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>false</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
         <fullName>Update_Status_to_Rejected</fullName>
         <field>Status__c</field>
         <literalValue>Rejected</literalValue>

@@ -55,5 +55,3 @@ private class LeaveRequestTriggerTest {
         System.assertEquals(6, updatedLeaveRequest.Number_of_Days_Requested__c, 'Number of days should be recalculated by trigger on update');
     }
 }
-
-

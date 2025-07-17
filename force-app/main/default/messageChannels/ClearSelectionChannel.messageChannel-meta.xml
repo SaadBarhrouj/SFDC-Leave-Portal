@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
-    <masterLabel>ClearSelectionChannel</masterLabel>
-    <isExposed>true</isExposed>
     <description>Channel to clear selection in myRequests</description>
+    <isExposed>true</isExposed>
+    <masterLabel>ClearSelectionChannel</masterLabel>
 </LightningMessageChannel>

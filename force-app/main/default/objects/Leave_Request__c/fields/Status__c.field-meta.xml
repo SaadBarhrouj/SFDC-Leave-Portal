@@ -31,6 +31,11 @@
                 <default>false</default>
                 <label>Pending Manager Approval</label>
             </value>
+            <value>
+                <fullName>Pending HR Approval</fullName>
+                <default>false</default>
+                <label>Pending HR Approval</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>
