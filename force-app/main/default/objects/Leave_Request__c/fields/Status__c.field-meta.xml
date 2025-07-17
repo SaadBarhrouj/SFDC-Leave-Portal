@@ -36,6 +36,16 @@
                 <default>false</default>
                 <label>Pending HR Approval</label>
             </value>
+            <value>
+                <fullName>CANCELLED</fullName>
+                <default>false</default>
+                <label>CANCELLED</label>
+            </value>
+            <value>
+                <fullName>CANCELLATION_REQUESTED</fullName>
+                <default>false</default>
+                <label>CANCELLATION_REQUESTED</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

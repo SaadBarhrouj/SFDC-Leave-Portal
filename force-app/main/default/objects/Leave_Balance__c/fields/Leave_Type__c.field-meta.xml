@@ -24,8 +24,12 @@
             <value>
                 <fullName>Sick Leave</fullName>
                 <default>false</default>
-                <isActive>false</isActive>
                 <label>Sick Leave</label>
+            </value>
+            <value>
+                <fullName>Training</fullName>
+                <default>false</default>
+                <label>Training</label>
             </value>
         </valueSetDefinition>
     </valueSet>

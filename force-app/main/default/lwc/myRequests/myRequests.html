@@ -15,6 +15,12 @@
                 onclick={handleNewRequest}
                 disabled={isLoading}>
             </lightning-button>
+            <lightning-combobox
+                name="statusFilter"
+                value={selectedStatus}
+                options={statusOptions}
+                onchange={handleStatusChange}
+            ></lightning-combobox>
         </div>
         
         <template if:true={isLoading}>
@@ -25,7 +31,7 @@
         <template if:true={hasRequests}>
             <lightning-datatable
                 key-field="Id"
-                data={requests}
+                data={filteredRequests}
                 columns={columns}
                 onrowaction={handleRowAction}
                 onrowselection={handleRowSelection}
@@ -69,17 +75,50 @@
                         
                         <lightning-input-field field-name="Requester__c" value={currentUserId} style="display: none;"></lightning-input-field>
                         
-                        <lightning-input-field field-name="Leave_Type__c" required></lightning-input-field>
+                        <lightning-input-field 
+                            field-name="Leave_Type__c" 
+                            required 
+                            onchange={handleFieldChange}>
+                        </lightning-input-field>
                         
                         <div class="slds-grid slds-gutters">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Start_Date__c" required></lightning-input-field>
+                                <lightning-input-field 
+                                    field-name="Start_Date__c" 
+                                    required 
+                                    onchange={handleFieldChange}>
+                                </lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="End_Date__c" required></lightning-input-field>
+                                <lightning-input-field 
+                                    field-name="End_Date__c" 
+                                    required 
+                                    onchange={handleFieldChange}>
+                                </lightning-input-field>
                             </div>
                         </div>
-                        
+
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label">Number of days requested :{numberOfDaysRequested}</label>
+                        </div>
+
+                        <template if:true={isDocumentRequired}>
+                            <div class="slds-box slds-theme_shade slds-var-m-top_small">
+                                <p class="slds-text-body_small slds-var-m-bottom_small">
+                                    <b>Un justificatif est requis pour ce type de congé.</b><br/>
+                                    Vous pouvez soumettre votre demande maintenant et déposer le document plus tard.
+                                </p>
+                                <lightning-file-upload
+                                    label="Déposer le justificatif"
+                                    name="fileUploader"
+                                    accept={acceptedFormats}
+                                    record-id={recordIdToEdit}
+                                    onuploadfinished={handleUploadFinished}
+                                    multiple="false">
+                                </lightning-file-upload>
+                            </div>
+                        </template>
+
                         <div class="slds-form-element">
                             <label class="slds-form-element__label">Comments</label>
                             <div class="slds-form-element__control">

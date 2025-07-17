@@ -1,15 +1,16 @@
-import { LightningElement, track, wire } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
-import userId from '@salesforce/user/Id';
+import cancelLeaveRequest from '@salesforce/apex/LeaveRequestController.cancelLeaveRequest';
 import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
-import { publish, MessageContext } from 'lightning/messageService';
-import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
-import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
-import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
-import { subscribe } from 'lightning/messageService';
+import getNumberOfDaysRequested from '@salesforce/apex/LeaveRequestController.getNumberOfDaysRequested';
 import submitForApproval from '@salesforce/apex/LeaveRequestController.submitForApproval';
+import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
+import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
+import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import userId from '@salesforce/user/Id';
+import { MessageContext, publish, subscribe } from 'lightning/messageService';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { LightningElement, track, wire } from 'lwc';
 
 const COLUMNS = [
     {
@@ -46,6 +47,45 @@ const COLUMNS = [
 ];
 
 export default class MyRequests extends LightningElement {
+    @track selectedStatus = 'All';
+    @track selectedLeaveType = '';
+
+    @track startDate;
+    @track endDate;
+    @track numberOfDaysRequested = 0;
+
+    // Wire pour appeler la méthode Apex de manière réactive
+    @wire(getNumberOfDaysRequested, { startDate: '$startDate', endDate: '$endDate' })
+    wiredCalculatedDays({ error, data }) {
+        if (data || data === 0) {
+            this.numberOfDaysRequested = data;
+        } else if (error) {
+            console.error('Error calculating days:', error);
+            this.numberOfDaysRequested = 0;
+        }
+    }
+    acceptedFormats = ['.pdf', '.png', '.jpg', '.jpeg'];
+    statusOptions = [
+        { label: 'All', value: 'All' },
+        { label: 'Approved', value: 'Approved' },
+        { label: 'Submitted', value: 'Submitted' },
+        { label: 'Pending Manager Approval', value: 'Pending Manager Approval' },
+        { label: 'Pending HR Approval', value: 'Pending HR Approval' },
+        { label: 'Rejected', value: 'Rejected' },
+        { label: 'Cancelled', value: 'Cancelled' },
+        { label: 'CANCELLATION_REQUESTED', value: 'CANCELLATION_REQUESTED' }
+    ];
+
+    handleStatusChange(event) {
+        this.selectedStatus = event.detail.value;
+    }
+
+    get filteredRequests() {
+        if (this.selectedStatus === 'All') {
+            return this.requests;
+        }
+        return this.requests.filter(r => r.Status__c === this.selectedStatus);
+    }
     subscriptionClearSelection;
     @track requests = [];
     @track isLoading = false;
@@ -90,7 +130,7 @@ export default class MyRequests extends LightningElement {
     }
 
     get hasRequests() {
-        return this.requests && this.requests.length > 0;
+        return this.filteredRequests && this.filteredRequests.length > 0;
     }
 
     processRequestsForDisplay(rawData) {
@@ -98,11 +138,20 @@ export default class MyRequests extends LightningElement {
             const recordUrl = `/lightning/r/Leave_Request__c/${request.Id}/view`;
             let statusClass = '';
             let availableActions = [];
-
             switch (request.Status__c) {
                 case 'Approved':
                     statusClass = 'slds-text-color_success';
-                    availableActions = [{ label: 'Show details', name: 'show_details' }];
+                    availableActions = [
+                        { label: 'Show details', name: 'show_details' },
+                        { label: 'Request cancellation', name: 'request_cancellation' }
+                    ];
+                    break;
+                case 'CANCELLATION_REQUESTED':
+                    statusClass = 'slds-text-color_warning';
+                    availableActions = [
+                        { label: 'Show details', name: 'show_details' },
+                        { label: 'Withdraw cancellation request', name: 'withdraw_cancellation' }
+                    ];
                     break;
                 case 'Rejected':
                     statusClass = 'slds-text-color_error';
@@ -111,6 +160,7 @@ export default class MyRequests extends LightningElement {
                 case 'Pending':
                 case 'Submitted':
                 case 'Pending Manager Approval':
+                case 'Pending HR Approval':
                     statusClass = 'slds-text-color_weak';
                     availableActions = [
                         { label: 'Show details', name: 'show_details' },
@@ -124,6 +174,7 @@ export default class MyRequests extends LightningElement {
                     break;
                 default:
                     statusClass = 'slds-text-color_default';
+                    availableActions = [{ label: 'Show details', name: 'show_details' }];
             }
 
             return {
@@ -139,6 +190,10 @@ export default class MyRequests extends LightningElement {
     handleNewRequest() {
         console.log('New Request clicked');
         this.recordIdToEdit = null;
+        this.selectedLeaveType = '';
+        this.startDate = null;
+        this.endDate = null;
+        this.numberOfDaysRequested = 0;
         this.showCreateModal = true;
     }
 
@@ -206,30 +261,24 @@ export default class MyRequests extends LightningElement {
         console.log('Edit request:', row);
         this.recordIdToEdit = row.Id;
         this.showCreateModal = true;
+        this.selectedLeaveType = row.Leave_Type__c;
     }
 
     cancelRequest(row) {
-        console.log('Cancel request:', row);
-        if (row.Status__c !== 'Pending' && row.Status__c !== 'Submitted' && row.Status__c !== 'Pending Approval') {
-            this.showError('You can only cancel requests with Pending, Submitted, or Pending Approval status.');
-            return;
-        }
-
-        // Here you would typically call an Apex method to update the record
-        // For now, we'll just show a confirmation and refresh the data
         if (confirm(`Are you sure you want to cancel request ${row.RequestNumber}?`)) {
-            console.log(`Request ${row.Id} cancellation initiated.`);
-            // In a real scenario, you would call an Apex method here, e.g.:
-            // cancelLeaveRequest({ requestId: row.Id })
-            //     .then(() => {
-            //         this.showSuccess('Request cancelled successfully.');
-            //         this.refreshRequests();
-            //     })
-            //     .catch(error => {
-            //         this.showError(error.body.message);
-            //     });
-            alert('Cancel functionality to be fully implemented with Apex. For now, refreshing list.');
-            this.refreshRequests();
+            this.isLoading = true;
+            cancelLeaveRequest({ requestId: row.Id })
+                .then(result => {
+                    this.showSuccess(result); 
+                    this.refreshRequests();   
+                })
+                .catch(error => {
+
+                    this.showError(error.body.message);
+                })
+                .finally(() => {
+                    this.isLoading = false;
+                });
         }
     }
 
@@ -252,24 +301,29 @@ export default class MyRequests extends LightningElement {
     async handleSubmit(event) {
         event.preventDefault();
         console.log('Submit form');
-
+    
         const fields = event.detail.fields;
-
+        const leaveType = fields.Leave_Type__c;
+    
         try {
-            const leaveBalanceId = await getLeaveBalanceId({
-                employeeId: userId,
-                leaveType: fields.Leave_Type__c
-            });
-
+            // Pour les types qui nécessitent un solde
+            let leaveBalanceId = null;
+            if (leaveType !== 'Sick Leave' && leaveType !== 'Training') {
+                leaveBalanceId = await getLeaveBalanceId({
+                    employeeId: userId,
+                    leaveType: leaveType
+                });
+                fields.Leave_Balance__c = leaveBalanceId;
+            }
+    
             fields.Requester__c = userId;
-            fields.Leave_Balance__c = leaveBalanceId;
             fields.Status__c = 'Submitted';
-
+    
             this.refs.leaveRequestForm.submit(fields);
-
+    
         } catch (error) {
             console.error('Error finding leave balance:', error);
-            this.showError('Could not find leave balance for ' + fields.Leave_Type__c + '. Please contact your administrator.');
+            this.showError('Could not find leave balance for ' + leaveType + '. Please contact your administrator.');
         }
     }
 
@@ -323,5 +377,47 @@ export default class MyRequests extends LightningElement {
 
     showError(message) {
         this.showToast('Error', message, 'error');
+    }
+
+    get isDocumentRequired() {
+        if (this.selectedLeaveType === 'Training') {
+            return true;
+        }
+        if (this.selectedLeaveType === 'Sick Leave' && this.numberOfDaysRequested > 2) {
+            return true;
+        }
+        return false;
+    }
+
+    handleFieldChange(event) {
+        const fieldName = event.target.fieldName;
+        const value = event.target.value;
+
+        if (fieldName === 'Leave_Type__c') {
+            this.selectedLeaveType = value;
+        } else if (fieldName === 'Start_Date__c') {
+            if (this.endDate && value > this.endDate) {
+                this.endDate = null; 
+            }
+            this.startDate = value;
+        } else if (fieldName === 'End_Date__c') {
+            this.endDate = value;
+        }
+    }
+
+    handleUploadFinished(event) {
+        const uploadedFiles = event.detail.files;
+        this.showSuccess(`${uploadedFiles.length} fichier(s) déposé(s) avec succès.`);
+        // Le Flow s'occupera de la mise à jour du statut justificatif.
+    }
+
+    getRequestedDays() {
+        // Méthode utilitaire pour récupérer le nombre de jours demandés dans le formulaire
+        const form = this.template.querySelector('lightning-record-edit-form');
+        if (form) {
+            const daysField = form.querySelector('[field-name="Number_of_Days_Requested__c"]');
+            return daysField ? Number(daysField.value) : 0;
+        }
+        return 0;
     }
 }
