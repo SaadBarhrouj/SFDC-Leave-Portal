@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Leave_Type__c</fullName>
-    <description>Specifies which type of leave balance was changed (e.g., Vacation, RTT).</description>
-    <label>Leave Type</label>
+    <fullName>Document_Status__c</fullName>
+    <externalId>false</externalId>
+    <label>Document Status</label>
     <required>false</required>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
@@ -12,24 +12,24 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Vacation</fullName>
-                <default>false</default>
-                <label>Vacation</label>
+                <fullName>Not Required</fullName>
+                <default>true</default>
+                <label>Not Required</label>
             </value>
             <value>
-                <fullName>RTT</fullName>
+                <fullName>Required</fullName>
                 <default>false</default>
-                <label>RTT</label>
+                <label>Required</label>
             </value>
             <value>
-                <fullName>Sick Leave</fullName>
+                <fullName>Provided</fullName>
                 <default>false</default>
-                <label>Sick Leave</label>
+                <label>Provided</label>
             </value>
             <value>
-                <fullName>Training</fullName>
+                <fullName>Overdue</fullName>
                 <default>false</default>
-                <label>Training</label>
+                <label>Overdue</label>
             </value>
         </valueSetDefinition>
     </valueSet>

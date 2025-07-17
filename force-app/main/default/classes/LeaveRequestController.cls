@@ -35,9 +35,21 @@ public with sharing class LeaveRequestController {
         }
     }
 
+    @AuraEnabled(cacheable=true)
+    public static Decimal getNumberOfDaysRequested(Date startDate, Date endDate) {
+        if (startDate == null || endDate == null || startDate > endDate) {
+            return 0;
+        }
+        // Récupérer le code pays de l'utilisateur actuel
+        User u = [SELECT Country_Code__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        
+        // Appeler la méthode utilitaire existante
+        return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Country_Code__c);
+    }
+
     @AuraEnabled
     public static String submitForApproval(String requestId) {
-        Leave_Request__c requestToSubmit = [
+        /* Leave_Request__c requestToSubmit = [
             SELECT Id, Requester__c, Requester__r.ManagerId 
             FROM Leave_Request__c 
             WHERE Id = :requestId 
@@ -46,17 +58,7 @@ public with sharing class LeaveRequestController {
 
         if (requestToSubmit.Requester__r.ManagerId == null) {
             throw new AuraHandledException('Submission failed: You do not have a manager assigned in Salesforce. Please contact your administrator.');
-        }
-
-        List<ProcessInstance> existingInstances = [
-            SELECT Id 
-            FROM ProcessInstance 
-            WHERE TargetObjectId = :requestId AND Status = 'Pending'
-        ];
-
-        if (!existingInstances.isEmpty()) {
-            return 'This request is already pending approval.';
-        }
+        } */
 
         try {
             Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
@@ -82,31 +84,49 @@ public with sharing class LeaveRequestController {
         }
     }
 
+    @AuraEnabled
+    public static String cancelLeaveRequest(Id requestId) {
+        Set<String> cancellableStatuses = new Set<String>{'Submitted', 'Pending Manager Approval', 'Pending HR Approval'};
 
-     @InvocableMethod(label='Reassign Approval Process to New Approver' description='Reassigns the approval process to the new approver after Approver__c is changed.')
-    public static void reassignApproval(List<Id> leaveRequestIds) {
-        List<ProcessInstanceWorkitem> workItemsToUpdate = new List<ProcessInstanceWorkitem>();
-        List<Leave_Request__c> requests = [SELECT Id, Approver__c FROM Leave_Request__c WHERE Id IN :leaveRequestIds];
-        Map<Id, Id> requestToApprover = new Map<Id, Id>();
-        for (Leave_Request__c req : requests) {
-            if (req.Approver__c != null) {
-                requestToApprover.put(req.Id, req.Approver__c);
+        try {
+            Leave_Request__c request = [
+                SELECT Id, Status__c 
+                FROM Leave_Request__c 
+                WHERE Id = :requestId 
+                WITH SECURITY_ENFORCED
+            ];
+
+            if (!cancellableStatuses.contains(request.Status__c)) {
+                throw new AuraHandledException('This request cannot be cancelled. Its current status is: ' + request.Status__c);
             }
-        }
-        List<ProcessInstanceWorkitem> workItems = [
-            SELECT Id, ProcessInstance.TargetObjectId 
-            FROM ProcessInstanceWorkitem 
-            WHERE ProcessInstance.TargetObjectId IN :leaveRequestIds
-        ];
-        for (ProcessInstanceWorkitem wi : workItems) {
-            Id newApproverId = requestToApprover.get(wi.ProcessInstance.TargetObjectId);
-            if (newApproverId != null) {
-                wi.ActorId = newApproverId;
-                workItemsToUpdate.add(wi);
+
+            if (request.Status__c == 'Pending Manager Approval' || request.Status__c == 'Pending HR Approval') {
+                List<ProcessInstanceWorkitem> workItems = [
+                    SELECT Id 
+                    FROM ProcessInstanceWorkitem 
+                    WHERE ProcessInstance.TargetObjectId = :requestId
+                ];
+                
+                if (!workItems.isEmpty()) {
+                    Approval.ProcessWorkitemRequest pwr = new Approval.ProcessWorkitemRequest();
+                    pwr.setWorkitemId(workItems[0].Id);
+                    pwr.setAction('Removed'); 
+                    pwr.setComments('Request recalled by user.');
+                    Approval.ProcessResult result = Approval.process(pwr);
+
+                    if (!result.isSuccess()) {
+                        throw new AuraHandledException('Failed to recall the request from approval. Please contact your administrator.');
+                    }
+                }
             }
-        }
-        if (!workItemsToUpdate.isEmpty()) {
-            update workItemsToUpdate;
+
+            request.Status__c = 'Cancelled';
+            update request;
+            
+            return 'The leave request has been successfully cancelled.';
+
+        } catch (Exception e) {
+            throw new AuraHandledException('An error occurred during cancellation: ' + e.getMessage());
         }
     }
 }
