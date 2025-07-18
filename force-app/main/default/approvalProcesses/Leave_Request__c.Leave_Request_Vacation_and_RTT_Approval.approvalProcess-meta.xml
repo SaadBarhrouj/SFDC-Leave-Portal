@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ApprovalProcess xmlns="http://soap.sforce.com/2006/04/metadata">
-    <active>false</active>
+    <active>true</active>
     <allowRecall>false</allowRecall>
     <allowedSubmitters>
         <type>owner</type>
     </allowedSubmitters>
     <approvalPageFields>
         <field>Name</field>
-        <field>Owner</field>
     </approvalPageFields>
     <approvalStep>
         <allowDelegate>false</allowDelegate>
@@ -56,6 +55,11 @@
             <operation>equals</operation>
             <value>Submitted</value>
         </criteriaItems>
+        <criteriaItems>
+            <field>Leave_Request__c.Leave_Type__c</field>
+            <operation>notEqual</operation>
+            <value>Sick Leave,Training</value>
+        </criteriaItems>
     </entryCriteria>
     <finalApprovalActions>
         <action>
@@ -89,12 +93,12 @@
             <type>FieldUpdate</type>
         </action>
     </initialSubmissionActions>
-    <label>Leave Request Multi-Level Approval</label>
+    <label>Leave Request Vacation and RTT Approval</label>
     <nextAutomatedApprover>
         <useApproverFieldOfRecordOwner>false</useApproverFieldOfRecordOwner>
         <userHierarchyField>Manager</userHierarchyField>
     </nextAutomatedApprover>
-    <processOrder>4</processOrder>
+    <processOrder>1</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>

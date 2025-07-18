@@ -33,12 +33,7 @@ public class FlowApprovalSynchronizer {
         }
 
         if (!workItemsToUpdate.isEmpty()) {
-            try {
-                update workItemsToUpdate;
-            } catch (Exception e) {
-                // Log the error in case something goes wrong, but don't stop the flow.
-                System.debug('Error during approval task reassignment: ' + e.getMessage());
-            }
+            update workItemsToUpdate;
         }
     }
 }

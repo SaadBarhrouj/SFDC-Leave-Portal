@@ -7,7 +7,6 @@
     </allowedSubmitters>
     <approvalPageFields>
         <field>Name</field>
-        <field>Owner</field>
     </approvalPageFields>
     <approvalStep>
         <allowDelegate>false</allowDelegate>
@@ -19,35 +18,11 @@
         </approvalActions>
         <assignedApprover>
             <approver>
-                <name>Approver__c</name>
-                <type>relatedUserField</type>
+                <type>userHierarchyField</type>
             </approver>
-            <whenMultipleApprovers>FirstResponse</whenMultipleApprovers>
         </assignedApprover>
         <label>Manager Approval</label>
         <name>Manager_Approval</name>
-    </approvalStep>
-    <approvalStep>
-        <allowDelegate>false</allowDelegate>
-        <assignedApprover>
-            <approver>
-                <name>HR_Approvals</name>
-                <type>queue</type>
-            </approver>
-            <whenMultipleApprovers>FirstResponse</whenMultipleApprovers>
-        </assignedApprover>
-        <entryCriteria>
-            <criteriaItems>
-                <field>Leave_Request__c.Number_of_Days_Requested__c</field>
-                <operation>greaterThan</operation>
-                <value>15</value>
-            </criteriaItems>
-        </entryCriteria>
-        <label>Step 2: HR Validation (Long Duration)</label>
-        <name>Step_2_HR_Validation_Long_Duration</name>
-        <rejectBehavior>
-            <type>RejectRequest</type>
-        </rejectBehavior>
     </approvalStep>
     <enableMobileDeviceAccess>false</enableMobileDeviceAccess>
     <entryCriteria>
@@ -89,12 +64,12 @@
             <type>FieldUpdate</type>
         </action>
     </initialSubmissionActions>
-    <label>Leave Request Multi-Level Approval</label>
+    <label>Leave Request Multi-Level Approval_v2</label>
     <nextAutomatedApprover>
         <useApproverFieldOfRecordOwner>false</useApproverFieldOfRecordOwner>
         <userHierarchyField>Manager</userHierarchyField>
     </nextAutomatedApprover>
-    <processOrder>4</processOrder>
+    <processOrder>1</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>

@@ -88,11 +88,7 @@ public with sharing class TeamRequestsController {
             }
             Approval.ProcessResult result = Approval.process(req);
             if (!result.isSuccess()) {
-                String errorMessage = '';
-                for (Database.Error err : result.getErrors()) {
-                    errorMessage += err.getMessage() + '. ';
-                }
-                throw new AuraHandledException(errorMessage);
+                throw new AuraHandledException(result.getErrors()[0].getMessage());
             }
         } catch (Exception e) {
             throw new AuraHandledException('Error processing request: ' + e.getMessage());

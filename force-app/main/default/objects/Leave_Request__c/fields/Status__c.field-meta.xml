@@ -37,13 +37,19 @@
                 <label>Pending HR Approval</label>
             </value>
             <value>
-                <fullName>CANCELLED</fullName>
+                <fullName>Cancelled</fullName>
                 <default>false</default>
-                <label>CANCELLED</label>
+                <label>Cancelled</label>
+            </value>
+            <value>
+                <fullName>Cancellation Requested</fullName>
+                <default>false</default>
+                <label>Cancellation Requested</label>
             </value>
             <value>
                 <fullName>CANCELLATION_REQUESTED</fullName>
                 <default>false</default>
+                <isActive>false</isActive>
                 <label>CANCELLATION_REQUESTED</label>
             </value>
         </valueSetDefinition>

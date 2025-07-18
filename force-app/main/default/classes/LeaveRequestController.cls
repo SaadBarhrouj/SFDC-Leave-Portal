@@ -40,49 +40,15 @@ public with sharing class LeaveRequestController {
         if (startDate == null || endDate == null || startDate > endDate) {
             return 0;
         }
-        // Récupérer le code pays de l'utilisateur actuel
+
         User u = [SELECT Country_Code__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
-        
-        // Appeler la méthode utilitaire existante
+        if (u.Country_Code__c == null || String.isBlank(u.Country_Code__c)) {
+            return 0;
+        }
         return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Country_Code__c);
     }
 
-    @AuraEnabled
-    public static String submitForApproval(String requestId) {
-        /* Leave_Request__c requestToSubmit = [
-            SELECT Id, Requester__c, Requester__r.ManagerId 
-            FROM Leave_Request__c 
-            WHERE Id = :requestId 
-            LIMIT 1
-        ];
-
-        if (requestToSubmit.Requester__r.ManagerId == null) {
-            throw new AuraHandledException('Submission failed: You do not have a manager assigned in Salesforce. Please contact your administrator.');
-        } */
-
-        try {
-            Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
-            req.setObjectId(requestId);
-            req.setComments('Submitted via LWC by ' + UserInfo.getName());
-            Approval.ProcessResult result = Approval.process(req);
-
-            if (result.isSuccess()) {
-                return 'Request successfully submitted for approval!';
-            } else {
-                String errors = '';
-                for (Database.Error error : result.getErrors()) {
-                    if(error.getMessage().contains('NO_APPLICABLE_PROCESS')){
-                        errors += 'No applicable approval process was found. Please check the request status or contact an admin. ';
-                    } else {
-                        errors += error.getMessage() + '. ';
-                    }
-                }
-                throw new AuraHandledException(errors);
-            }
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
+   
 
     @AuraEnabled
     public static String cancelLeaveRequest(Id requestId) {
@@ -93,7 +59,6 @@ public with sharing class LeaveRequestController {
                 SELECT Id, Status__c 
                 FROM Leave_Request__c 
                 WHERE Id = :requestId 
-                WITH SECURITY_ENFORCED
             ];
 
             if (!cancellableStatuses.contains(request.Status__c)) {
