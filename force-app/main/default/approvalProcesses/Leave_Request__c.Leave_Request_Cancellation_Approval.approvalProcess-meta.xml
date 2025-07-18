@@ -13,40 +13,39 @@
         <allowDelegate>false</allowDelegate>
         <assignedApprover>
             <approver>
-                <type>userHierarchyField</type>
+                <name>Last_Approver__c</name>
+                <type>relatedUserField</type>
             </approver>
+            <whenMultipleApprovers>FirstResponse</whenMultipleApprovers>
         </assignedApprover>
-        <label>Manager Approval</label>
-        <name>Manager_Approval</name>
+        <label>Cancellation Approval by Last Approver</label>
+        <name>Cancellation_Approval_by_Last_Approver</name>
     </approvalStep>
+    <description>This process starts when a user requests to cancel an approved leave.</description>
     <enableMobileDeviceAccess>false</enableMobileDeviceAccess>
     <entryCriteria>
         <criteriaItems>
-            <field>Leave_Request__c.Leave_Type__c</field>
+            <field>Leave_Request__c.Status__c</field>
             <operation>equals</operation>
-            <value>Training</value>
+            <value>Cancellation Requested</value>
         </criteriaItems>
     </entryCriteria>
     <finalApprovalActions>
         <action>
-            <name>Approve_Status</name>
+            <name>Update_Status_to_Cancelled</name>
             <type>FieldUpdate</type>
         </action>
     </finalApprovalActions>
-    <finalApprovalRecordLock>false</finalApprovalRecordLock>
+    <finalApprovalRecordLock>true</finalApprovalRecordLock>
     <finalRejectionActions>
         <action>
-            <name>Reject_Status</name>
+            <name>Revert_Status_to_Approved</name>
             <type>FieldUpdate</type>
         </action>
     </finalRejectionActions>
     <finalRejectionRecordLock>false</finalRejectionRecordLock>
-    <label>Leave Request Training Approval</label>
-    <nextAutomatedApprover>
-        <useApproverFieldOfRecordOwner>false</useApproverFieldOfRecordOwner>
-        <userHierarchyField>Manager</userHierarchyField>
-    </nextAutomatedApprover>
-    <processOrder>4</processOrder>
+    <label>Leave Request Cancellation Approval</label>
+    <processOrder>1</processOrder>
     <recordEditability>AdminOnly</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>
