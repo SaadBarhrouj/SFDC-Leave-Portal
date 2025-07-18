@@ -7,7 +7,6 @@
     </allowedSubmitters>
     <approvalPageFields>
         <field>Name</field>
-        <field>Owner</field>
     </approvalPageFields>
     <approvalStep>
         <allowDelegate>false</allowDelegate>
@@ -19,10 +18,8 @@
         </approvalActions>
         <assignedApprover>
             <approver>
-                <name>Approver__c</name>
-                <type>relatedUserField</type>
+                <type>userHierarchyField</type>
             </approver>
-            <whenMultipleApprovers>FirstResponse</whenMultipleApprovers>
         </assignedApprover>
         <label>Manager Approval</label>
         <name>Manager_Approval</name>
@@ -89,12 +86,12 @@
             <type>FieldUpdate</type>
         </action>
     </initialSubmissionActions>
-    <label>Leave Request Multi-Level Approval</label>
+    <label>Leave Request Multi-Level Approval_v3</label>
     <nextAutomatedApprover>
         <useApproverFieldOfRecordOwner>false</useApproverFieldOfRecordOwner>
         <userHierarchyField>Manager</userHierarchyField>
     </nextAutomatedApprover>
-    <processOrder>4</processOrder>
+    <processOrder>0</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>

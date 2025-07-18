@@ -36,7 +36,8 @@ private class HolidayControllerTest {
 
     @isTest
     static void testGetHolidays_UserWithNoCountryCode() {
-        User testUser = TestDataFactory.createTestUser('noCode', null);
+        String blankCode = ' ';
+        User testUser = TestDataFactory.createTestUser('noCode', blankCode);
 
         System.runAs(testUser) {
             Test.startTest();
@@ -47,5 +48,17 @@ private class HolidayControllerTest {
         }
     }
 
+    @isTest
+    static void testGetHolidays_UserWithNullCountryCode() {
+        User testUser = TestDataFactory.createTestUser('nullCode', null);
+
+        System.runAs(testUser) {
+            Test.startTest();
+            List<Holiday__c> holidays = HolidayController.getHolidays();
+            Test.stopTest();
+
+            System.assertEquals(0, holidays.size(), 'List should be empty if user country code is null.');
+        }
+    }
 
 }

@@ -1,10 +1,10 @@
 public class LeaveRequestUtils {
-
+    
     public static Decimal calculateRequestedDays(Date startDate, Date endDate, String countryCode) {
         if (startDate == null || endDate == null || startDate > endDate) {
             return 0;
         }
-
+        
         Map<Date, Holiday__c> holidaysMap = new Map<Date, Holiday__c>();
         for (Holiday__c holiday : [
             SELECT Holiday_Date__c, Deduction_Value__c 
@@ -15,15 +15,15 @@ public class LeaveRequestUtils {
         ]) {
             holidaysMap.put(holiday.Holiday_Date__c, holiday);
         }
-
+        
         Decimal requestedDays = 0;
         Date currentDate = startDate;
-
+        
         while (currentDate <= endDate) {
-
+            
             Datetime dt = Datetime.newInstance(currentDate.year(), currentDate.month(), currentDate.day());
             String dayOfWeek = dt.format('E');
-
+            
             if (dayOfWeek != 'Sat' && dayOfWeek != 'Sun') {
                 if (holidaysMap.containsKey(currentDate)) {
                     Decimal deduction = holidaysMap.get(currentDate).Deduction_Value__c;
@@ -36,7 +36,7 @@ public class LeaveRequestUtils {
         }
         return requestedDays;
     }
-
+    
     public static void updateUsedDays(Set<Id> leaveBalanceIds) {
         if(leaveBalanceIds == null || leaveBalanceIds.isEmpty()) return;
         Map<Id, Decimal> usedDaysMap = new Map<Id, Decimal>();
@@ -60,6 +60,20 @@ public class LeaveRequestUtils {
         }
         if(!balancesToUpdate.isEmpty()) {
             update balancesToUpdate;
+        }
+    }
+    
+    public static void submitForApproval(List<Leave_Request__c> requests) {
+        for (Leave_Request__c req : requests) {
+            if (req.Status__c == 'Submitted') {
+                try {
+                    Approval.ProcessSubmitRequest aprReq = new Approval.ProcessSubmitRequest();
+                    aprReq.setObjectId(req.Id);
+                    Approval.ProcessResult result = Approval.process(aprReq);
+                } catch (Exception e) {
+                    System.debug('Approval submission failed: ' + e.getMessage());
+                }
+            }
         }
     }
 }
