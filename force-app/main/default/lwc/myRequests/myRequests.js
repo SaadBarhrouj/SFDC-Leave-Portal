@@ -10,7 +10,7 @@ import userId from '@salesforce/user/Id';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { LightningElement, track, wire } from 'lwc';
-
+import requestCancellation from '@salesforce/apex/LeaveRequestController.requestCancellation';
 const COLUMNS = [
     {
         label: 'Request Number',
@@ -140,10 +140,16 @@ export default class MyRequests extends LightningElement {
             switch (request.Status__c) {
                 case 'Approved':
                     statusClass = 'slds-text-color_success';
-                    availableActions = [
-                        { label: 'Show details', name: 'show_details' },
-                        { label: 'Request cancellation', name: 'request_cancellation' }
-                    ];
+                    if (request.Leave_Type__c === 'Sick Leave') {
+                        availableActions = [
+                            { label: 'Show details', name: 'show_details' }
+                        ];
+                    } else {
+                        availableActions = [
+                            { label: 'Show details', name: 'show_details' },
+                            { label: 'Request cancellation', name: 'request_cancellation' }
+                        ];
+                    }
                     break;
                 case 'CANCELLATION_REQUESTED':
                     statusClass = 'slds-text-color_warning';
@@ -236,6 +242,9 @@ export default class MyRequests extends LightningElement {
             case 'cancel':
                 this.cancelRequest(row);
                 break;
+            case 'request_cancellation':
+                this.requestCancellation(row);
+                break;
             case 'edit':
                 this.editRequest(row);
                 break;
@@ -243,6 +252,24 @@ export default class MyRequests extends LightningElement {
         }
     }
 
+    requestCancellation(row) {
+        if (confirm(`Are you sure you want to request cancellation for ${row.RequestNumber}?`)) {
+            this.isLoading = true;
+            requestCancellation({ leaveRequestId: row.Id })
+                .then(() => {
+                    this.showSuccess('Cancellation request submitted.');
+                    this.refreshRequests();
+                })
+                .catch(error => {
+                    console.log('Error requesting cancellation:', error);
+                    this.showError(error.body.message);
+                })
+                .finally(() => {
+                    this.isLoading = false;
+                });
+        }
+    }
+    
     showRowDetails(row) {
         const payload = {
             recordId: row.Id,
@@ -305,7 +332,6 @@ export default class MyRequests extends LightningElement {
         const leaveType = fields.Leave_Type__c;
     
         try {
-            // Pour les types qui nécessitent un solde
             let leaveBalanceId = null;
             if (leaveType !== 'Sick Leave' && leaveType !== 'Training') {
                 leaveBalanceId = await getLeaveBalanceId({
@@ -392,7 +418,6 @@ export default class MyRequests extends LightningElement {
     handleUploadFinished(event) {
         const uploadedFiles = event.detail.files;
         this.showSuccess(`${uploadedFiles.length} fichier(s) déposé(s) avec succès.`);
-        // Le Flow s'occupera de la mise à jour du statut justificatif.
     }
 
     getRequestedDays() {

@@ -71,7 +71,7 @@
             <type>FieldUpdate</type>
         </action>
     </finalApprovalActions>
-    <finalApprovalRecordLock>true</finalApprovalRecordLock>
+    <finalApprovalRecordLock>false</finalApprovalRecordLock>
     <finalRejectionActions>
         <action>
             <name>Rejected_Request_Email</name>
@@ -98,7 +98,7 @@
         <useApproverFieldOfRecordOwner>false</useApproverFieldOfRecordOwner>
         <userHierarchyField>Manager</userHierarchyField>
     </nextAutomatedApprover>
-    <processOrder>1</processOrder>
+    <processOrder>2</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>

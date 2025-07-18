@@ -16,7 +16,7 @@ public with sharing class LeaveRequestController {
             throw new AuraHandledException('No leave balance found for ' + leaveType + ' for this year');
         }
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static List<Leave_Request__c> getMyLeaves() {
         try {
@@ -34,37 +34,37 @@ public with sharing class LeaveRequestController {
             throw new AuraHandledException('Error retrieving leave requests: ' + e.getMessage());
         }
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static Decimal getNumberOfDaysRequested(Date startDate, Date endDate) {
         if (startDate == null || endDate == null || startDate > endDate) {
             return 0;
         }
-
+        
         User u = [SELECT Country_Code__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
         if (u.Country_Code__c == null || String.isBlank(u.Country_Code__c)) {
             return 0;
         }
         return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Country_Code__c);
     }
-
-   
-
+    
+    
+    
     @AuraEnabled
     public static String cancelLeaveRequest(Id requestId) {
         Set<String> cancellableStatuses = new Set<String>{'Submitted', 'Pending Manager Approval', 'Pending HR Approval'};
-
+        
         try {
             Leave_Request__c request = [
                 SELECT Id, Status__c 
                 FROM Leave_Request__c 
                 WHERE Id = :requestId 
             ];
-
+            
             if (!cancellableStatuses.contains(request.Status__c)) {
                 throw new AuraHandledException('This request cannot be cancelled. Its current status is: ' + request.Status__c);
             }
-
+            
             if (request.Status__c == 'Pending Manager Approval' || request.Status__c == 'Pending HR Approval') {
                 List<ProcessInstanceWorkitem> workItems = [
                     SELECT Id 
@@ -75,23 +75,41 @@ public with sharing class LeaveRequestController {
                 if (!workItems.isEmpty()) {
                     Approval.ProcessWorkitemRequest pwr = new Approval.ProcessWorkitemRequest();
                     pwr.setWorkitemId(workItems[0].Id);
-                    pwr.setAction('Removed'); 
+                    pwr.setAction('Removed');
                     pwr.setComments('Request recalled by user.');
                     Approval.ProcessResult result = Approval.process(pwr);
-
+                    
                     if (!result.isSuccess()) {
                         throw new AuraHandledException('Failed to recall the request from approval. Please contact your administrator.');
                     }
                 }
             }
-
+            
             request.Status__c = 'Cancelled';
             update request;
             
             return 'The leave request has been successfully cancelled.';
-
+            
         } catch (Exception e) {
             throw new AuraHandledException('An error occurred during cancellation: ' + e.getMessage());
+        }
+    }
+    
+    @AuraEnabled
+    public static void requestCancellation(Id leaveRequestId) {
+        Leave_Request__c req = [SELECT Id, Status__c FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
+        if (req.Status__c == 'Approved') {
+            req.Status__c = 'Cancellation Requested';
+            try {
+                update req;
+            } catch (DmlException e) {
+                if (e.getMessage().contains('UNABLE_TO_LOCK_ROW')) {
+                    throw new AuraHandledException('This request is locked and cannot be modified. Please contact an administrator.');
+                }
+                throw e;
+            }
+        } else {
+            throw new AuraHandledException('Cancellation can only be requested for approved leaves.');
         }
     }
 }

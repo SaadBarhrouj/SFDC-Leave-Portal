@@ -70,6 +70,17 @@
         <senderType>CurrentUser</senderType>
         <template>unfiled$public/Request_submitted</template>
     </alerts>
+    <alerts>
+        <fullName>Send_Reminder_for_Missing_Supporting_Document</fullName>
+        <description>Send Reminder for Missing Supporting Document</description>
+        <protected>false</protected>
+        <recipients>
+            <field>Requester__c</field>
+            <type>userLookup</type>
+        </recipients>
+        <senderType>CurrentUser</senderType>
+        <template>unfiled$public/Supporting_Document_Reminder</template>
+    </alerts>
     <fieldUpdates>
         <fullName>Approve_Status</fullName>
         <field>Status__c</field>
@@ -121,6 +132,16 @@
         <reevaluateOnChange>false</reevaluateOnChange>
     </fieldUpdates>
     <fieldUpdates>
+        <fullName>Revert_Status_to_Approved</fullName>
+        <field>Status__c</field>
+        <literalValue>Approved</literalValue>
+        <name>Revert Status to Approved</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>false</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
         <fullName>Set_Status_to_Pending_Manager_Approval</fullName>
         <field>Status__c</field>
         <literalValue>Pending Manager Approval</literalValue>
@@ -145,6 +166,16 @@
         <field>Status__c</field>
         <literalValue>Approved</literalValue>
         <name>Update Status to Approved</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>false</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Update_Status_to_Cancelled</fullName>
+        <field>Status__c</field>
+        <literalValue>Cancelled</literalValue>
+        <name>Update Status to Cancelled</name>
         <notifyAssignee>false</notifyAssignee>
         <operation>Literal</operation>
         <protected>false</protected>
