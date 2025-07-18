@@ -105,11 +105,11 @@
                         <template if:true={isDocumentRequired}>
                             <div class="slds-box slds-theme_shade slds-var-m-top_small">
                                 <p class="slds-text-body_small slds-var-m-bottom_small">
-                                    <b>Un justificatif est requis pour ce type de congé.</b><br/>
-                                    Vous pouvez soumettre votre demande maintenant et déposer le document plus tard.
+                                    <b>A supporting document is required for this type of leave.</b><br/>
+                                    You can submit your request now and upload the document later.
                                 </p>
                                 <lightning-file-upload
-                                    label="Déposer le justificatif"
+                                    label="Upload Supporting Document"
                                     name="fileUploader"
                                     accept={acceptedFormats}
                                     record-id={recordIdToEdit}
