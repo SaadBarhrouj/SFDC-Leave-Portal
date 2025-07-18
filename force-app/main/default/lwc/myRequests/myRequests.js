@@ -3,7 +3,6 @@ import cancelLeaveRequest from '@salesforce/apex/LeaveRequestController.cancelLe
 import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 import getNumberOfDaysRequested from '@salesforce/apex/LeaveRequestController.getNumberOfDaysRequested';
-import submitForApproval from '@salesforce/apex/LeaveRequestController.submitForApproval';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
@@ -334,20 +333,8 @@ export default class MyRequests extends LightningElement {
 
         console.log(message, 'ID:', event.detail.id);
 
-        if (!this.recordIdToEdit) {
-            submitForApproval({ requestId: event.detail.id })
-                .then(result => {
-                    this.showSuccess(result);
-                    this.refreshRequests();
-                })
-                .catch(error => {
-                    this.showError(error.body.message);
-                });
-        } else {
-            this.showSuccess(message);
-            this.refreshRequests();
-        }
-
+        this.showSuccess(message);
+        this.refreshRequests();
         this.closeCreateModal();
     }
 
@@ -380,10 +367,7 @@ export default class MyRequests extends LightningElement {
     }
 
     get isDocumentRequired() {
-        if (this.selectedLeaveType === 'Training') {
-            return true;
-        }
-        if (this.selectedLeaveType === 'Sick Leave' && this.numberOfDaysRequested > 2) {
+        if (this.selectedLeaveType === 'Training' || this.selectedLeaveType === 'Sick Leave') {
             return true;
         }
         return false;
