@@ -43,7 +43,8 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
             }
         }
         LeaveRequestUtils.updateUsedDays(leaveBalanceIds);
-        
-        LeaveRequestUtils.submitForApproval(Trigger.new);
+        if (Trigger.isInsert || Trigger.isUpdate) {
+            LeaveRequestUtils.submitForApproval(Trigger.new);
+        }
     }
 }

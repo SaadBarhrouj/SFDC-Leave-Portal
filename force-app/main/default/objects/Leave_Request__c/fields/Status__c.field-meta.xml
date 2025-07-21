@@ -47,6 +47,11 @@
                 <label>Cancellation Requested</label>
             </value>
             <value>
+                <fullName>Escalated to Senior Manager</fullName>
+                <default>false</default>
+                <label>Escalated to Senior Manager</label>
+            </value>
+            <value>
                 <fullName>CANCELLATION_REQUESTED</fullName>
                 <default>false</default>
                 <isActive>false</isActive>

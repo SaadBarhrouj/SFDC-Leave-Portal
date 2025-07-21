@@ -13,7 +13,7 @@ import rejectLeaveRequest from '@salesforce/apex/TeamRequestsController.rejectLe
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import { subscribe } from 'lightning/messageService';
 
-const ACTIONS = [
+const BASE_ACTIONS = [
     { label: 'Approve', name: 'approve' },
     { label: 'Reject', name: 'reject' }
 ];
@@ -50,8 +50,18 @@ const COLUMNS = [
         sortable: true
     },
     {
+        label: 'Manager',
+        fieldName: 'managerUrl',
+        type: 'url',
+        sortable: true,
+        typeAttributes: {
+            label: { fieldName: 'ManagerName' },
+            target: '_self'
+        }
+    },
+    {
         type: 'action',
-        typeAttributes: { rowActions: ACTIONS },
+        typeAttributes: { rowActions: { fieldName: 'rowActions' } },
     },
 ];
 
@@ -105,17 +115,36 @@ export default class TeamRequests extends LightningElement {
         this.wiredRequestsResult = result;
         if (result.data) {
             this.requests = result.data.map(req => {
+                let rowActions = [...BASE_ACTIONS];
+                if (req.Status__c === 'Pending HR Approval' || req.Status__c === 'Escalated to Senior Manager') {
+                    rowActions.push({ label: "View manager's team calendar", name: 'view_manager_calendar' });
+                }
+                let managerName = '';
+                let managerUrl = '';
+                if (req.Requester__r && req.Requester__r.Manager && req.Requester__r.Manager.Name) {
+                    managerName = req.Requester__r.Manager.Name;
+                    managerUrl = `/lightning/r/User/${req.Requester__r.ManagerId}/view`;
+                } else {
+                    managerName = 'No manager';
+                    managerUrl = '';
+                }
+                console.log('LeaveRequest:', req.Id, '| Requester:', req.Requester__r ? req.Requester__r.Name : 'undefined', '| Manager object:', req.Requester__r ? req.Requester__r.Manager : 'undefined', '| Manager name:', managerName);
                 return {
                     ...req,
                     RequesterName: req.Requester__r.Name,
                     requesterUrl: `/lightning/r/User/${req.Requester__c}/view`,
-                    requestUrl: `/lightning/r/Leave_Request__c/${req.Id}/view`
+                    requestUrl: `/lightning/r/Leave_Request__c/${req.Id}/view`,
+                    ManagerName: managerName,
+                    ManagerId: req.Requester__r.ManagerId,
+                    managerUrl,
+                    rowActions
                 };
             });
             this.error = undefined;
         } else if (result.error) {
             this.error = result.error;
             this.requests = [];
+            console.error('TeamRequests error:', JSON.stringify(result.error));
             this.showToast('Error', 'Could not retrieve team requests.', 'error');
         }
         this.isLoading = false;
@@ -147,6 +176,16 @@ export default class TeamRequests extends LightningElement {
                 break;
             case 'reject':
                 this.openRejectModal();
+                break;
+            case 'view_manager_calendar':
+                if (row.ManagerId) {
+                    const payload = {
+                        managerId: row.ManagerId,
+                        context: 'managerTeam',
+                        selectedRequestId: row.Id 
+                    };
+                    publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
+                }
                 break;
             default:
         }

@@ -70,6 +70,7 @@ export default class MyRequests extends LightningElement {
         { label: 'Submitted', value: 'Submitted' },
         { label: 'Pending Manager Approval', value: 'Pending Manager Approval' },
         { label: 'Pending HR Approval', value: 'Pending HR Approval' },
+        { label: 'Escalated to Senior Manager', value: 'Escalated to Senior Manager' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Cancelled', value: 'Cancelled' },
         { label: 'CANCELLATION_REQUESTED', value: 'CANCELLATION_REQUESTED' }
@@ -166,6 +167,7 @@ export default class MyRequests extends LightningElement {
                 case 'Submitted':
                 case 'Pending Manager Approval':
                 case 'Pending HR Approval':
+                case 'Escalated to Senior Manager':
                     statusClass = 'slds-text-color_weak';
                     availableActions = [
                         { label: 'Show details', name: 'show_details' },
