@@ -1,0 +1,7 @@
+Hello {!Leave_Request__c.Requester__r.Name},
+
+This is a reminder to upload the required supporting document for your leave request {!Leave_Request__c.Name} submitted on {!Leave_Request__c.CreatedDate}.
+
+Please log in to the portal and attach your document as soon as possible.
+
+Thank you.
