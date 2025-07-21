@@ -1,26 +1,40 @@
 <template>
     <lightning-card title="Leave Requests" icon-name="utility:task">
-        <div slot="actions">
-            <lightning-button 
-                label="Refresh" 
-                icon-name="utility:refresh" 
-                onclick={refreshRequests}
-                disabled={isLoading}
-                class="slds-m-right_x-small">
-            </lightning-button>
-            <lightning-button 
-                label="New" 
-                variant="brand" 
-                icon-name="utility:add" 
-                onclick={handleNewRequest}
-                disabled={isLoading}>
-            </lightning-button>
-            <lightning-combobox
-                name="statusFilter"
-                value={selectedStatus}
-                options={statusOptions}
-                onchange={handleStatusChange}
-            ></lightning-combobox>
+        <div class="slds-grid slds-gutters" slot="actions">
+            <div class="slds-col slds-grid slds-align-middle">
+                <div class="slds-align_absolute-center">
+                    <lightning-icon 
+                        icon-name="utility:filter" 
+                        size="x-small" 
+                        class="slds-m-right_x-small">
+                    </lightning-icon>
+                </div>
+                <lightning-combobox
+                    name="statusFilter"
+                    value={selectedStatus}
+                    options={statusOptions}
+                    onchange={handleStatusChange}
+                    label="Status"
+                    variant="label-hidden">
+                </lightning-combobox>
+            </div>
+            <div class="slds-col">
+                <lightning-button 
+                    label="Refresh" 
+                    icon-name="utility:refresh" 
+                    onclick={refreshRequests}
+                    disabled={isLoading}
+                    class="slds-m-right_x-small">
+                </lightning-button>
+                <lightning-button 
+                    label="New" 
+                    variant="brand" 
+                    icon-name="utility:add" 
+                    onclick={handleNewRequest}
+                    disabled={isLoading}
+                    class="slds-m-right_x-small">
+                </lightning-button>
+            </div>
         </div>
         
         <template if:true={isLoading}>
@@ -29,7 +43,7 @@
             </div>
         </template>
         <template if:true={hasRequests}>
-            <lightning-datatable
+            <c-requests-datatable
                 key-field="Id"
                 data={filteredRequests}
                 columns={columns}
@@ -37,7 +51,7 @@
                 onrowselection={handleRowSelection}
                 resize-column-disabled="true"
                 max-row-selection="1">
-            </lightning-datatable>
+            </c-requests-datatable>
         </template>
         <template if:false={hasRequests}>
             <div class="slds-align_absolute-center slds-p-around_medium">

@@ -3,6 +3,7 @@ import cancelLeaveRequest from '@salesforce/apex/LeaveRequestController.cancelLe
 import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 import getNumberOfDaysRequested from '@salesforce/apex/LeaveRequestController.getNumberOfDaysRequested';
+import requestCancellation from '@salesforce/apex/LeaveRequestController.requestCancellation';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
@@ -10,7 +11,26 @@ import userId from '@salesforce/user/Id';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { LightningElement, track, wire } from 'lwc';
-import requestCancellation from '@salesforce/apex/LeaveRequestController.requestCancellation';
+
+function getStatusClass(value) {
+    switch (value) {
+        case 'Approved':
+            return 'slds-badge slds-theme_success';
+        case 'Rejected':
+            return 'slds-badge slds-theme_error';
+        case 'Cancellation Requested':
+            return 'slds-badge slds-theme_info';
+        case 'Cancelled':
+        case 'Pending Manager Approval':
+        case 'Pending HR Approval':
+        case 'Submitted':
+        case 'Pending':
+            return 'slds-badge';
+        default:
+            return 'slds-badge';
+    }
+}
+
 const COLUMNS = [
     {
         label: 'Request Number',
@@ -29,14 +49,13 @@ const COLUMNS = [
     {
         label: 'Status',
         fieldName: 'Status__c',
-        type: 'text',
-        sortable: true,
-        cellAttributes: {
-            class: { fieldName: 'statusClass' }
-            
-        }
+        type: 'customBadge',
+        typeAttributes: {
+            value: { fieldName: 'Status__c' },
+            class: { fieldName: 'statusBadgeClass' }
+        },
+        initialWidth: 220
     },
-    { label: 'Comments', fieldName: 'Employee_Comments__c', wrapText: true },
     {
         type: 'action',
         typeAttributes: {
@@ -65,14 +84,14 @@ export default class MyRequests extends LightningElement {
     }
     acceptedFormats = ['.pdf', '.png', '.jpg', '.jpeg'];
     statusOptions = [
-        { label: 'All', value: 'All' },
+        { label: 'All Status', value: 'All' },
         { label: 'Approved', value: 'Approved' },
         { label: 'Submitted', value: 'Submitted' },
         { label: 'Pending Manager Approval', value: 'Pending Manager Approval' },
         { label: 'Pending HR Approval', value: 'Pending HR Approval' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Cancelled', value: 'Cancelled' },
-        { label: 'CANCELLATION_REQUESTED', value: 'CANCELLATION_REQUESTED' }
+        { label: 'Cancellation Requested', value: 'Cancellation Requested' }
     ];
 
     handleStatusChange(event) {
@@ -187,6 +206,7 @@ export default class MyRequests extends LightningElement {
                 Name: recordUrl,
                 RequestNumber: request.Name,
                 statusClass: statusClass,
+                statusBadgeClass: getStatusClass(request.Status__c),
                 availableActions: availableActions
             };
         });
