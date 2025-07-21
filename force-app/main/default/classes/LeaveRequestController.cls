@@ -52,7 +52,7 @@ public with sharing class LeaveRequestController {
     
     @AuraEnabled
     public static String cancelLeaveRequest(Id requestId) {
-        Set<String> cancellableStatuses = new Set<String>{'Submitted', 'Pending Manager Approval', 'Pending HR Approval'};
+        Set<String> cancellableStatuses = new Set<String>{'Submitted', 'Pending Manager Approval', 'Pending HR Approval', 'Escalated to Senior Manager'};
         
         try {
             Leave_Request__c request = [

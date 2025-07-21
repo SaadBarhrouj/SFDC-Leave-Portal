@@ -1,14 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>Envoie les données et le contexte des congés au composant calendrier.</description>
+    <description>Sends leave data and context to the calendar component.</description>
     <isExposed>true</isExposed>
     <lightningMessageFields>
-        <description>Le contexte de la vue (&apos;my&apos; ou &apos;team&apos;).</description>
+        <description>The view context ('my', 'team' or 'managerTeam').</description>
         <fieldName>context</fieldName>
     </lightningMessageFields>
     <lightningMessageFields>
-        <description>La liste des congés à afficher.</description>
+        <description>The list of leave requests to display.</description>
         <fieldName>leaveRequests</fieldName>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <description>The manager ID for the managerTeam context.</description>
+        <fieldName>managerId</fieldName>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <description>The selected leave request ID for the managerTeam context.</description>
+        <fieldName>selectedRequestId</fieldName>
     </lightningMessageFields>
     <masterLabel>LeaveDataForCalendarChannel</masterLabel>
 </LightningMessageChannel>

@@ -1,4 +1,20 @@
 public with sharing class TeamRequestsController {
+    @AuraEnabled(cacheable=true)
+    public static List<Leave_Request__c> getApprovedLeavesByManager(Id managerId) {
+        if (managerId == null) {
+            return new List<Leave_Request__c>();
+        }
+        List<User> teamMembers = [SELECT Id FROM User WHERE ManagerId = :managerId];
+        Set<Id> teamMemberIds = new Set<Id>();
+        for (User u : teamMembers) teamMemberIds.add(u.Id);
+
+        return [
+            SELECT Id, Name, Start_Date__c, End_Date__c, Leave_Type__c, Status__c, Requester__r.Name
+            FROM Leave_Request__c
+            WHERE Requester__c IN :teamMemberIds
+            ORDER BY Start_Date__c ASC
+        ];
+    }
     
     @AuraEnabled(cacheable=true)
     public static List<Leave_Request__c> getTeamRequests() {
@@ -6,7 +22,6 @@ public with sharing class TeamRequestsController {
         Set<Id> actorIds = new Set<Id>();
         actorIds.add(currentUserId);
 
-        // Récupérer les queues dont l'utilisateur est membre
         for (GroupMember gm : [
             SELECT GroupId
             FROM GroupMember
@@ -31,9 +46,29 @@ public with sharing class TeamRequestsController {
         return [
             SELECT 
                 Id, Name, Start_Date__c, End_Date__c, Leave_Type__c,
-                Number_of_Days_Requested__c, Status__c, Requester__r.Name
+                Number_of_Days_Requested__c, Status__c, Requester__r.Name, Requester__c,
+                Requester__r.ManagerId, Requester__r.Manager.Name
             FROM Leave_Request__c
             WHERE Id IN :leaveRequestIds
+            ORDER BY Start_Date__c ASC
+        ];
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Leave_Request__c> getTeamLeavesForRequester(Id requesterId) {
+        User requester = [SELECT ManagerId FROM User WHERE Id = :requesterId LIMIT 1];
+        if (requester.ManagerId == null) {
+            return new List<Leave_Request__c>();
+        }
+        List<User> teamMembers = [SELECT Id FROM User WHERE ManagerId = :requester.ManagerId];
+        Set<Id> teamMemberIds = new Set<Id>();
+        for (User u : teamMembers) teamMemberIds.add(u.Id);
+
+        return [
+            SELECT Id, Name, Start_Date__c, End_Date__c, Leave_Type__c, Status__c, Requester__r.Name
+            FROM Leave_Request__c
+            WHERE Requester__c IN :teamMemberIds
+            AND (Status__c = 'Approved' OR Status__c = 'Cancellation Requested')
             ORDER BY Start_Date__c ASC
         ];
     }

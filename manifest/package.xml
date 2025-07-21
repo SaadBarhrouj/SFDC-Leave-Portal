@@ -54,6 +54,10 @@
     <types>
         <members>User.Country_Code__c</members>
         <name>CustomField</name>
+    </types>1
+     <types>
+        <members>Admin</members>
+        <name>Profile</name>
     </types>
     <types>
         <members>Admin</members>
