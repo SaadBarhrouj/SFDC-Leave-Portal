@@ -1,103 +1,131 @@
 <template>
-        <div class="slds-is-relative">
-            <template if:true={isLoading}>
-                <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
-            </template>
+    <div class="slds-is-relative">
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+        </template>
 
-                    <template if:false={hasRecord}>
-                        <div class="slds-align_absolute-center slds-var-p-around_medium">
-                            <c-no-data-svg message="Select a request to see details."></c-no-data-svg>
+        <template if:false={hasRecord}>
+            <div class="slds-align_absolute-center slds-var-p-around_medium">
+                <c-no-data-svg message="Select a request to see details."></c-no-data-svg>
+            </div>
+        </template>
+
+        <template if:true={hasRecord}>
+            <div class="slds-var-p-around_medium">
+
+                <div class="slds-form slds-m-bottom_medium">
+                    <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
+                        <label class="slds-form-element__label">Requester</label>
+                        <div class="slds-form-element__control">
+                            <div class="slds-form-element__static">{leaveRequest.Requester__r.Name}</div>
                         </div>
-                    </template>
+                    </div>
+                </div>
 
-                    <template if:true={hasRecord}>
-                        <div class="slds-var-p-around_medium">
-                            <!-- Header Section: Request ID and Requester Link -->
-                            <div class="slds-form slds-m-bottom_medium">
-                                <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                    <label class="slds-form-element__label">Request ID</label>
-                                    <div class="slds-form-element__control">
-                                        <div class="slds-form-element__static">{leaveRequest.Name}</div>
-                                    </div>
-                                </div>
-                                <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                    <label class="slds-form-element__label">Requester</label>
-                                    <div class="slds-form-element__control">
-                                        <div class="slds-form-element__static">{leaveRequest.Requester__r.Name}</div>
+                <div class="slds-form">
+                    <div class="slds-grid slds-wrap">
+                        <!-- Column 1 -->
+                        <div class="slds-col slds-size_1-of-2 slds-var-p-right_small">
+                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
+                                <label class="slds-form-element__label">Start Date</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-form-element__static">
+                                        <lightning-formatted-date-time value={leaveRequest.Start_Date__c}></lightning-formatted-date-time>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Two-Column Form Layout -->
-                            <div class="slds-form">
-                                <div class="slds-grid slds-wrap">
-                                    <!-- Column 1 -->
-                                    <div class="slds-col slds-size_1-of-2 slds-var-p-right_small">
-                                        <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                            <label class="slds-form-element__label">Start Date</label>
-                                            <div class="slds-form-element__control">
-                                                <div class="slds-form-element__static">
-                                                    <lightning-formatted-date-time value={leaveRequest.Start_Date__c}></lightning-formatted-date-time>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                            <label class="slds-form-element__label">Status</label>
-                                            <div class="slds-form-element__control">
-                                                <div class="slds-form-element__static">{leaveRequest.Status__c}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Column 2 -->
-                                    <div class="slds-col slds-size_1-of-2 slds-var-p-left_small">
-                                        <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                            <label class="slds-form-element__label">End Date</label>
-                                            <div class="slds-form-element__control">
-                                                <div class="slds-form-element__static">
-                                                    <lightning-formatted-date-time value={leaveRequest.End_Date__c}></lightning-formatted-date-time>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Full-Width Row for Employee Comments -->
-                                    <div class="slds-col slds-size_1-of-1">
-                                        <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                            <label class="slds-form-element__label">Employee Comments</label>
-                                            <div class="slds-form-element__control">
-                                                <div class="slds-form-element__static">{leaveRequest.Employee_Comments__c}</div>
-                                            </div>
-                                        </div>
+                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly slds-m-top_small">
+                                <label class="slds-form-element__label">Status</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-form-element__static">{leaveRequest.Status__c}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Column 2 -->
+                        <div class="slds-col slds-size_1-of-2 slds-var-p-left_small">
+                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
+                                <label class="slds-form-element__label">End Date</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-form-element__static">
+                                        <lightning-formatted-date-time value={leaveRequest.End_Date__c}></lightning-formatted-date-time>
                                     </div>
                                 </div>
-                                <!-- Leave Balance Section -->
-                                <template if:true={leaveRequest.Leave_Balance__r}>
-                                    <div class="slds-grid slds-wrap slds-m-top_small">
-                                        <div class="slds-col slds-size_1-of-2 slds-var-p-right_small">
-                                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                                <label class="slds-form-element__label">Total Leave Allocation</label>
-                                                <div class="slds-form-element__control">
-                                                    <div class="slds-form-element__static">{leaveRequest.Leave_Balance__r.Allocated_Days__c}</div>
-                                                </div>
-                                            </div>
-                                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                                <label class="slds-form-element__label">Leave Taken</label>
-                                                <div class="slds-form-element__control">
-                                                    <div class="slds-form-element__static">{leaveRequest.Leave_Balance__r.Used_Days__c}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="slds-col slds-size_1-of-2 slds-var-p-left_small">
-                                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                                <label class="slds-form-element__label">Leave Balance</label>
-                                                <div class="slds-form-element__control">
-                                                    <div class="slds-form-element__static">{leaveRequest.Leave_Balance__r.Remaining_Days__c}</div>
-                                                </div>
-                                            </div>
-                                        </div>
+                            </div>
+                            <template if:true={isRejected}>
+                                <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly slds-m-top_small">
+                                    <label class="slds-form-element__label">Rejection Reason</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static">{leaveRequest.Rejection_Reason__c}</div>
                                     </div>
-                                </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="slds-m-top_small">
+                        <template if:true={leaveRequest.Employee_Comments__c}>
+                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly slds-m-bottom_small">
+                                <label class="slds-form-element__label">Employee Comments</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-form-element__static">{leaveRequest.Employee_Comments__c}</div>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={leaveRequest.Approver_Comments__c}>
+                            <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
+                                <label class="slds-form-element__label">Approver Comments</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-form-element__static">{leaveRequest.Approver_Comments__c}</div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Leave Balance Section -->
+                    <template if:true={leaveRequest.Leave_Balance__r}>
+                        <div class="slds-grid slds-wrap slds-m-top_small">
+                            <div class="slds-col slds-size_1-of-2 slds-var-p-right_small">
+                                <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
+                                    <label class="slds-form-element__label">Leave Balance</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static">{leaveRequest.Leave_Balance__r.Remaining_Days__c}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-var-p-left_small">
+                                <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
+                                    <label class="slds-form-element__label">Leave Taken</label>
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element__static">{leaveRequest.Leave_Balance__r.Used_Days__c}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </template>
-        </div>
+                </div>
+
+                <!-- Supporting Documents Section -->
+                <template if:true={hasFiles}>
+                    <div class="slds-m-top_small">
+                        <label class="slds-form-element__label">Supporting Documents</label>
+                        <div class="slds-p-around_small slds-box slds-box_border">
+                            <template for:each={relatedFiles} for:item="file">
+                                <lightning-pill 
+                                    key={file.Id}
+                                    label={file.Title}
+                                    href="javascript:void(0);"
+                                    data-id={file.Id}
+                                    onclick={handleFilePreview}
+                                    class="slds-m-right_small slds-m-bottom_small">
+                                    <lightning-icon icon-name="doctype:attachment" alternative-text="Attachment"></lightning-icon>
+                                </lightning-pill>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </template>
+    </div>
 </template>

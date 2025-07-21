@@ -14,7 +14,7 @@ import { LightningElement, track, wire } from 'lwc';
 
 function getStatusClass(value) {
     switch (value) {
-        case 'Approved':
+        /* case 'Approved':
             return 'slds-badge slds-theme_success';
         case 'Rejected':
             return 'slds-badge slds-theme_error';
@@ -25,7 +25,7 @@ function getStatusClass(value) {
         case 'Pending HR Approval':
         case 'Submitted':
         case 'Pending':
-            return 'slds-badge';
+            return 'slds-badge'; */
         default:
             return 'slds-badge';
     }
@@ -109,6 +109,7 @@ export default class MyRequests extends LightningElement {
     @track isLoading = false;
     @track showCreateModal = false;
     @track recordIdToEdit = null;
+    @track showUploadStep = false; // Nouvelle propriété pour l'étape 2
     columns = COLUMNS;
 
     @wire(MessageContext)
@@ -219,6 +220,7 @@ export default class MyRequests extends LightningElement {
         this.startDate = null;
         this.endDate = null;
         this.numberOfDaysRequested = 0;
+        this.showUploadStep = false; // Réinitialiser à l'ouverture
         this.showCreateModal = true;
     }
 
@@ -226,6 +228,7 @@ export default class MyRequests extends LightningElement {
         console.log('Create modal closed');
         this.showCreateModal = false;
         this.recordIdToEdit = null;
+        this.showUploadStep = false; // Réinitialiser à la fermeture
     }
 
     handleRowSelection(event) {
@@ -300,6 +303,9 @@ export default class MyRequests extends LightningElement {
     }
 
     get modalTitle() {
+        if (this.recordIdToEdit && this.showUploadStep) {
+            return 'Upload Supporting Document';
+        }
         return this.recordIdToEdit ? 'Edit Leave Request' : 'New Leave Request';
     }
 
@@ -343,6 +349,7 @@ export default class MyRequests extends LightningElement {
             publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
         }
     }
+    
 
     async handleSubmit(event) {
         event.preventDefault();
@@ -373,11 +380,22 @@ export default class MyRequests extends LightningElement {
     }
 
     handleSuccess(event) {
-        const message = this.recordIdToEdit
-            ? 'Leave request updated successfully!'
-            : 'Leave request created successfully!';
+        const newRecordId = event.detail.id;
+        const isNewRecord = !this.recordIdToEdit;
 
-        console.log(message, 'ID:', event.detail.id);
+        // Si nouvelle demande ET justificatif requis, passer à l'étape 2
+        if (isNewRecord && this.isDocumentRequired) {
+            this.showToast('Success', 'Step 1 complete: Request created!', 'success');
+            this.recordIdToEdit = newRecordId;
+            this.showUploadStep = true;
+            this.refreshRequests();
+            return; // Ne pas fermer la modale
+        }
+
+        // Cas normal (édition ou création sans justificatif)
+        const message = isNewRecord
+            ? 'Leave request created successfully!'
+            : 'Leave request updated successfully!';
 
         this.showSuccess(message);
         this.refreshRequests();
