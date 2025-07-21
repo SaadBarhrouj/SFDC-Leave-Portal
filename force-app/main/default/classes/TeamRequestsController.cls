@@ -59,7 +59,6 @@ public with sharing class TeamRequestsController {
     private static void processApprovalRequest(String leaveRequestId, String action, String comment) {
         try {
             Id currentUserId = UserInfo.getUserId();
-            // Récupérer les queues dont l'utilisateur est membre
             Set<Id> actorIds = new Set<Id>();
             actorIds.add(currentUserId);
             for (GroupMember gm : [
@@ -70,7 +69,12 @@ public with sharing class TeamRequestsController {
                 actorIds.add(gm.GroupId);
             }
 
-            // Chercher le workitem assigné à l'utilisateur OU à une queue dont il est membre
+            if (action == 'Approve') {
+                Leave_Request__c reqToUpdate = [SELECT Id, Last_Approver__c FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
+                reqToUpdate.Last_Approver__c = currentUserId;
+                update reqToUpdate;
+            }
+
             ProcessInstanceWorkitem workItem = [
                 SELECT Id, ActorId
                 FROM ProcessInstanceWorkitem
@@ -88,14 +92,11 @@ public with sharing class TeamRequestsController {
             }
             Approval.ProcessResult result = Approval.process(req);
             if (!result.isSuccess()) {
-                String errorMessage = '';
-                for (Database.Error err : result.getErrors()) {
-                    errorMessage += err.getMessage() + '. ';
-                }
-                throw new AuraHandledException(errorMessage);
+                throw new AuraHandledException(result.getErrors()[0].getMessage());
             }
         } catch (Exception e) {
             throw new AuraHandledException('Error processing request: ' + e.getMessage());
         }
     }
+
 }

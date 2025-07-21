@@ -55,6 +55,11 @@
             <operation>equals</operation>
             <value>Submitted</value>
         </criteriaItems>
+        <criteriaItems>
+            <field>Leave_Request__c.Leave_Type__c</field>
+            <operation>notEqual</operation>
+            <value>Sick Leave,Training</value>
+        </criteriaItems>
     </entryCriteria>
     <finalApprovalActions>
         <action>
@@ -66,7 +71,7 @@
             <type>FieldUpdate</type>
         </action>
     </finalApprovalActions>
-    <finalApprovalRecordLock>true</finalApprovalRecordLock>
+    <finalApprovalRecordLock>false</finalApprovalRecordLock>
     <finalRejectionActions>
         <action>
             <name>Rejected_Request_Email</name>
@@ -88,12 +93,12 @@
             <type>FieldUpdate</type>
         </action>
     </initialSubmissionActions>
-    <label>Leave Request Multi-Level Approval</label>
+    <label>Leave Request Vacation and RTT Approval</label>
     <nextAutomatedApprover>
         <useApproverFieldOfRecordOwner>false</useApproverFieldOfRecordOwner>
         <userHierarchyField>Manager</userHierarchyField>
     </nextAutomatedApprover>
-    <processOrder>1</processOrder>
+    <processOrder>2</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>

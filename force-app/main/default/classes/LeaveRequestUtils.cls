@@ -62,4 +62,18 @@ public class LeaveRequestUtils {
             update balancesToUpdate;
         }
     }
+
+    public static void submitForApproval(List<Leave_Request__c> requests) {
+        for (Leave_Request__c req : requests) {
+            if (req.Status__c == 'Submitted' || req.Status__c == 'Cancellation Requested') {
+                try {
+                    Approval.ProcessSubmitRequest aprReq = new Approval.ProcessSubmitRequest();
+                    aprReq.setObjectId(req.Id);
+                    Approval.ProcessResult result = Approval.process(aprReq);
+                } catch (Exception e) {
+                System.debug('Approval submission failed: ' + e.getMessage());
+                }
+            }
+        }
+    }
 }
