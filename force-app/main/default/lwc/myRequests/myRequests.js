@@ -53,7 +53,6 @@ export default class MyRequests extends LightningElement {
     @track endDate;
     @track numberOfDaysRequested = 0;
 
-    // Wire pour appeler la méthode Apex de manière réactive
     @wire(getNumberOfDaysRequested, { startDate: '$startDate', endDate: '$endDate' })
     wiredCalculatedDays({ error, data }) {
         if (data || data === 0) {
@@ -73,7 +72,7 @@ export default class MyRequests extends LightningElement {
         { label: 'Escalated to Senior Manager', value: 'Escalated to Senior Manager' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Cancelled', value: 'Cancelled' },
-        { label: 'CANCELLATION_REQUESTED', value: 'CANCELLATION_REQUESTED' }
+        { label: 'Cancellation Requested', value: 'Cancellation Requested' }
     ];
 
     handleStatusChange(event) {
@@ -152,7 +151,7 @@ export default class MyRequests extends LightningElement {
                         ];
                     }
                     break;
-                case 'CANCELLATION_REQUESTED':
+                case 'Cancellation Requested':
                     statusClass = 'slds-text-color_warning';
                     availableActions = [
                         { label: 'Show details', name: 'show_details' },
@@ -323,6 +322,7 @@ export default class MyRequests extends LightningElement {
                 context: 'my'
             };
             publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
+            this.selectedStatus = 'All';
         }
     }
 
