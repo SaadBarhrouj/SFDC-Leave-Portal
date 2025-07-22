@@ -1,0 +1,16 @@
+// This script schedules the annual synchronization of public holidays.
+// It must be executed only once after deployment.
+
+String jobName = 'Annual Holiday Synchronization';
+
+// CRON Expression: s m h day_of_month month day_of_week year
+// Here: At 2:00 AM, on the 1st day of November, every year.
+String cronExpression = '0 0 2 1 11 ? *';
+
+// Create an instance of the class to be scheduled
+ScheduledHolidaySync jobToSchedule = new ScheduledHolidaySync();
+
+// Schedule the job
+System.schedule(jobName, cronExpression, jobToSchedule);
+
+System.debug('The job "' + jobName + '" has been scheduled
