@@ -1,26 +1,40 @@
 <template>
     <lightning-card title="Leave Requests" icon-name="utility:task">
-        <div slot="actions">
-            <lightning-button 
-                label="Refresh" 
-                icon-name="utility:refresh" 
-                onclick={refreshRequests}
-                disabled={isLoading}
-                class="slds-m-right_x-small">
-            </lightning-button>
-            <lightning-button 
-                label="New" 
-                variant="brand" 
-                icon-name="utility:add" 
-                onclick={handleNewRequest}
-                disabled={isLoading}>
-            </lightning-button>
-            <lightning-combobox
-                name="statusFilter"
-                value={selectedStatus}
-                options={statusOptions}
-                onchange={handleStatusChange}
-            ></lightning-combobox>
+        <div class="slds-grid slds-gutters" slot="actions">
+            <div class="slds-col slds-grid slds-align-middle">
+                <div class="slds-align_absolute-center">
+                    <lightning-icon 
+                        icon-name="utility:filter" 
+                        size="x-small" 
+                        class="slds-m-right_x-small">
+                    </lightning-icon>
+                </div>
+                <lightning-combobox
+                    name="statusFilter"
+                    value={selectedStatus}
+                    options={statusOptions}
+                    onchange={handleStatusChange}
+                    label="Status"
+                    variant="label-hidden">
+                </lightning-combobox>
+            </div>
+            <div class="slds-col">
+                <lightning-button 
+                    label="Refresh" 
+                    icon-name="utility:refresh" 
+                    onclick={refreshRequests}
+                    disabled={isLoading}
+                    class="slds-m-right_x-small">
+                </lightning-button>
+                <lightning-button 
+                    label="New" 
+                    variant="brand" 
+                    icon-name="utility:add" 
+                    onclick={handleNewRequest}
+                    disabled={isLoading}
+                    class="slds-m-right_x-small">
+                </lightning-button>
+            </div>
         </div>
         
         <template if:true={isLoading}>
@@ -29,7 +43,7 @@
             </div>
         </template>
         <template if:true={hasRequests}>
-            <lightning-datatable
+            <c-requests-datatable
                 key-field="Id"
                 data={filteredRequests}
                 columns={columns}
@@ -37,7 +51,7 @@
                 onrowselection={handleRowSelection}
                 resize-column-disabled="true"
                 max-row-selection="1">
-            </lightning-datatable>
+            </c-requests-datatable>
         </template>
         <template if:false={hasRequests}>
             <div class="slds-align_absolute-center slds-p-around_medium">
@@ -53,18 +67,18 @@
             aria-modal="true"                       
             aria-labelledby="modal-heading-01"      
             class="slds-modal slds-fade-in-open">   
-            
-            <div class="slds-modal__container">
-                <header class="slds-modal__header">
-                    <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">
-                        {modalTitle}
-                    </h2>
-                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeCreateModal}>
-                        <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
-                    </button>
-                </header>
-                
-                <div class="slds-modal__content slds-var-p-around_medium">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header">
+                <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">
+                    {modalTitle}
+                </h2>
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={closeCreateModal}>
+                    <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                </button>
+            </header>
+            <div class="slds-modal__content slds-var-p-around_medium">
+                <!-- ÉTAPE 1 : Formulaire -->
+                <template if:false={showUploadStep}>
                     <lightning-record-edit-form
                         lwc:ref="leaveRequestForm"
                         object-api-name="Leave_Request__c"
@@ -72,15 +86,12 @@
                         onsuccess={handleSuccess}
                         onerror={handleError}
                         onsubmit={handleSubmit}>
-                        
                         <lightning-input-field field-name="Requester__c" value={currentUserId} style="display: none;"></lightning-input-field>
-                        
                         <lightning-input-field 
                             field-name="Leave_Type__c" 
                             required 
                             onchange={handleFieldChange}>
                         </lightning-input-field>
-                        
                         <div class="slds-grid slds-gutters">
                             <div class="slds-col slds-size_1-of-2">
                                 <lightning-input-field 
@@ -97,28 +108,24 @@
                                 </lightning-input-field>
                             </div>
                         </div>
-
                         <div class="slds-form-element">
                             <label class="slds-form-element__label">Number of days requested :{numberOfDaysRequested}</label>
                         </div>
-
+                        <!-- Affichage du composant d'upload si édition et justificatif requis -->
                         <template if:true={isDocumentRequired}>
-                            <div class="slds-box slds-theme_shade slds-var-m-top_small">
-                                <p class="slds-text-body_small slds-var-m-bottom_small">
-                                    <b>A supporting document is required for this type of leave.</b><br/>
-                                    You can submit your request now and upload the document later.
-                                </p>
-                                <lightning-file-upload
-                                    label="Upload Supporting Document"
-                                    name="fileUploader"
-                                    accept={acceptedFormats}
-                                    record-id={recordIdToEdit}
-                                    onuploadfinished={handleUploadFinished}
-                                    multiple="false">
-                                </lightning-file-upload>
-                            </div>
+                            <template if:true={recordIdToEdit}>
+                                <div class="slds-box slds-theme_shade slds-var-m-top_small">
+                                    <lightning-file-upload
+                                        label="Upload Supporting Document"
+                                        name="fileUploader"
+                                        accept={acceptedFormats}
+                                        record-id={recordIdToEdit}
+                                        onuploadfinished={handleUploadFinished}
+                                        multiple="false">
+                                    </lightning-file-upload>
+                                </div>
+                            </template>
                         </template>
-
                         <div class="slds-form-element">
                             <label class="slds-form-element__label">Comments</label>
                             <div class="slds-form-element__control">
@@ -128,11 +135,9 @@
                                 </lightning-input-field>
                             </div>
                         </div>
-                        
-                        <div class="slds-modal__footer">
-                            <button class="slds-button slds-button_neutral" type="button" onclick={closeCreateModal}>
-                                Cancel
-                            </button>
+
+                        <div class="slds-m-top_medium slds-text-align_right">
+                            <button class="slds-button slds-button_neutral" onclick={closeCreateModal}>Cancel</button>
                             <lightning-button 
                                 variant="brand" 
                                 type="submit" 
@@ -141,10 +146,31 @@
                             </lightning-button>
                         </div>
                     </lightning-record-edit-form>
-                </div>
+                </template>
+                <!-- ÉTAPE 2 : Upload du justificatif -->
+                <template if:true={showUploadStep}>
+                    <div class="slds-box slds-theme_shade slds-var-m-top_small">
+                        <lightning-file-upload
+                            label="Upload Supporting Document"
+                            name="fileUploader"
+                            accept={acceptedFormats}
+                            record-id={recordIdToEdit}
+                            onuploadfinished={handleUploadFinished}>
+                        </lightning-file-upload>
+                    </div>
+                    <div class="slds-m-top_medium slds-text-align_right">
+                        <button class="slds-button slds-button_neutral" onclick={closeCreateModal}>Cancel</button>
+                    <lightning-button 
+                        variant="brand" 
+                        label="Finish"
+                        class="slds-m-left_x-small"
+                        onclick={closeCreateModal}>
+                    </lightning-button>
+                    </div>
+                </template>
             </div>
-        </section>
-        
-        <div class="slds-backdrop slds-backdrop_open"></div>
-    </template>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>
 </template>

@@ -3,6 +3,7 @@ import cancelLeaveRequest from '@salesforce/apex/LeaveRequestController.cancelLe
 import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 import getNumberOfDaysRequested from '@salesforce/apex/LeaveRequestController.getNumberOfDaysRequested';
+import requestCancellation from '@salesforce/apex/LeaveRequestController.requestCancellation';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
@@ -10,7 +11,26 @@ import userId from '@salesforce/user/Id';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { LightningElement, track, wire } from 'lwc';
-import requestCancellation from '@salesforce/apex/LeaveRequestController.requestCancellation';
+
+function getStatusClass(value) {
+    switch (value) {
+        /* case 'Approved':
+            return 'slds-badge slds-theme_success';
+        case 'Rejected':
+            return 'slds-badge slds-theme_error';
+        case 'Cancellation Requested':
+            return 'slds-badge slds-theme_info';
+        case 'Cancelled':
+        case 'Pending Manager Approval':
+        case 'Pending HR Approval':
+        case 'Submitted':
+        case 'Pending':
+            return 'slds-badge'; */
+        default:
+            return 'slds-badge';
+    }
+}
+
 const COLUMNS = [
     {
         label: 'Request Number',
@@ -29,14 +49,13 @@ const COLUMNS = [
     {
         label: 'Status',
         fieldName: 'Status__c',
-        type: 'text',
-        sortable: true,
-        cellAttributes: {
-            class: { fieldName: 'statusClass' }
-            
-        }
+        type: 'customBadge',
+        typeAttributes: {
+            value: { fieldName: 'Status__c' },
+            class: { fieldName: 'statusBadgeClass' }
+        },
+        initialWidth: 220
     },
-    { label: 'Comments', fieldName: 'Employee_Comments__c', wrapText: true },
     {
         type: 'action',
         typeAttributes: {
@@ -64,7 +83,7 @@ export default class MyRequests extends LightningElement {
     }
     acceptedFormats = ['.pdf', '.png', '.jpg', '.jpeg'];
     statusOptions = [
-        { label: 'All', value: 'All' },
+        { label: 'All Status', value: 'All' },
         { label: 'Approved', value: 'Approved' },
         { label: 'Submitted', value: 'Submitted' },
         { label: 'Pending Manager Approval', value: 'Pending Manager Approval' },
@@ -90,6 +109,7 @@ export default class MyRequests extends LightningElement {
     @track isLoading = false;
     @track showCreateModal = false;
     @track recordIdToEdit = null;
+    @track showUploadStep = false; // Nouvelle propriété pour l'étape 2
     columns = COLUMNS;
 
     @wire(MessageContext)
@@ -188,6 +208,7 @@ export default class MyRequests extends LightningElement {
                 Name: recordUrl,
                 RequestNumber: request.Name,
                 statusClass: statusClass,
+                statusBadgeClass: getStatusClass(request.Status__c),
                 availableActions: availableActions
             };
         });
@@ -200,6 +221,7 @@ export default class MyRequests extends LightningElement {
         this.startDate = null;
         this.endDate = null;
         this.numberOfDaysRequested = 0;
+        this.showUploadStep = false; // Réinitialiser à l'ouverture
         this.showCreateModal = true;
     }
 
@@ -207,6 +229,7 @@ export default class MyRequests extends LightningElement {
         console.log('Create modal closed');
         this.showCreateModal = false;
         this.recordIdToEdit = null;
+        this.showUploadStep = false; // Réinitialiser à la fermeture
     }
 
     handleRowSelection(event) {
@@ -281,6 +304,9 @@ export default class MyRequests extends LightningElement {
     }
 
     get modalTitle() {
+        if (this.recordIdToEdit && this.showUploadStep) {
+            return 'Upload Supporting Document';
+        }
         return this.recordIdToEdit ? 'Edit Leave Request' : 'New Leave Request';
     }
 
@@ -325,6 +351,7 @@ export default class MyRequests extends LightningElement {
             this.selectedStatus = 'All';
         }
     }
+    
 
     async handleSubmit(event) {
         event.preventDefault();
@@ -355,11 +382,22 @@ export default class MyRequests extends LightningElement {
     }
 
     handleSuccess(event) {
-        const message = this.recordIdToEdit
-            ? 'Leave request updated successfully!'
-            : 'Leave request created successfully!';
+        const newRecordId = event.detail.id;
+        const isNewRecord = !this.recordIdToEdit;
 
-        console.log(message, 'ID:', event.detail.id);
+        // Si nouvelle demande ET justificatif requis, passer à l'étape 2
+        if (isNewRecord && this.isDocumentRequired) {
+            this.showToast('Success', 'Step 1 complete: Request created!', 'success');
+            this.recordIdToEdit = newRecordId;
+            this.showUploadStep = true;
+            this.refreshRequests();
+            return; // Ne pas fermer la modale
+        }
+
+        // Cas normal (édition ou création sans justificatif)
+        const message = isNewRecord
+            ? 'Leave request created successfully!'
+            : 'Leave request updated successfully!';
 
         this.showSuccess(message);
         this.refreshRequests();
