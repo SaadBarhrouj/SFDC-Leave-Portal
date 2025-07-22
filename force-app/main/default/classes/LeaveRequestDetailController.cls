@@ -47,7 +47,6 @@ public with sharing class LeaveRequestDetailController {
     
     @AuraEnabled
     public static void deleteRelatedFile(Id contentDocumentId, Id recordId) {
-        // Supprime le lien entre le fichier et la demande
         List<ContentDocumentLink> links = [
         SELECT Id FROM ContentDocumentLink
         WHERE ContentDocumentId = :contentDocumentId AND LinkedEntityId = :recordId

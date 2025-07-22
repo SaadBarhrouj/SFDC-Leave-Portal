@@ -21,7 +21,7 @@ export default class LeaveRequestDetail extends NavigationMixin(LightningElement
     @track relatedFiles = [];
     error;
 
-    @track refreshKey = Date.now();
+    refreshKey = Date.now();
     refreshSubscription = null;
 
     @wire(MessageContext)

@@ -293,6 +293,11 @@ export default class MyRequests extends NavigationMixin(LightningElement) {
         };
         console.log('[myRequests] Publishing show details:', payload);
         publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
+        
+        const datatable = this.refs.requestsDatatable;
+        if (datatable) {
+            datatable.selectedRows = [row.Id];
+        }
     }
 
     get modalTitle() {
@@ -312,11 +317,8 @@ export default class MyRequests extends NavigationMixin(LightningElement) {
     }
 
     async handleRemoveFile(event) {
-        const fileTitleToRemove = event.detail.name;
-        const fileToRemove = this.relatedFiles.find(f => f.title === fileTitleToRemove);
-        if (!fileToRemove) return;
-    
-        const contentDocumentId = fileToRemove.Id;
+        const contentDocumentId = event.currentTarget.dataset.id;
+        if (!contentDocumentId) return;
         if (!confirm('Are you sure you want to remove this document?')) return;
         try {
             await deleteRelatedFile({ contentDocumentId, recordId: this.recordIdToEdit });
@@ -417,12 +419,18 @@ export default class MyRequests extends NavigationMixin(LightningElement) {
         this.showSuccess(message);
         this.refreshRequests();
         
+        const selectPayload = {
+            recordId: savedRecordId,
+            context: 'myRequest'
+        };
+        publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, selectPayload);
+
+        this.publishRefreshRequest(savedRecordId);
+
         const datatable = this.refs.requestsDatatable;
         if (datatable) {
             datatable.selectedRows = [savedRecordId];
         }
-
-        this.publishRefreshRequest(savedRecordId);
 
         this.closeCreateModal();
     }
@@ -486,15 +494,6 @@ export default class MyRequests extends NavigationMixin(LightningElement) {
     }
 
     handleFilePreview(event) {
-        if (
-            event.target.classList.contains('slds-button__icon') ||
-            event.target.closest('.slds-pill__remove') ||
-            event.target.closest('button')
-        ) {
-            event.stopPropagation();
-            return;
-        }
-    
         const contentDocumentId = event.currentTarget.dataset.id;
         this[NavigationMixin.Navigate]({
             type: 'standard__namedPage',
