@@ -6,11 +6,13 @@ private class LeaveRequestTriggerTest {
         User testUser = TestDataFactory.createTestUser('tstuser', 'US');
         Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
 
-        Date today = Date.today();
+        Date startDate = Date.newInstance(2025, 7, 23);
+        Date endDate = Date.newInstance(2025, 7, 27);  
+
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
             testUser.Id, 'Vacation', 
-            today.addDays(1), 
-            today.addDays(5), 
+            startDate, 
+            endDate, 
             leaveBalance.Id
         );
 

@@ -14,7 +14,7 @@ export default class LeaveRequestTabs extends LightningElement {
     messageContext;
     @track selectedRecordId;
     @track selectedContext;
-
+    @track selectedManagerId;
     connectedCallback() {
         console.log('[LeaveRequestTabs] connectedCallback');
         this.subscribeToChannels();
@@ -48,10 +48,12 @@ export default class LeaveRequestTabs extends LightningElement {
         console.log('[LeaveRequestTabs] Calendar channel message:', message);
         if (message.context) {
             this.selectedContext = message.context;
-            this.selectedRecordId = null; 
+            this.selectedManagerId = message.managerId || null;
+            this.selectedRecordId = message.selectedRequestId || null; 
             this.activeTab = 'calendar';
             publish(this.messageContext, CLEAR_SELECTION_CHANNEL, {});
         }
+        console.log('[LeaveRequestTabs] selectedContext:', this.selectedContext, '| selectedManagerId:', this.selectedManagerId, '| activeTab:', this.activeTab);
     }
 
     handleActive(event) {
