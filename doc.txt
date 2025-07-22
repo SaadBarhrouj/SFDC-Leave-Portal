@@ -13,4 +13,4 @@ ScheduledHolidaySync jobToSchedule = new ScheduledHolidaySync();
 // Schedule the job
 System.schedule(jobName, cronExpression, jobToSchedule);
 
-System.debug('The job "' + jobName + '" has been scheduled
+System.debug('The job "' + jobName + '" has been scheduled)
