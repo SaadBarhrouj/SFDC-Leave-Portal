@@ -1,5 +1,5 @@
 @isTest
-public class HolidayAutomationTestssss {
+public class HolidayAutomationTests {
 
     @isTest
     static void testQueueable_Success() {
