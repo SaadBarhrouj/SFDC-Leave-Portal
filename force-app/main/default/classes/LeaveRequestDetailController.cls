@@ -1,6 +1,6 @@
 public with sharing class LeaveRequestDetailController {
     @AuraEnabled(cacheable=true)
-    public static Leave_Request__c getLeaveRequestDetails(Id recordId) {
+    public static Leave_Request__c getLeaveRequestDetails(Id recordId, Long refresh) {
         if (recordId == null) {
             return null;
         }
@@ -18,9 +18,9 @@ public with sharing class LeaveRequestDetailController {
             LIMIT 1
         ];
     }
-
+    
     @AuraEnabled(cacheable=true)
-    public static List<ContentDocument> getRelatedFiles(Id recordId) {
+    public static List<ContentDocument> getRelatedFiles(Id recordId, Long refresh) {
         if (recordId == null) {
             return new List<ContentDocument>();
         }
@@ -33,15 +33,24 @@ public with sharing class LeaveRequestDetailController {
         ]) {
             contentDocumentIds.add(cdl.ContentDocumentId);
         }
-
+        
         if (contentDocumentIds.isEmpty()) {
             return new List<ContentDocument>();
         }
-
+        
         return [
             SELECT Id, Title, FileExtension, FileType 
             FROM ContentDocument 
             WHERE Id IN :contentDocumentIds
         ];
+    }
+    
+    @AuraEnabled
+    public static void deleteRelatedFile(Id contentDocumentId, Id recordId) {
+        List<ContentDocumentLink> links = [
+        SELECT Id FROM ContentDocumentLink
+        WHERE ContentDocumentId = :contentDocumentId AND LinkedEntityId = :recordId
+    ];
+        delete links;
     }
 }

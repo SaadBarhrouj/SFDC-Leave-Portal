@@ -25,7 +25,7 @@ private class LeaveRequestDetailControllerTest {
 
         Test.startTest();
         System.runAs(sysAdminUser) {
-            Leave_Request__c result = LeaveRequestDetailController.getLeaveRequestDetails(req.Id);
+            Leave_Request__c result = LeaveRequestDetailController.getLeaveRequestDetails(req.Id, null);
             System.assertNotEquals(null, result, 'Leave request should not be null.');
             System.assertEquals(req.Id, result.Id, 'Leave request ID should match.');
         }
@@ -35,7 +35,7 @@ private class LeaveRequestDetailControllerTest {
     @isTest
     static void testGetLeaveRequestDetails_NullId() {
         Test.startTest();
-        Leave_Request__c result = LeaveRequestDetailController.getLeaveRequestDetails(null);
+        Leave_Request__c result = LeaveRequestDetailController.getLeaveRequestDetails(null, null);
         Test.stopTest();
         System.assertEquals(null, result, 'Result should be null for a null Id.');
     }

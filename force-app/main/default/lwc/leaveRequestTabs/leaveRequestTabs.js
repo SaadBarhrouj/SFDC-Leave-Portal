@@ -1,9 +1,8 @@
-import { LightningElement, wire, track } from 'lwc';
-import { MessageContext, subscribe } from 'lightning/messageService';
-import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
-import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
-import { publish } from 'lightning/messageService';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
+import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
+import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import { MessageContext, publish, subscribe } from 'lightning/messageService';
+import { LightningElement, track, wire } from 'lwc';
 
 export default class LeaveRequestTabs extends LightningElement {
     activeTab = 'calendar';
