@@ -4,28 +4,20 @@ import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveB
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 import getNumberOfDaysRequested from '@salesforce/apex/LeaveRequestController.getNumberOfDaysRequested';
 import requestCancellation from '@salesforce/apex/LeaveRequestController.requestCancellation';
+import deleteRelatedFile from '@salesforce/apex/LeaveRequestDetailController.deleteRelatedFile';
+import getRelatedFiles from '@salesforce/apex/LeaveRequestDetailController.getRelatedFiles';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
 import userId from '@salesforce/user/Id';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
+import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { LightningElement, track, wire } from 'lwc';
 
 function getStatusClass(value) {
     switch (value) {
-        /* case 'Approved':
-            return 'slds-badge slds-theme_success';
-        case 'Rejected':
-            return 'slds-badge slds-theme_error';
-        case 'Cancellation Requested':
-            return 'slds-badge slds-theme_info';
-        case 'Cancelled':
-        case 'Pending Manager Approval':
-        case 'Pending HR Approval':
-        case 'Submitted':
-        case 'Pending':
-            return 'slds-badge'; */
         default:
             return 'slds-badge';
     }
@@ -64,13 +56,13 @@ const COLUMNS = [
     }
 ];
 
-export default class MyRequests extends LightningElement {
+export default class MyRequests extends NavigationMixin(LightningElement) {
     @track selectedStatus = 'All';
     @track selectedLeaveType = '';
-
     @track startDate;
     @track endDate;
     @track numberOfDaysRequested = 0;
+    @track relatedFiles = [];
 
     @wire(getNumberOfDaysRequested, { startDate: '$startDate', endDate: '$endDate' })
     wiredCalculatedDays({ error, data }) {
@@ -250,7 +242,7 @@ export default class MyRequests extends LightningElement {
     }
 
     clearSelection() {
-        const datatable = this.template.querySelector('lightning-datatable');
+        const datatable = this.template.querySelector('c-requests-datatable');
         if (datatable) {
             datatable.selectedRows = [];
         }
@@ -301,6 +293,11 @@ export default class MyRequests extends LightningElement {
         };
         console.log('[myRequests] Publishing show details:', payload);
         publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, payload);
+        
+        const datatable = this.refs.requestsDatatable;
+        if (datatable) {
+            datatable.selectedRows = [row.Id];
+        }
     }
 
     get modalTitle() {
@@ -310,11 +307,35 @@ export default class MyRequests extends LightningElement {
         return this.recordIdToEdit ? 'Edit Leave Request' : 'New Leave Request';
     }
 
+    async loadRelatedFiles(recordId) {
+        const files = await getRelatedFiles({ recordId, refresh: Date.now() });
+        this.relatedFiles = files.map(f => ({
+            Id: f.Id,
+            title: f.Title
+        }));
+        
+    }
+
+    async handleRemoveFile(event) {
+        const contentDocumentId = event.currentTarget.dataset.id;
+        if (!contentDocumentId) return;
+        if (!confirm('Are you sure you want to remove this document?')) return;
+        try {
+            await deleteRelatedFile({ contentDocumentId, recordId: this.recordIdToEdit });
+            this.showSuccess('Document removed successfully.');
+            this.loadRelatedFiles(this.recordIdToEdit);
+            this.publishRefreshRequest(this.recordIdToEdit);
+        } catch (error) {
+            this.showError('Error removing document.');
+        }
+    }
+
     editRequest(row) {
         console.log('Edit request:', row);
         this.recordIdToEdit = row.Id;
         this.showCreateModal = true;
         this.selectedLeaveType = row.Leave_Type__c;
+        this.loadRelatedFiles(row.Id);
     }
 
     cancelRequest(row) {
@@ -344,11 +365,6 @@ export default class MyRequests extends LightningElement {
             console.error('Error refreshing data:', error);
         } finally {
             this.isLoading = false;
-            const payload = {
-                context: 'my'
-            };
-            publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
-            this.selectedStatus = 'All';
         }
     }
     
@@ -369,9 +385,11 @@ export default class MyRequests extends LightningElement {
                 });
                 fields.Leave_Balance__c = leaveBalanceId;
             }
-    
             fields.Requester__c = userId;
-            fields.Status__c = 'Submitted';
+            
+            if (!this.recordIdToEdit) {
+                fields.Status__c = 'Submitted';
+            }
     
             this.refs.leaveRequestForm.submit(fields);
     
@@ -382,13 +400,12 @@ export default class MyRequests extends LightningElement {
     }
 
     handleSuccess(event) {
-        const newRecordId = event.detail.id;
+        const savedRecordId = event.detail.id;
         const isNewRecord = !this.recordIdToEdit;
 
         // Si nouvelle demande ET justificatif requis, passer à l'étape 2
         if (isNewRecord && this.isDocumentRequired) {
-            this.showToast('Success', 'Step 1 complete: Request created!', 'success');
-            this.recordIdToEdit = newRecordId;
+            this.recordIdToEdit = savedRecordId;
             this.showUploadStep = true;
             this.refreshRequests();
             return; // Ne pas fermer la modale
@@ -401,6 +418,20 @@ export default class MyRequests extends LightningElement {
 
         this.showSuccess(message);
         this.refreshRequests();
+        
+        const selectPayload = {
+            recordId: savedRecordId,
+            context: 'myRequest'
+        };
+        publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, selectPayload);
+
+        this.publishRefreshRequest(savedRecordId);
+
+        const datatable = this.refs.requestsDatatable;
+        if (datatable) {
+            datatable.selectedRows = [savedRecordId];
+        }
+
         this.closeCreateModal();
     }
 
@@ -458,6 +489,21 @@ export default class MyRequests extends LightningElement {
     handleUploadFinished(event) {
         const uploadedFiles = event.detail.files;
         this.showSuccess(`${uploadedFiles.length} fichier(s) déposé(s) avec succès.`);
+        this.loadRelatedFiles(this.recordIdToEdit);
+        this.publishRefreshRequest(this.recordIdToEdit);
+    }
+
+    handleFilePreview(event) {
+        const contentDocumentId = event.currentTarget.dataset.id;
+        this[NavigationMixin.Navigate]({
+            type: 'standard__namedPage',
+            attributes: {
+                pageName: 'filePreview'
+            },
+            state: {
+                selectedRecordId: contentDocumentId
+            }
+        });
     }
 
     getRequestedDays() {
@@ -469,6 +515,9 @@ export default class MyRequests extends LightningElement {
         }
         return 0;
     }
+
+    publishRefreshRequest(recordId) {
+        const payload = { recordId: recordId };
+        publish(this.messageContext, REFRESH_LEAVE_DATA_CHANNEL, payload);
+    }
 }
-
-

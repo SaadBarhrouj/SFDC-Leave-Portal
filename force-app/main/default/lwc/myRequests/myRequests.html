@@ -44,6 +44,7 @@
         </template>
         <template if:true={hasRequests}>
             <c-requests-datatable
+                lwc:ref="requestsDatatable"
                 key-field="Id"
                 data={filteredRequests}
                 columns={columns}
@@ -114,6 +115,27 @@
                         <!-- Affichage du composant d'upload si édition et justificatif requis -->
                         <template if:true={isDocumentRequired}>
                             <template if:true={recordIdToEdit}>
+                                <!-- Supporting Documents déjà attachés -->
+                                <template if:true={relatedFiles.length}>
+
+                                        <label class="slds-form-element__label">Supporting Documents</label>
+                                        <div class="slds-p-around_small slds-box slds-box_border">
+                                            <template for:each={relatedFiles} for:item="file">
+                                                <lightning-pill 
+                                                    key={file.Id}
+                                                    label={file.title}
+                                                    href="javascript:void(0);"
+                                                    data-id={file.Id}
+                                                    onclick={handleFilePreview}
+                                                    onremove={handleRemoveFile}
+                                                    class="slds-m-right_small slds-m-bottom_small">
+                                                    <lightning-icon icon-name="doctype:attachment" alternative-text="Attachment"></lightning-icon>
+                                                </lightning-pill>
+                                            </template>
+                                        </div>
+
+                                </template>
+                                <!-- Upload -->
                                 <div class="slds-box slds-theme_shade slds-var-m-top_small">
                                     <lightning-file-upload
                                         label="Upload Supporting Document"

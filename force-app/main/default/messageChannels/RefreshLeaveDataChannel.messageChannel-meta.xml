@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>RefreshLeaveDataChannel</masterLabel>
+    <isExposed>true</isExposed>
+    <description>Ce canal est utilisé pour signaler que les données d'une demande de congé doivent être rafraîchies.</description>
+    <lightningMessageFields>
+        <fieldName>recordId</fieldName>
+        <description>L'ID de la demande de congé à rafraîchir.</description>
+    </lightningMessageFields>
+</LightningMessageChannel>
