@@ -1,0 +1,101 @@
+<template>
+    <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header">
+                <h2 class="slds-modal__title slds-hyphenate">{modalTitle}</h2>
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                    <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                </button>
+            </header>
+
+            <div class="slds-modal__content slds-var-p-around_medium">
+                <template if:false={showUploadStep}>
+                    <lightning-record-edit-form
+                        lwc:ref="leaveRequestForm"
+                        object-api-name="Leave_Request__c"
+                        record-id={recordIdToEdit}
+                        onsuccess={handleSuccess}
+                        onerror={handleError}
+                        onsubmit={handleSubmit}
+                        onload={handleFormLoad}>
+                        <lightning-input-field field-name="Requester__c" value={currentUserId} class="slds-hide"></lightning-input-field>
+                        <lightning-input-field field-name="Leave_Type__c" required onchange={handleFieldChange}></lightning-input-field>
+                        
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="Start_Date__c" required onchange={handleFieldChange}></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning-input-field field-name="End_Date__c" required onchange={handleFieldChange}></lightning-input-field>
+                            </div>
+                        </div>
+
+                        <div class="slds-form-element slds-var-m-bottom_small">
+                            <label class="slds-form-element__label">Number of days requested: {numberOfDaysRequested}</label>
+                        </div>
+                        
+                        <template if:true={isDocumentRequired}>
+                            <template if:true={recordIdToEdit}>
+                                <template if:true={hasRelatedFiles}>
+                                    <label class="slds-form-element__label slds-var-m-bottom_x-small">Supporting Documents</label>
+                                    <div class="slds-p-around_small slds-box slds-box_border">
+                                        <template for:each={relatedFiles} for:item="file">
+                                            <lightning-pill
+                                                key={file.Id}
+                                                label={file.title}
+                                                href="javascript:void(0);"
+                                                data-id={file.Id}
+                                                onclick={handleFilePreview}
+                                                onremove={handleRemoveFile}
+                                                class="slds-m-right_small slds-m-bottom_small">
+                                                <lightning-icon icon-name="doctype:attachment" alternative-text="Attachment"></lightning-icon>
+                                            </lightning-pill>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="slds-box slds-theme_shade slds-var-m-top_small">
+                                    <lightning-file-upload
+                                        label="Upload/Replace Supporting Document"
+                                        name="fileUploader"
+                                        accept={acceptedFormats}
+                                        record-id={recordIdToEdit}
+                                        onuploadfinished={handleUploadFinished}
+                                        multiple="false">
+                                    </lightning-file-upload>
+                                </div>
+                            </template>
+                        </template>
+
+                        <lightning-input-field field-name="Employee_Comments__c" variant="label-stacked" label="Comments"></lightning-input-field>
+
+                        <button type="submit" class="slds-hide"></button>
+                    </lightning-record-edit-form>
+                </template>
+
+                <template if:true={showUploadStep}>
+                     <div class="slds-box slds-theme_shade slds-var-m-top_small">
+                        <p class="slds-var-m-bottom_small">Step 2: Please upload the required supporting document.</p>
+                        <lightning-file-upload
+                            label="Upload Supporting Document"
+                            name="fileUploader"
+                            accept={acceptedFormats}
+                            record-id={recordIdToEdit}
+                            onuploadfinished={handleUploadFinished}>
+                        </lightning-file-upload>
+                    </div>
+                </template>
+            </div>
+
+            <footer class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" onclick={handleClose}>Cancel</button>
+                <template if:true={showUploadStep}>
+                     <lightning-button variant="brand" label="Finish" class="slds-m-left_x-small" onclick={handleFinish}></lightning-button>
+                </template>
+                <template if:false={showUploadStep}>
+                    <lightning-button variant="brand" label={submitButtonLabel} class="slds-m-left_x-small" onclick={triggerSubmit}  disabled={isSaving}></lightning-button>
+                </template>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

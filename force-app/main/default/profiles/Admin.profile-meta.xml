@@ -6,6 +6,10 @@
         <visible>true</visible>
     </applicationVisibilities>
     <classAccesses>
+        <apexClass>ContentDocumentLinkTriggerTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>FlowApprovalSynchronizer</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -22,11 +26,19 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>HolidayAutomationTests</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>HolidayController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
         <apexClass>HolidayControllerTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>LeaveBalanceHandler</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -55,6 +67,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LeaveRequestUtilsTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>ScheduledHolidaySync</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -201,6 +217,9 @@
     </layoutAssignments>
     <layoutAssignments>
         <layout>Leave_Request__c-Leave Request Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>User-User Layout</layout>
     </layoutAssignments>
     <objectPermissions>
         <allowCreate>true</allowCreate>
