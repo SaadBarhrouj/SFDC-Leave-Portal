@@ -222,8 +222,13 @@ export default class TeamRequests extends LightningElement {
                 this.handleApprove();
                 break;
             case 'reject':
+                if (row.Status__c === 'Cancellation Requested') {
+                this.handleRejectCancellation();
+            } else {
                 this.openRejectModal();
+            }
                 break;
+
             case 'view_manager_calendar':
                 if (row.ManagerId) {
                     const payload = {
@@ -251,6 +256,27 @@ export default class TeamRequests extends LightningElement {
             });
     }
 
+
+        handleRejectCancellation() {
+        if (confirm('Are you sure you want to reject this cancellation request? The leave will remain approved.')) {
+            this.isLoading = true;
+            
+            rejectLeaveRequest({
+                leaveRequestId: this.selectedRequestId,
+                rejectionReason: null,
+                approverComment: null
+            })
+            .then(() => {
+                this.showToast('Success', 'Cancellation request rejected.', 'success');
+                return this.refreshData();
+            })
+            .catch(error => {
+                this.showToast('Error', error.body.message, 'error');
+                this.isLoading = false;
+            });
+        }
+    }
+    
     openRejectModal() {
         this.showModal = true;
     }
@@ -270,27 +296,42 @@ export default class TeamRequests extends LightningElement {
         this.approverComment = event.target.value;
     }
 
-    submitRejection() {
-        if (!this.rejectionReason) {
-            this.showToast('Required', 'Please select a reason for rejection.', 'warning');
-            return;
+submitRejection() {
+    this.isLoading = true;
+
+    rejectLeaveRequest({
+        leaveRequestId: this.selectedRequestId,
+        rejectionReason: this.rejectionReason,
+        approverComment: this.approverComment
+    })
+    .then(() => {
+        this.showToast('Success', 'Request rejected successfully.', 'success');
+        this.closeModal();
+        return this.refreshData();
+    })
+    .catch(error => {
+        console.error('Error Details:', JSON.stringify(error));
+
+        let errorMessage = 'An unknown error occurred.'; 
+
+        if (error && error.body && error.body.fieldErrors && error.body.fieldErrors.Approver_Comments__c) {
+            
+            errorMessage = error.body.fieldErrors.Approver_Comments__c[0].message;
+            
+            let commentField = this.template.querySelector('[data-field="Approver_Comments__c"]');
+            if (commentField) {
+                commentField.setCustomValidity(errorMessage);
+                commentField.reportValidity();
+            }
+
+        } else if (error && error.body && error.body.message) {
+            errorMessage = error.body.message;
+            this.showToast('Error', errorMessage, 'error');
         }
-        this.isLoading = true;
-        rejectLeaveRequest({
-            leaveRequestId: this.selectedRequestId,
-            rejectionReason: this.rejectionReason,
-            approverComment: this.approverComment
-        })
-            .then(() => {
-                this.showToast('Success', 'Request rejected successfully.', 'success');
-                this.closeModal();
-                return this.refreshData();
-            })
-            .catch(error => {
-                this.showToast('Error', error.body.message, 'error');
-                this.isLoading = false;
-            });
-    }
+        
+        this.isLoading = false;
+    });
+}
 
     handleRefresh() {
         this.refreshData();
