@@ -9,6 +9,7 @@ import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequ
 import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
+import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequestModifiedChannel__c';
 import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest';
 
 const COLUMNS = [
@@ -123,6 +124,7 @@ export default class MyRequestContainer extends LightningElement {
         this.isLoading = true;
         try {
             await refreshApex(this.wiredRequestsResult);
+            publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
         } catch (error) {
             this.showError('Error refreshing data.');
         } finally {
