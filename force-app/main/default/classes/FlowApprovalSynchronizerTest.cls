@@ -15,7 +15,7 @@ private class FlowApprovalSynchronizerTest {
         User approver = TestDataFactory.createTestUser('approvr', 'US');
         User requester = TestDataFactory.createTestUser('requestr', 'US');
         String leaveType = 'RTT';
-        Date startDate = Date.today();
+        Date startDate = Date.today().addDays(10);
         Date endDate = startDate.addDays(2);
         Leave_Request__c req = TestDataFactory.createLeaveRequest(requester.Id, leaveType, startDate, endDate, null);
         insert req;
@@ -30,7 +30,7 @@ private class FlowApprovalSynchronizerTest {
     static void testNoWorkItemsToUpdate() {
         User approver = TestDataFactory.createTestUser('approver', 'US');
         String leaveType = 'RTT';
-        Date startDate = Date.today();
+        Date startDate = Date.today().addDays(10);
         Date endDate = startDate.addDays(2);
         Leave_Request__c req = TestDataFactory.createLeaveRequest(approver.Id, leaveType, startDate, endDate, null);
         insert req;
@@ -48,24 +48,28 @@ private class FlowApprovalSynchronizerTest {
         User requester = TestDataFactory.createTestUser('requestr', 'US');
         requester.ManagerId = manager.Id;
         update requester;
-        String leaveType = 'RTT';
-        Date startDate = Date.today();
+        
+        String leaveType = 'Vacation';
+        Date startDate = Date.today().addDays(10);
         Date endDate = startDate.addDays(2);
         Leave_Request__c req = TestDataFactory.createLeaveRequest(requester.Id, leaveType, startDate, endDate, null);
         insert req; 
+        
         req = [SELECT Id, Approver__c FROM Leave_Request__c WHERE Id = :req.Id];
         System.assertEquals(manager.Id, req.Approver__c, 'Approver should be the manager');
+        
         req.Status__c = 'Submitted';
         update req;
+
         req.Approver__c = newApprover.Id;
         update req;
+        
         Test.startTest();
         FlowApprovalSynchronizer.syncApprovalTask(new List<Id>{req.Id});
         Test.stopTest();
-        List<ProcessInstanceWorkitem> workitems = [SELECT Id, ActorId, ProcessInstance.TargetObjectId FROM ProcessInstanceWorkitem WHERE ProcessInstance.TargetObjectId = :req.Id AND ProcessInstance.Status = 'Pending'];
+        
+        List<ProcessInstanceWorkitem> workitems = [SELECT Id, ActorId FROM ProcessInstanceWorkitem WHERE ProcessInstance.TargetObjectId = :req.Id AND ProcessInstance.Status = 'Pending'];
         System.assert(!workitems.isEmpty(), 'Workitem should exist for the request');
         System.assertEquals(newApprover.Id, workitems[0].ActorId, 'ActorId should be updated to new approver');
     }
-
-
 }
