@@ -8,6 +8,7 @@ import requestCancellation from '@salesforce/apex/LeaveRequestController.request
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
 import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
+import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest'; // <-- AJOUTER CET IMPORT
 
 const COLUMNS = [
     { label: 'Request Number', fieldName: 'Name', type: 'url', typeAttributes: { label: { fieldName: 'RequestNumber' }, target: '_blank' }, sortable: true },
@@ -74,6 +75,7 @@ export default class MyRequestContainer extends LightningElement {
             case 'edit': this.editRequest(row); break;
             case 'cancel': this.cancelRequest(row); break;
             case 'request_cancellation': this.requestCancellation(row); break;
+            case 'withdraw_cancellation': this.withdrawCancellation(row); break; 
             default: break;
         }
     }
@@ -153,6 +155,19 @@ export default class MyRequestContainer extends LightningElement {
         }
     }
 
+     withdrawCancellation(row) {
+        if (confirm(`Are you sure you want to withdraw the cancellation request for ${row.RequestNumber}?`)) {
+            this.isLoading = true;
+            withdrawCancellationRequest({ leaveRequestId: row.Id })
+                .then(() => {
+                    this.showSuccess('Cancellation request withdrawn.');
+                    this.refreshRequests();
+                })
+                .catch(error => this.showError(error.body.message))
+                .finally(() => this.isLoading = false);
+        }
+    }
+
     subscribeToClearSelection() {
         if (this.subscriptionClearSelection) return;
         this.subscriptionClearSelection = subscribe(this.messageContext, CLEAR_SELECTION_CHANNEL, () => {
@@ -171,6 +186,8 @@ export default class MyRequestContainer extends LightningElement {
         publish(this.messageContext, REFRESH_LEAVE_DATA_CHANNEL, { recordId });
     }
     
+  
+
     processRequestsForDisplay(rawData) {
         return rawData.map(request => {
             const recordUrl = `/lightning/r/Leave_Request__c/${request.Id}/view`;
@@ -182,15 +199,31 @@ export default class MyRequestContainer extends LightningElement {
                         availableActions.push({ label: 'Request cancellation', name: 'request_cancellation' });
                     }
                     break;
+                
                 case 'Cancellation Requested':
-                    availableActions.push({ label: 'Show details', name: 'show_details' }, { label: 'Withdraw cancellation request', name: 'withdraw_cancellation' });
+                    availableActions.push(
+                        { label: 'Show details', name: 'show_details' }, 
+                        { label: 'Withdraw cancellation request', name: 'withdraw_cancellation' }
+                    );
                     break;
+                
+                case 'Pending HR Approval':
+                    availableActions.push(
+                        { label: 'Show details', name: 'show_details' },
+                        { label: 'Cancel', name: 'cancel' } 
+                    );
+                    break;
+
                 case 'Submitted':
                 case 'Pending Manager Approval':
-                case 'Pending HR Approval':
                 case 'Escalated to Senior Manager':
-                    availableActions.push({ label: 'Show details', name: 'show_details' }, { label: 'Edit', name: 'edit' }, { label: 'Cancel', name: 'cancel' });
+                    availableActions.push(
+                        { label: 'Show details', name: 'show_details' }, 
+                        { label: 'Edit', name: 'edit' }, 
+                        { label: 'Cancel', name: 'cancel' }
+                    );
                     break;
+                    
                 default:
                     availableActions.push({ label: 'Show details', name: 'show_details' });
             }

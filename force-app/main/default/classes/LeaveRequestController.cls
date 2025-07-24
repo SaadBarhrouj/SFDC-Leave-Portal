@@ -112,4 +112,44 @@ public with sharing class LeaveRequestController {
             throw new AuraHandledException('Cancellation can only be requested for approved leaves.');
         }
     }
+
+    @AuraEnabled
+    public static void withdrawCancellationRequest(Id leaveRequestId) {
+        try {
+            Leave_Request__c request = [
+                SELECT Id, Status__c 
+                FROM Leave_Request__c 
+                WHERE Id = :leaveRequestId
+            ];
+
+            if (request.Status__c != 'Cancellation Requested') {
+                throw new AuraHandledException('You can only withdraw a cancellation request if the status is "Cancellation Requested".');
+            }
+
+            List<ProcessInstanceWorkitem> workItems = [
+                SELECT Id 
+                FROM ProcessInstanceWorkitem 
+                WHERE ProcessInstance.TargetObjectId = :leaveRequestId
+            ];
+            
+            if (!workItems.isEmpty()) {
+                Approval.ProcessWorkitemRequest pwr = new Approval.ProcessWorkitemRequest();
+                pwr.setWorkitemId(workItems[0].Id);
+                pwr.setAction('Removed'); 
+                pwr.setComments('Cancellation request withdrawn by user.');
+                
+                Approval.ProcessResult result = Approval.process(pwr);
+                
+                if (!result.isSuccess()) {
+                    throw new AuraHandledException('Failed to withdraw the cancellation request from approval process.');
+                }
+            }
+
+            request.Status__c = 'Approved';
+            update request;
+            
+        } catch (Exception e) {
+            throw new AuraHandledException('An error occurred: ' + e.getMessage());
+        }
+    }
 }
