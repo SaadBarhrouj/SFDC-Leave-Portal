@@ -10,8 +10,8 @@ private class LeaveRequestDetailControllerTest {
         Leave_Request__c request = TestDataFactory.createLeaveRequest(
             testUser.Id, 
             'Vacation', 
-            Date.today(), 
-            Date.today().addDays(2), 
+            Date.today().addDays(10), 
+            Date.today().addDays(12), 
             balance.Id
         );
         request.Status__c = 'Pending Manager Approval';
