@@ -14,8 +14,9 @@ import { getObjectInfo, getPicklistValues } from 'lightning/uiObjectInfoApi';
 import { LightningElement, track, wire } from 'lwc';
 
 const BASE_ACTIONS = [
+    { label: 'Show details', name: 'show_details' },
     { label: 'Approve', name: 'approve' },
-    { label: 'Reject', name: 'reject' }
+    { label: 'Reject', name: 'reject' },
 ];
 
 function getStatusClass(status) {
@@ -224,6 +225,12 @@ export default class TeamRequests extends LightningElement {
                 break;
             case 'reject':
                 this.openRejectModal();
+                break;
+            case 'show_details':
+                publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, {
+                    recordId: row.Id,
+                    context: 'teamRequest'
+                });
                 break;
             case 'view_manager_calendar':
                 if (row.ManagerId) {

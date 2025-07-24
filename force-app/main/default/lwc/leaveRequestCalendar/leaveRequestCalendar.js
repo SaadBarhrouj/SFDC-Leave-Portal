@@ -78,9 +78,9 @@ export default class LeaveRequestCalendar extends LightningElement {
     
     @api
     set context(value) {
-        if (value && value !== this._context) {
+        if (value) {
             this._context = value;
-            this.calendar = null; 
+            this.calendar = null;
             if (value === 'my') {
                 this.loadMyRequestsData();
             } else if (value === 'team') {
@@ -117,6 +117,7 @@ export default class LeaveRequestCalendar extends LightningElement {
             .then(data => {
                 this.currentLeaveRequests = data;
                 this.handleDataLoaded();
+                console.log('[CALENDAR]', data);
             })
             .catch(error => console.error('Error loading My Leaves:', error));
     }

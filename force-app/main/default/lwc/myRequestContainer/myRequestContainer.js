@@ -131,11 +131,12 @@ export default class MyRequestContainer extends LightningElement {
     }
 
     handleRefresh() {
-        this.refreshRequests();
-        const payload = {
-            context: 'my'
-        };
-        publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
+        return refreshApex(this.wiredRequestsResult).finally(() => {
+            const payload = {
+                context: 'my'
+            };
+            publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
+        });
     }
 
     cancelRequest(row) {
