@@ -74,8 +74,8 @@ private class LeaveRequestControllerTest {
             Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
                 testUser.Id, 
                 'Vacation', 
-                Date.today(), 
-                Date.today().addDays(2), 
+                Date.today().addDays(10), 
+                Date.today().addDays(12), 
                 leaveBalance.Id
             );
             insert leaveRequest;
@@ -185,7 +185,7 @@ private class LeaveRequestControllerTest {
         update testUser;
         System.runAs(testUser) {
             Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today(), Date.today().addDays(2), balance.Id);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Submitted';
             insert request;
             Exception ex;
@@ -218,7 +218,7 @@ private class LeaveRequestControllerTest {
         update testUser;
         System.runAs(testUser) {
             Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today(), Date.today().addDays(2), balance.Id);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Pending Manager Approval';
             insert request;
             Test.startTest();
@@ -235,7 +235,7 @@ private class LeaveRequestControllerTest {
         User testUser = TestDataFactory.createTestUser('testuser', 'US');
         System.runAs(testUser) {
             Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today(), Date.today().addDays(2), balance.Id);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Approved';
             insert request;
             Exception ex;
@@ -261,7 +261,7 @@ private class LeaveRequestControllerTest {
         update requester;
         System.runAs(requester) {
             Leave_Balance__c balance = TestDataFactory.createLeaveBalance(requester.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(requester.Id, 'Vacation', Date.today(), Date.today().addDays(2), balance.Id);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(requester.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Pending Manager Approval';
             insert request;
             Test.startTest();

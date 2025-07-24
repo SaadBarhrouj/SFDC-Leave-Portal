@@ -47,8 +47,6 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
         return this.isNewRecord ? 'New Leave Request' : 'Edit Leave Request';
     }
 
-    // Dans leaveRequestFormModal.js
-
     get submitButtonLabel() { if (this.isSaving) {return 'Saving...'; } return this.isNewRecord ? 'Submit Request' : 'Save Changes'; }
     get isDocumentRequired() { return this.selectedLeaveType === 'Training' || this.selectedLeaveType === 'Sick Leave'; }
     get hasRelatedFiles() { return this.relatedFiles && this.relatedFiles.length > 0; }
@@ -72,6 +70,8 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
     
     async handleSubmit(event) {
         event.preventDefault(); 
+        this.isSaving = true;
+
         const fields = { ...event.detail.fields }; 
         try {
             if (fields.Leave_Type__c !== 'Sick Leave' && fields.Leave_Type__c !== 'Training') {
@@ -83,6 +83,8 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
             this.refs.leaveRequestForm.submit(fields);
         } catch (error) {
             this.showToast('Error', 'Could not find leave balance for ' + fields.Leave_Type__c, 'error');
+            this.isSaving = false; 
+
         }
     }
 
@@ -110,7 +112,6 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
     }
     
     triggerSubmit() {
-        this.isSaving = true;
         const submitButton = this.template.querySelector('button[type="submit"]');
         if (submitButton) {
             submitButton.click();

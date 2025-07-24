@@ -1,8 +1,29 @@
 <template>
     <lightning-card title="Team Requests" icon-name="utility:groups">
-        <lightning-button label="Refresh" slot="actions" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
+        <div class="slds-grid slds-gutters" slot="actions">
+            <div class="slds-col slds-grid slds-align-middle">
+                <div class="slds-align_absolute-center">
+                    <lightning-icon 
+                        icon-name="utility:filter" 
+                        size="x-small" 
+                        class="slds-m-right_x-small">
+                    </lightning-icon>
+                </div>
+                <lightning-combobox
+                    name="statusFilter"
+                    value={selectedStatus}
+                    options={statusOptions}
+                    onchange={handleStatusChange}
+                    label="Status"
+                    variant="label-hidden">
+                </lightning-combobox>
+            </div>
+            <div class="slds-col">
+                <lightning-button label="Refresh" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
+            </div>
+        </div>
 
-        <div class="slds-var-p-around_medium slds-is-relative">
+        <div class="slds-is-relative">
             <!-- Loading Spinner Overlay -->
             <template if:true={isLoading}>
                 <div class="spinner-overlay">
@@ -18,15 +39,15 @@
             </template>
 
             <template if:true={hasRequests}>
-                <lightning-datatable
+                <c-requests-datatable
                     key-field="Id"
-                    data={requests}
+                    data={filteredRequests}
                     columns={columns}
                     onrowaction={handleRowAction}
                     onrowselection={handleRowSelection}
                     resize-column-disabled="true"
                     max-row-selection="1">
-                </lightning-datatable>
+                </c-requests-datatable>
             </template>
         </div>    
     
@@ -54,6 +75,7 @@
                         required>
                     </lightning-combobox>
                     <lightning-textarea
+                        data-field="Approver_Comments__c"
                         class="slds-var-m-top_small"
                         name="approverComment"
                         label="Approver Comment"

@@ -13,16 +13,16 @@ private class TeamRequestsControllerTest {
         Leave_Balance__c rttBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'RTT', 10);
         
         Leave_Request__c pendingRequest1 = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today(), Date.today().addDays(1), vacationBalance.Id
+            teamMember.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(11), vacationBalance.Id
             );
         Leave_Request__c pendingRequest2 = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'RTT', Date.today(), Date.today().addDays(2), rttBalance.Id
+            teamMember.Id, 'RTT', Date.today().addDays(12), Date.today().addDays(14), rttBalance.Id
             );
         Leave_Request__c pendingRequest3 = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'RTT', Date.today(), Date.today().addDays(3), rttBalance.Id
+            teamMember.Id, 'RTT', Date.today().addDays(15), Date.today().addDays(18), rttBalance.Id
             );
         Leave_Request__c approvedRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(11), vacationBalance.Id
+            teamMember.Id, 'Vacation', Date.today().addDays(20), Date.today().addDays(21), vacationBalance.Id
             );
         approvedRequest.Status__c = 'Approved';
         pendingRequest1.Status__c = 'Submitted';
@@ -30,7 +30,7 @@ private class TeamRequestsControllerTest {
         pendingRequest3.Status__c = 'Submitted';
         
         Leave_Request__c vacation25DaysRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today(), Date.today().addDays(25), vacationBalance.Id
+            teamMember.Id, 'Vacation', Date.today().addDays(30), Date.today().addDays(55), vacationBalance.Id
             );
         vacation25DaysRequest.Status__c = 'Submitted';
         
@@ -117,10 +117,12 @@ private class TeamRequestsControllerTest {
     @isTest
     static void testApproveLeaveRequest_Error() {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
+        
+        String invalidId = Id.valueOf('001000000000000AAA');
         Test.startTest();
         System.runAs(manager) {
             try {
-                TeamRequestsController.approveLeaveRequest('invalidId');
+                TeamRequestsController.approveLeaveRequest(invalidId);
                 System.assert(false, 'An AuraHandledException should have been thrown.');
             } catch (AuraHandledException e) {
                 System.debug('Exception message: ' + e.getMessage());
@@ -137,7 +139,7 @@ private class TeamRequestsControllerTest {
         
         Leave_Balance__c vacationBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Vacation', 5);
         Leave_Request__c request = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today(), Date.today(), vacationBalance.Id
+            teamMember.Id, 'Vacation', Date.today().addDays(70), Date.today().addDays(71), vacationBalance.Id
             );
         request.Status__c = 'Submitted';
         insert request;
@@ -201,7 +203,7 @@ private class TeamRequestsControllerTest {
         User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb' LIMIT 1];
         Leave_Balance__c vacationBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Vacation', 5);
         Leave_Request__c vacationRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today(), Date.today(), vacationBalance.Id
+            teamMember.Id, 'Vacation', Date.today().addDays(80), Date.today().addDays(81), vacationBalance.Id
             );
         vacationRequest.Status__c = 'Submitted';
         insert vacationRequest;

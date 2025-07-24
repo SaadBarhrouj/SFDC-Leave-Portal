@@ -47,4 +47,13 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
             LeaveRequestUtils.submitForApproval(Trigger.new);
         }
     }
+
+    if (Trigger.isBefore) {
+        if (Trigger.isInsert) {
+            LeaveRequestUtils.validateNoOverlappingRequests(Trigger.new, null);
+        }
+        if (Trigger.isUpdate) {
+            LeaveRequestUtils.validateNoOverlappingRequests(Trigger.new, Trigger.oldMap);
+        }
+    }
 }

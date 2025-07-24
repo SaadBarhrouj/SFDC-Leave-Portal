@@ -5,6 +5,8 @@ import getHolidays from '@salesforce/apex/HolidayController.getHolidays';
 import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 import getApprovedLeavesByManager from '@salesforce/apex/TeamRequestsController.getApprovedLeavesByManager';
 import USER_ID from '@salesforce/user/Id';
+import { subscribe, MessageContext } from 'lightning/messageService';
+import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequestModifiedChannel__c';
 
 export default class LeaveRequestCalendar extends LightningElement {
     _selectedRequestId;
@@ -34,6 +36,32 @@ export default class LeaveRequestCalendar extends LightningElement {
     _context = 'my';
     _managerId;
     scriptsLoaded = false;
+    subscription = null;
+
+    @wire(MessageContext)
+    messageContext;
+
+    subscribeToMessageChannel() {
+        if (!this.subscription) {
+            this.subscription = subscribe(
+                this.messageContext,
+                LEAVE_REQUEST_MODIFIED_CHANNEL,
+                () => this.handleRefresh()
+            );
+        }
+    }
+
+    handleRefresh() {
+        console.log('[LeaveRequestCalendar] Received leave request modified message, refreshing leave requests data.');            
+        condsole.log(this._context);
+        if (this._context === 'my') {
+            this.loadMyRequestsData();
+        } else if (this._context === 'team') {
+            this.loadTeamRequestsData();
+        } else if (this._context === 'managerTeam' && this.managerId) {
+            this.loadManagerTeamRequestsData(this.managerId);
+        }
+    }
 
     @api
     set managerId(value) {
@@ -74,7 +102,7 @@ export default class LeaveRequestCalendar extends LightningElement {
                 title: h.Name,
                 start: h.Holiday_Date__c,
                 allDay: true,
-                color: '#e39139'
+                color: '#28b463'
             }));
             if (this.calendar) {
                 this.processAndDisplayEvents();
@@ -96,6 +124,7 @@ export default class LeaveRequestCalendar extends LightningElement {
     loadTeamRequestsData() {
         getApprovedLeavesByManager({ managerId: USER_ID })
             .then(data => {
+                console.log('Received Team Data: ', data);
                 this.currentLeaveRequests = data;
                 this.handleDataLoaded();
             })
@@ -119,6 +148,7 @@ export default class LeaveRequestCalendar extends LightningElement {
     }
 
     connectedCallback() {
+        this.subscribeToMessageChannel();
         if (this._context === 'team') {
             this.loadTeamRequestsData();
         } else {
