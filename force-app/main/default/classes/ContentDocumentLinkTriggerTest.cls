@@ -3,8 +3,12 @@ public class ContentDocumentLinkTriggerTest {
     @isTest
     static void testContentDocumentLinkTrigger_LeaveRequest() {
         User testUser = TestDataFactory.createTestUser('docuser', 'US');
+        
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
-            testUser.Id, 'Vacation', Date.today(), Date.today(), null
+            testUser.Id, 'Vacation', 
+            Date.today().addDays(10), 
+            Date.today().addDays(11), 
+            null
         );
         insert leaveRequest;
 
@@ -34,8 +38,12 @@ public class ContentDocumentLinkTriggerTest {
     @isTest
     static void testContentDocumentLinkTrigger_NotLeaveRequest() {
         User testUser = TestDataFactory.createTestUser('docuser2', 'US');
+        
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
-            testUser.Id, 'Vacation', Date.today(), Date.today(), null
+            testUser.Id, 'Vacation', 
+            Date.today().addDays(10), 
+            Date.today().addDays(11), 
+            null
         );
         insert leaveRequest;
 
