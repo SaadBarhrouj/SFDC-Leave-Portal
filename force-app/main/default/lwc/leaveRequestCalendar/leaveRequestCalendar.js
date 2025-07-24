@@ -2,7 +2,7 @@ import { LightningElement, wire, api } from 'lwc';
 import { loadScript, loadStyle } from 'lightning/platformResourceLoader';
 import fullCalendar from '@salesforce/resourceUrl/fullcalendar_v5';
 import getHolidays from '@salesforce/apex/HolidayController.getHolidays';
-import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
+import getMyLeavesForCalendar from '@salesforce/apex/LeaveRequestController.getMyLeavesForCalendar';
 import getApprovedLeavesByManager from '@salesforce/apex/TeamRequestsController.getApprovedLeavesByManager';
 import USER_ID from '@salesforce/user/Id';
 import { subscribe, MessageContext } from 'lightning/messageService';
@@ -36,32 +36,6 @@ export default class LeaveRequestCalendar extends LightningElement {
     _context = 'my';
     _managerId;
     scriptsLoaded = false;
-    subscription = null;
-
-    @wire(MessageContext)
-    messageContext;
-
-    subscribeToMessageChannel() {
-        if (!this.subscription) {
-            this.subscription = subscribe(
-                this.messageContext,
-                LEAVE_REQUEST_MODIFIED_CHANNEL,
-                () => this.handleRefresh()
-            );
-        }
-    }
-
-    handleRefresh() {
-        console.log('[LeaveRequestCalendar] Received leave request modified message, refreshing leave requests data.');            
-        condsole.log(this._context);
-        if (this._context === 'my') {
-            this.loadMyRequestsData();
-        } else if (this._context === 'team') {
-            this.loadTeamRequestsData();
-        } else if (this._context === 'managerTeam' && this.managerId) {
-            this.loadManagerTeamRequestsData(this.managerId);
-        }
-    }
 
     @api
     set managerId(value) {
@@ -78,9 +52,9 @@ export default class LeaveRequestCalendar extends LightningElement {
     
     @api
     set context(value) {
-        if (value && value !== this._context) {
+        if (value) {
             this._context = value;
-            this.calendar = null; 
+            this.calendar = null;
             if (value === 'my') {
                 this.loadMyRequestsData();
             } else if (value === 'team') {
@@ -113,10 +87,11 @@ export default class LeaveRequestCalendar extends LightningElement {
     }
     
     loadMyRequestsData() {
-        getMyLeaves()
+        getMyLeavesForCalendar()
             .then(data => {
                 this.currentLeaveRequests = data;
                 this.handleDataLoaded();
+                console.log('[CALENDAR]', data);
             })
             .catch(error => console.error('Error loading My Leaves:', error));
     }

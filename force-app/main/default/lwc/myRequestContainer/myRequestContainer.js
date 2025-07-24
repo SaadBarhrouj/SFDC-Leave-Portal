@@ -8,7 +8,9 @@ import requestCancellation from '@salesforce/apex/LeaveRequestController.request
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
 import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
-import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest'; 
+import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
+import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequestModifiedChannel__c';
+import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest';
 
 const COLUMNS = [
     { label: 'Request Number', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestNumber' }, name: 'show_details',variant: 'base'  } },
@@ -122,11 +124,21 @@ export default class MyRequestContainer extends LightningElement {
         this.isLoading = true;
         try {
             await refreshApex(this.wiredRequestsResult);
+            publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
         } catch (error) {
             this.showError('Error refreshing data.');
         } finally {
             this.isLoading = false;
         }
+    }
+
+    handleRefresh() {
+        return refreshApex(this.wiredRequestsResult).finally(() => {
+            const payload = {
+                context: 'my'
+            };
+            publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
+        });
     }
 
     cancelRequest(row) {

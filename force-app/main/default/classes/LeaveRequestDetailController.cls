@@ -11,7 +11,8 @@ public with sharing class LeaveRequestDetailController {
                 Approver_Comments__c, Rejection_Reason__c,
                 Requester__c, Requester__r.Name,
                 Leave_Balance__r.Used_Days__c,
-                Leave_Balance__r.Remaining_Days__c
+                Leave_Balance__r.Remaining_Days__c,
+                Leave_Balance__r.Leave_Type__c
             FROM Leave_Request__c
             WHERE Id = :recordId
             WITH SECURITY_ENFORCED
