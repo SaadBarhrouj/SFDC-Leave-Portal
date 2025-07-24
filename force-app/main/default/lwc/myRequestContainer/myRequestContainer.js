@@ -8,7 +8,8 @@ import requestCancellation from '@salesforce/apex/LeaveRequestController.request
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
 import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
-import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest'; // <-- AJOUTER CET IMPORT
+import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
+import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest';
 
 const COLUMNS = [
     { label: 'Request Number', fieldName: 'Name', type: 'url', typeAttributes: { label: { fieldName: 'RequestNumber' }, target: '_blank' }, sortable: true },
@@ -127,6 +128,14 @@ export default class MyRequestContainer extends LightningElement {
         } finally {
             this.isLoading = false;
         }
+    }
+
+    handleRefresh() {
+        this.refreshRequests();
+        const payload = {
+            context: 'my'
+        };
+        publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
     }
 
     cancelRequest(row) {

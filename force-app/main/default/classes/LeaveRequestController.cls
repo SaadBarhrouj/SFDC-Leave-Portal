@@ -34,6 +34,10 @@ public with sharing class LeaveRequestController {
             throw new AuraHandledException('Error retrieving leave requests: ' + e.getMessage());
         }
     }
+    @AuraEnabled
+    public static List<Leave_Request__c> getMyLeavesForCalendar() {
+        return getMyLeaves();
+    }
     
     @AuraEnabled(cacheable=true)
     public static Decimal getNumberOfDaysRequested(Date startDate, Date endDate) {

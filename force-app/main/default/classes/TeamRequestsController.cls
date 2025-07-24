@@ -1,5 +1,5 @@
 public with sharing class TeamRequestsController {
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Leave_Request__c> getApprovedLeavesByManager(Id managerId) {
         if (managerId == null) {
             return new List<Leave_Request__c>();
