@@ -13,11 +13,11 @@ import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequ
 import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest';
 
 const COLUMNS = [
-    { label: 'Request Number', fieldName: 'Name', type: 'url', typeAttributes: { label: { fieldName: 'RequestNumber' }, target: '_blank' }, sortable: true },
-    { label: 'Leave Type', fieldName: 'Leave_Type__c', sortable: true },
-    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local', sortable: true },
-    { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local', sortable: true },
-    { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true, cellAttributes: { alignment: 'left' } },
+    { label: 'Request Number', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestNumber' }, name: 'show_details',variant: 'base'  } },
+    { label: 'Leave Type', fieldName: 'Leave_Type__c' },
+    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local' },
+    { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },
+    { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', cellAttributes: { alignment: 'left' } },
     { label: 'Status', fieldName: 'Status__c', type: 'customBadge', typeAttributes: { value: { fieldName: 'Status__c' }, class: { fieldName: 'statusBadgeClass' } }, initialWidth: 220 },
     { type: 'action', typeAttributes: { rowActions: { fieldName: 'availableActions' } } }
 ];
@@ -73,7 +73,7 @@ export default class MyRequestContainer extends LightningElement {
     handleRowAction(event) {
         const { action, row } = event.detail;
         switch (action.name) {
-            case 'show_details': this.publishSelection(row.Id, true); break;
+            case 'show_details': this.publishSelection(row.Id, true);break;
             case 'edit': this.editRequest(row); break;
             case 'cancel': this.cancelRequest(row); break;
             case 'request_cancellation': this.requestCancellation(row); break;
@@ -202,7 +202,6 @@ export default class MyRequestContainer extends LightningElement {
 
     processRequestsForDisplay(rawData) {
         return rawData.map(request => {
-            const recordUrl = `/lightning/r/Leave_Request__c/${request.Id}/view`;
             let availableActions = [];
             switch (request.Status__c) {
                 case 'Approved':
@@ -239,7 +238,7 @@ export default class MyRequestContainer extends LightningElement {
                 default:
                     availableActions.push({ label: 'Show details', name: 'show_details' });
             }
-            return { ...request, Name: recordUrl, RequestNumber: request.Name, statusBadgeClass: 'slds-badge', availableActions };
+            return { ...request, RequestNumber: request.Name, statusBadgeClass: 'slds-badge', availableActions };
         });
     }
 

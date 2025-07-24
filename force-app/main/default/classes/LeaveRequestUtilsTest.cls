@@ -102,4 +102,36 @@ private class LeaveRequestUtilsTest {
         System.assertEquals(0, actualDaysWithNullStart, 'Should be 0 for a null start date.');
         System.assertEquals(0, actualDaysWithNullEnd, 'Should be 0 for a null end date.');
     }
+
+    @isTest
+    static void testValidateNoOverlappingRequests() {
+           User user1 = TestDataFactory.createTestUser('User1', 'MA');
+           User user2 = TestDataFactory.createTestUser('User2', 'MA');
+        Leave_Request__c existingRequest = new Leave_Request__c(
+            Start_Date__c = Date.newInstance(2026, 7, 1),
+            End_Date__c = Date.newInstance(2026, 7, 5),
+            Requester__c = user1.Id,
+            Leave_Type__c = 'RTT'
+        );
+        insert existingRequest;
+
+         List<Leave_Request__c> newRequests = new List<Leave_Request__c> {
+            new Leave_Request__c(
+                Start_Date__c = Date.newInstance(2026, 7, 1),
+                End_Date__c = Date.newInstance(2026, 7, 5),
+                Requester__c = user2.Id,
+                Leave_Type__c = 'RTT'
+            ),
+            new Leave_Request__c(
+                Start_Date__c = Date.newInstance(2026, 7, 6),
+                End_Date__c = Date.newInstance(2026, 7, 10),
+                Requester__c = user1.Id,
+                Leave_Type__c = 'RTT'
+            )
+        };
+        insert newRequests; 
+
+        System.AssertEquals(3, [SELECT COUNT() FROM Leave_Request__c], 'Should have 3 leave requests including the existing one.');
+        System.AssertEquals(0, newRequests[0].getErrors().size(), 'The first new request should not  have an error due to overlapping dates.');
+    }
 }

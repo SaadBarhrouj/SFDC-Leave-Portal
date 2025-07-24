@@ -79,16 +79,20 @@ public with sharing class TeamRequestsController {
         processApprovalRequest(leaveRequestId, 'Approve', null);
     }
     
+
     @AuraEnabled
     public static void rejectLeaveRequest(String leaveRequestId, String rejectionReason, String approverComment) {
-        if (String.isBlank(rejectionReason)) {
-            throw new AuraHandledException('A reason for rejection is required.');
-        }
+        
         Leave_Request__c req = [SELECT Id FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
-        req.Rejection_Reason__c = rejectionReason;
-        req.Approver_Comments__c = approverComment;
-        update req;
 
+        if (String.isNotBlank(rejectionReason)) {
+            req.Rejection_Reason__c = rejectionReason;
+        }
+
+        if (String.isNotBlank(approverComment)) {
+            req.Approver_Comments__c = approverComment;
+        }
+        update req;
         processApprovalRequest(leaveRequestId, 'Reject', null);
     }
     

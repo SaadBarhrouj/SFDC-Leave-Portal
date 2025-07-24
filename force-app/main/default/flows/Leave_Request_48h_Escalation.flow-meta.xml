@@ -63,6 +63,12 @@
                 <elementReference>$Record.Approver__r.ManagerId</elementReference>
             </value>
         </inputAssignments>
+        <inputAssignments>
+            <field>Status__c</field>
+            <value>
+                <stringValue>Escalated to Senior Manager</stringValue>
+            </value>
+        </inputAssignments>
         <inputReference>$Record</inputReference>
     </recordUpdates>
     <recordUpdates>
