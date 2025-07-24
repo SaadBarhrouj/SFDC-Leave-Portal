@@ -7,6 +7,6 @@
 					ISPICKVAL(	Rejection_Reason__c  , &quot;Other&quot;)	, 
 	     ISBLANK(Approver_Comments__c)
 			)</errorConditionFormula>
-    <errorDisplayField>Rejection_Reason__c</errorDisplayField>
+    <errorDisplayField>Approver_Comments__c</errorDisplayField>
     <errorMessage>Please provide comments when Other is selected as the rejection reason.</errorMessage>
 </ValidationRule>
