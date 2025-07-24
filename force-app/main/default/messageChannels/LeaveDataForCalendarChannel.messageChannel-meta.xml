@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Sends leave data and context to the calendar component.</description>
     <isExposed>true</isExposed>
     <lightningMessageFields>
-        <description>The view context ('my', 'team' or 'managerTeam').</description>
+        <description>The view context (&apos;my&apos;, &apos;team&apos; or &apos;managerTeam&apos;).</description>
         <fieldName>context</fieldName>
     </lightningMessageFields>
     <lightningMessageFields>

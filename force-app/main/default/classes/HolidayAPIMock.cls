@@ -1,4 +1,4 @@
-    public class HolidayAPIMock implements HttpCalloutMock {
+public class HolidayAPIMock implements HttpCalloutMock {
         protected Integer statusCode;
         protected String responseBody;
 

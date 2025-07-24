@@ -1,0 +1,19 @@
+<template>
+    <template if:true={hasRequests}>
+        <c-requests-datatable
+            lwc:ref="datatable"
+            key-field="Id"
+            data={requests}
+            columns={columns}
+            onrowaction={handleRowAction}
+            onrowselection={handleRowSelection}
+            resize-column-disabled="true"
+            max-row-selection="1">
+        </c-requests-datatable>
+    </template>
+    <template if:false={hasRequests}>
+        <div class="slds-align_absolute-center slds-p-around_medium">
+            <c-no-data-svg message="You haven't submitted any leave requests yet."></c-no-data-svg>
+        </div>
+    </template>
+</template>

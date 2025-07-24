@@ -2,7 +2,7 @@
     <lightning-card>
         <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
             <lightning-tab label="My Requests" value="my" default onactive={tabChangeHandler}>
-                <c-my-requests></c-my-requests>
+                <c-my-request-container></c-my-request-container>
             </lightning-tab>
             <lightning-tab label="Team Requests" value="team" onactive={tabChangeHandler}>
                 <c-team-requests></c-team-requests> 
