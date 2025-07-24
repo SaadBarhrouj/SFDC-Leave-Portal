@@ -74,7 +74,7 @@ export default class LeaveRequestCalendar extends LightningElement {
                 title: h.Name,
                 start: h.Holiday_Date__c,
                 allDay: true,
-                color: '#e39139'
+                color: '#28b463'
             }));
             if (this.calendar) {
                 this.processAndDisplayEvents();

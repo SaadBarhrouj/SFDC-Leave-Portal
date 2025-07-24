@@ -50,7 +50,7 @@ public with sharing class TeamRequestsController {
                 Requester__r.ManagerId, Requester__r.Manager.Name
             FROM Leave_Request__c
             WHERE Id IN :leaveRequestIds
-            ORDER BY Start_Date__c ASC
+            ORDER BY CreatedDate DESC
         ];
     }
 
@@ -75,6 +75,7 @@ public with sharing class TeamRequestsController {
     
     @AuraEnabled
     public static void approveLeaveRequest(String leaveRequestId) {
+        LeaveRequestUtils.validateRequestOnApproval(leaveRequestId);
         processApprovalRequest(leaveRequestId, 'Approve', null);
     }
     

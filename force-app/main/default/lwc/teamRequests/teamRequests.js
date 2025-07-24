@@ -1,22 +1,41 @@
-import { LightningElement, track, wire } from 'lwc';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
-import { publish, MessageContext } from 'lightning/messageService';
-import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
-import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
-import { getPicklistValues, getObjectInfo } from 'lightning/uiObjectInfoApi';
-import LEAVE_REQUEST_OBJECT from '@salesforce/schema/Leave_Request__c';
-import REJECTION_REASON_FIELD from '@salesforce/schema/Leave_Request__c.Rejection_Reason__c';
-import getTeamRequests from '@salesforce/apex/TeamRequestsController.getTeamRequests';
 import approveLeaveRequest from '@salesforce/apex/TeamRequestsController.approveLeaveRequest';
+import getTeamRequests from '@salesforce/apex/TeamRequestsController.getTeamRequests';
 import rejectLeaveRequest from '@salesforce/apex/TeamRequestsController.rejectLeaveRequest';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
-import { subscribe } from 'lightning/messageService';
+import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
+import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import LEAVE_REQUEST_OBJECT from '@salesforce/schema/Leave_Request__c';
+import REJECTION_REASON_FIELD from '@salesforce/schema/Leave_Request__c.Rejection_Reason__c';
+import { MessageContext, publish, subscribe } from 'lightning/messageService';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { getObjectInfo, getPicklistValues } from 'lightning/uiObjectInfoApi';
+import { LightningElement, track, wire } from 'lwc';
 
 const BASE_ACTIONS = [
     { label: 'Approve', name: 'approve' },
     { label: 'Reject', name: 'reject' }
 ];
+
+function getStatusClass(status) {
+    switch (status) {
+        case 'Approved':
+            return 'slds-badge slds-theme_success';
+        case 'Rejected':
+            return 'slds-badge slds-theme_error';
+        case 'Cancelled':
+            return 'slds-badge slds-theme_warning';
+        case 'Cancellation Requested':
+            return 'slds-badge slds-badge_inverse';
+        case 'Submitted':
+        case 'Pending Manager Approval':
+        case 'Pending HR Approval':
+        case 'Escalated to Senior Manager':
+            return 'slds-badge';
+        default:
+            return 'slds-badge slds-theme_lightest';
+    }
+}
 
 const COLUMNS = [
     {
@@ -42,12 +61,17 @@ const COLUMNS = [
     { label: 'Leave Type', fieldName: 'Leave_Type__c', sortable: true },
     { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local', sortable: true },
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local', sortable: true },
-    { label: 'Total Days', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true, cellAttributes: { alignment: 'left' } },
+    { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true, cellAttributes: { alignment: 'left' } },
     {
         label: 'Status',
         fieldName: 'Status__c',
-        type: 'text',
-        sortable: true
+        type: 'customBadge',
+        sortable: true,
+        typeAttributes: {
+            value: { fieldName: 'Status__c' },
+            class: { fieldName: 'statusBadgeClass' }
+        },
+        initialWidth: 220
     },
     {
         label: 'Manager',
@@ -80,22 +104,31 @@ export default class TeamRequests extends LightningElement {
     rejectionReason = '';
     approverComment = '';
 
+    @track selectedStatus = 'All';
+    statusOptions = [
+        { label: 'All Status', value: 'All' },
+        { label: 'Pending Manager Approval', value: 'Pending Manager Approval' },
+        { label: 'Pending HR Approval', value: 'Pending HR Approval' },
+        { label: 'Escalated to Senior Manager', value: 'Escalated to Senior Manager' },
+        { label: 'Cancellation Requested', value: 'Cancellation Requested' }
+    ];
+
     @wire(MessageContext)
     messageContext;
 
     connectedCallback() {
-            this.subscribeToClearSelection();
+        this.subscribeToClearSelection();
+    }
+
+    subscribeToClearSelection() {
+        if (!this.subscriptionClearSelection) {
+            this.subscriptionClearSelection = subscribe(
+                this.messageContext,
+                CLEAR_SELECTION_CHANNEL,
+                () => this.clearSelection()
+            );
         }
-    
-        subscribeToClearSelection() {
-            if (!this.subscriptionClearSelection) {
-                this.subscriptionClearSelection = subscribe(
-                    this.messageContext,
-                    CLEAR_SELECTION_CHANNEL,
-                    () => this.clearSelection()
-                );
-            }
-        }
+    }
 
     @wire(getObjectInfo, { objectApiName: LEAVE_REQUEST_OBJECT })
     objectInfo;
@@ -119,6 +152,9 @@ export default class TeamRequests extends LightningElement {
                 if (req.Status__c === 'Pending HR Approval' || req.Status__c === 'Escalated to Senior Manager') {
                     rowActions.push({ label: "View manager's team calendar", name: 'view_manager_calendar' });
                 }
+                if (req.Status__c === 'Pending Manager Approval') {
+                    rowActions.push({ label: "View in my team calendar", name: 'view_manager_calendar' });
+                }
                 let managerName = '';
                 let managerUrl = '';
                 if (req.Requester__r && req.Requester__r.Manager && req.Requester__r.Manager.Name) {
@@ -128,7 +164,6 @@ export default class TeamRequests extends LightningElement {
                     managerName = 'No manager';
                     managerUrl = '';
                 }
-                console.log('LeaveRequest:', req.Id, '| Requester:', req.Requester__r ? req.Requester__r.Name : 'undefined', '| Manager object:', req.Requester__r ? req.Requester__r.Manager : 'undefined', '| Manager name:', managerName);
                 return {
                     ...req,
                     RequesterName: req.Requester__r.Name,
@@ -137,7 +172,8 @@ export default class TeamRequests extends LightningElement {
                     ManagerName: managerName,
                     ManagerId: req.Requester__r.ManagerId,
                     managerUrl,
-                    rowActions
+                    rowActions,
+                    statusBadgeClass: getStatusClass(req.Status__c)
                 };
             });
             this.error = undefined;
@@ -150,8 +186,19 @@ export default class TeamRequests extends LightningElement {
         this.isLoading = false;
     }
 
+    get filteredRequests() {
+        if (this.selectedStatus === 'All') {
+            return this.requests;
+        }
+        return this.requests.filter(r => r.Status__c === this.selectedStatus);
+    }
+
     get hasRequests() {
-        return this.requests && this.requests.length > 0;
+        return this.filteredRequests && this.filteredRequests.length > 0;
+    }
+
+    handleStatusChange(event) {
+        this.selectedStatus = event.detail.value;
     }
 
     handleRowSelection(event) {
