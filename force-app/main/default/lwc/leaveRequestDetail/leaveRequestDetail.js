@@ -82,6 +82,12 @@ export default class LeaveRequestDetail extends NavigationMixin(LightningElement
         return this.leaveRequest && this.leaveRequest.Status__c === 'Rejected';
     }
 
+    get showRejectionReason() {
+        return this.leaveRequest 
+            && this.leaveRequest.Rejection_Reason__c 
+            && this.leaveRequest.Rejection_Reason__c !== 'Other';
+    }
+
     get hasFiles() {
         return this.relatedFiles && this.relatedFiles.length > 0;
     }
