@@ -5,12 +5,31 @@
         <name>ApexClass</name>
     </types>
     <types>
-        <members>*</members>
-        <name>LightningComponentBundle</name>
+        <members>RequestApprovedVF</members>
+        <name>ApexPage</name>
+    </types>
+    <types>
+        <members>ContentDocumentLinkTrigger</members>
+        <members>LeaveRequestTrigger</members>
+        <name>ApexTrigger</name>
+    </types>
+    <types>
+        <members>Leave_Request__c.Leave_Request_Approval</members>
+        <members>Leave_Request__c.Leave_Request_Cancellation_Approval</members>
+        <members>Leave_Request__c.Leave_Request_Sick_Leave_Auto_Approval</members>
+        <name>ApprovalProcess</name>
+    </types>
+    <types>
+        <members>asset_2025_07_02_161235_jpg</members>
+        <name>ContentAsset</name>
     </types>
     <types>
         <members>Leave_Portal</members>
         <name>CustomApplication</name>
+    </types>
+    <types>
+        <members>User.Country_Code__c</members>
+        <name>CustomField</name>
     </types>
     <types>
         <members>Holiday__c</members>
@@ -28,36 +47,82 @@
         <name>CustomTab</name>
     </types>
     <types>
+        <members>unfiled$public/Leave_Cancellation_Approved</members>
+        <members>unfiled$public/Leave_Cancellation_Rejected</members>
+        <members>unfiled$public/Request_Approved</members>
+        <members>unfiled$public/Request_Approved_VF</members>
+        <members>unfiled$public/Request_Rejected</members>
+        <members>unfiled$public/Request_submitted</members>
+        <members>unfiled$public/Supporting_Document_Reminder</members>
+        <name>EmailTemplate</name>
+    </types>
+    <types>
+        <members>Nager_API_Auth</members>
+        <name>ExternalCredential</name>
+    </types>
+    <types>
         <members>Leave_Portal_UtilityBar</members>
         <members>Leave_Requests</members>
         <name>FlexiPage</name>
+    </types>
+    <types>
+        <members>Automatic_Leave_Request_Submission</members>
+        <members>Leave_Request_48h_Escalation</members>
+        <members>Send_Reminder_for_Missing_Supporting_Document</members>
+        <members>User_Management_Sync_Country_Holidays</members>
+        <name>Flow</name>
+    </types>
+    <types>
+        <members>Country_Codes</members>
+        <name>GlobalValueSet</name>
     </types>
     <types>
         <members>Holiday__c-Holiday Layout</members>
         <members>Leave_Balance__c-Leave Balance Layout</members>
         <members>Leave_Balance_History__c-Leave Balance History Layout</members>
         <members>Leave_Request__c-Leave Request Layout</members>
+        <members>User-User Layout</members>
         <name>Layout</name>
     </types>
     <types>
         <members>*</members>
-        <name>StaticResource</name>
+        <name>LightningComponentBundle</name>
     </types>
     <types>
-        <members>asset_2025_07_02_161235_jpg</members>
-        <name>ContentAsset</name>
+        <members>ClearSelectionChannel</members>
+        <members>LeaveDataForCalendarChannel</members>
+        <members>LeaveRequestModifiedChannel</members>
+        <members>LeaveRequestSelectedChannel</members>
+        <members>RefreshLeaveDataChannel</members>
+        <name>LightningMessageChannel</name>
+    </types>
+    <types>
+        <members>Nager_API</members>
+        <name>NamedCredential</name>
     </types>
     <types>
         <members>*</members>
         <name>PermissionSet</name>
     </types>
     <types>
-        <members>User.Country_Code__c</members>
-        <name>CustomField</name>
-    </types>
-    <types>
         <members>Admin</members>
         <name>Profile</name>
+    </types>
+    <types>
+        <members>HR_Approvals</members>
+        <name>Queue</name>
+    </types>
+    <types>
+        <members>HR_Team</members>
+        <name>Role</name>
+    </types>
+    <types>
+        <members>*</members>
+        <name>StaticResource</name>
+    </types>
+    <types>
+        <members>Leave_Request__c</members>
+        <name>Workflow</name>
     </types>
     <version>64.0</version>
 </Package>

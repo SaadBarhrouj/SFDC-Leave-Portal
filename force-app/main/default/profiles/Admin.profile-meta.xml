@@ -6,6 +6,10 @@
         <visible>true</visible>
     </applicationVisibilities>
     <classAccesses>
+        <apexClass>CancelPastLeaveRequestsBatch</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>ContentDocumentLinkTriggerTest</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -67,6 +71,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LeaveRequestUtilsTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>ScheduleCancelPastLeaves</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
