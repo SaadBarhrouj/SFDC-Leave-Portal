@@ -118,14 +118,18 @@ public with sharing class TeamRequestsController {
                 update reqToUpdate;
             }
             
-            ProcessInstanceWorkitem workItem = [
+            List<ProcessInstanceWorkitem> workItems = [
                 SELECT Id, ActorId
                 FROM ProcessInstanceWorkitem
                 WHERE ProcessInstance.TargetObjectId = :leaveRequestId
-                  AND ActorId IN :actorIds
-                  AND ProcessInstance.Status = 'Pending'
+                AND ActorId IN :actorIds
+                AND ProcessInstance.Status = 'Pending'
                 LIMIT 1
             ];
+            if(workItems.isEmpty()){
+                throw new AuraHandledException('No pending approval workitem found for this request.');
+            }
+            ProcessInstanceWorkitem workItem = workItems[0];
             
             Approval.ProcessWorkitemRequest req = new Approval.ProcessWorkitemRequest();
             req.setWorkitemId(workItem.Id);
