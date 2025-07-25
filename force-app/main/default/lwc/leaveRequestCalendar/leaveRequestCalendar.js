@@ -53,7 +53,6 @@ export default class LeaveRequestCalendar extends LightningElement {
 
     handleRefresh() {
         console.log('[LeaveRequestCalendar] Received leave request modified message, refreshing leave requests data.');            
-        condsole.log(this._context);
         if (this._context === 'my') {
             this.loadMyRequestsData();
         } else if (this._context === 'team') {

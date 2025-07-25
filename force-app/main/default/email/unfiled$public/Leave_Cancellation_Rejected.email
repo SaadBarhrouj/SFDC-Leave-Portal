@@ -1,0 +1,7 @@
+Hello {!Leave_Request__c.Requester__r.Name},
+
+We regret to inform you that your request to cancel leave #{!Leave_Request__c.Name} (from {!Leave_Request__c.Start_Date__c} to {!Leave_Request__c.End_Date__c}) has been rejected.
+
+Your original leave remains approved. Please contact your manager for more details.
+
+Best regards,

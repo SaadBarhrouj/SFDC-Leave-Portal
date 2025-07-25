@@ -1,0 +1,7 @@
+Hello {!Leave_Request__c.Requester__r.Name},
+
+Your request to cancel leave #{!Leave_Request__c.Name} (from {!Leave_Request__c.Start_Date__c} to {!Leave_Request__c.End_Date__c}) has been approved.
+
+The leave has been successfully cancelled from the system.
+
+Best regards,
