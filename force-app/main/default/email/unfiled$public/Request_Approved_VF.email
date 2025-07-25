@@ -1,0 +1,36 @@
+<messaging:emailTemplate subject="Your leave request #{!relatedTo.Name} has been approved" 
+    recipientType="User" 
+    relatedToType="Leave_Request__c">
+
+    <messaging:htmlEmailBody >
+        <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    .container { padding: 20px; border: 1px solid #DDDDDD; }
+                    .highlight { color: #0070d2; font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <p>Hello {!relatedTo.Requester__r.Name},</p>
+                    <p>Good news! Your leave request <span class="highlight">{!relatedTo.Name}</span> has been <b>approved</b>.</p>
+                    <p>You may now proceed with the next steps as needed.</p>
+                    <p>Thank you for your submission.</p>
+                    <p>Best regards,</p>
+                </div>
+            </body>
+        </html>
+    </messaging:htmlEmailBody>
+
+    <messaging:plainTextEmailBody >
+        Hello {!relatedTo.Requester__r.Name},
+
+        Good news! Your leave request #{!relatedTo.Name} has been approved.
+        You may now proceed with the next steps as needed.
+
+        Thank you for your submission.
+
+        Best regards,
+    </messaging:plainTextEmailBody>
+</messaging:emailTemplate>
