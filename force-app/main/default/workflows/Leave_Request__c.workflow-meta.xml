@@ -8,7 +8,7 @@
             <type>creator</type>
         </recipients>
         <senderType>CurrentUser</senderType>
-        <template>unfiled$public/Request_Approved</template>
+        <template>unfiled$public/Request_Approved_VF</template>
     </alerts>
     <alerts>
         <fullName>Leave_Request_Submission_Confirmation</fullName>
@@ -81,6 +81,26 @@
         <senderType>CurrentUser</senderType>
         <template>unfiled$public/Supporting_Document_Reminder</template>
     </alerts>
+    <alerts>
+        <fullName>Send_email_on_cancellation_approval</fullName>
+        <description>Send email on cancellation approval</description>
+        <protected>false</protected>
+        <recipients>
+            <type>creator</type>
+        </recipients>
+        <senderType>CurrentUser</senderType>
+        <template>unfiled$public/Leave_Cancellation_Approved</template>
+    </alerts>
+    <alerts>
+        <fullName>Send_email_on_cancellation_rejection</fullName>
+        <description>Send email on cancellation rejection</description>
+        <protected>false</protected>
+        <recipients>
+            <type>creator</type>
+        </recipients>
+        <senderType>CurrentUser</senderType>
+        <template>unfiled$public/Leave_Cancellation_Rejected</template>
+    </alerts>
     <fieldUpdates>
         <fullName>Approve_Status</fullName>
         <field>Status__c</field>
@@ -146,6 +166,16 @@
         <field>Status__c</field>
         <literalValue>Pending Manager Approval</literalValue>
         <name>Set Status to Pending Manager Approval</name>
+        <notifyAssignee>false</notifyAssignee>
+        <operation>Literal</operation>
+        <protected>false</protected>
+        <reevaluateOnChange>false</reevaluateOnChange>
+    </fieldUpdates>
+    <fieldUpdates>
+        <fullName>Set_Status_to_a_Pending_Manager_Approval</fullName>
+        <field>Status__c</field>
+        <literalValue>Pending Manager Approval</literalValue>
+        <name>Set Status to a Pending Manager Approval</name>
         <notifyAssignee>false</notifyAssignee>
         <operation>Literal</operation>
         <protected>false</protected>
