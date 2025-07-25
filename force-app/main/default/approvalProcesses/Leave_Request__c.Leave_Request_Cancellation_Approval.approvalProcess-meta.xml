@@ -32,6 +32,10 @@
     </entryCriteria>
     <finalApprovalActions>
         <action>
+            <name>Send_email_on_cancellation_approval</name>
+            <type>Alert</type>
+        </action>
+        <action>
             <name>Update_Status_to_Cancelled</name>
             <type>FieldUpdate</type>
         </action>
@@ -41,6 +45,10 @@
         <action>
             <name>Revert_Status_to_Approved</name>
             <type>FieldUpdate</type>
+        </action>
+        <action>
+            <name>Send_email_on_cancellation_rejection</name>
+            <type>Alert</type>
         </action>
     </finalRejectionActions>
     <finalRejectionRecordLock>false</finalRejectionRecordLock>
