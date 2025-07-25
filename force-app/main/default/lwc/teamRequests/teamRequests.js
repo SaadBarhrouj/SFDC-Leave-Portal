@@ -5,6 +5,7 @@ import rejectLeaveRequest from '@salesforce/apex/TeamRequestsController.rejectLe
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequestModifiedChannel__c';
 import LEAVE_REQUEST_OBJECT from '@salesforce/schema/Leave_Request__c';
 import REJECTION_REASON_FIELD from '@salesforce/schema/Leave_Request__c.Rejection_Reason__c';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
@@ -13,13 +14,14 @@ import { getObjectInfo, getPicklistValues } from 'lightning/uiObjectInfoApi';
 import { LightningElement, track, wire } from 'lwc';
 
 const BASE_ACTIONS = [
+    { label: 'Show details', name: 'show_details' },
     { label: 'Approve', name: 'approve' },
-    { label: 'Reject', name: 'reject' }
+    { label: 'Reject', name: 'reject' },
 ];
 
 function getStatusClass(status) {
     switch (status) {
-        case 'Approved':
+        /* case 'Approved':
             return 'slds-badge slds-theme_success';
         case 'Rejected':
             return 'slds-badge slds-theme_error';
@@ -31,9 +33,9 @@ function getStatusClass(status) {
         case 'Pending Manager Approval':
         case 'Pending HR Approval':
         case 'Escalated to Senior Manager':
-            return 'slds-badge';
+            return 'slds-badge'; */
         default:
-            return 'slds-badge slds-theme_lightest';
+            return 'slds-badge slds-badge';
     }
 }
 
@@ -228,7 +230,12 @@ export default class TeamRequests extends LightningElement {
                 this.openRejectModal();
             }
                 break;
-
+            case 'show_details':
+                publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, {
+                    recordId: row.Id,
+                    context: 'teamRequest'
+                });
+                break;
             case 'view_manager_calendar':
                 if (row.ManagerId) {
                     const payload = {
@@ -248,6 +255,7 @@ export default class TeamRequests extends LightningElement {
         approveLeaveRequest({ leaveRequestId: this.selectedRequestId })
             .then(() => {
                 this.showToast('Success', 'Request approved successfully.', 'success');
+                publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
                 return this.refreshData();
             })
             .catch(error => {
@@ -336,10 +344,6 @@ submitRejection() {
 }
 
     handleRefresh() {
-        this.refreshData();
-    }
-
-    refreshData() {
         this.isLoading = true;
         return refreshApex(this.wiredRequestsResult).finally(() => {
             this.isLoading = false;
@@ -348,7 +352,13 @@ submitRejection() {
             };
             publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
         });
+    }
 
+    refreshData() {
+        this.isLoading = true;
+        return refreshApex(this.wiredRequestsResult).finally(() => {
+            this.isLoading = false;
+        });
     }
 
     showToast(title, message, type) {

@@ -15,6 +15,15 @@
 
                 <div class="slds-form slds-m-bottom_medium">
                     <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
+                        <label class="slds-form-element__label">Request Name</label>
+                        <div class="slds-form-element__control">
+                            <div class="slds-form-element__static">{leaveRequest.Name}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slds-form slds-m-bottom_medium">
+                    <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
                         <label class="slds-form-element__label">Requester</label>
                         <div class="slds-form-element__control">
                             <div class="slds-form-element__static">{leaveRequest.Requester__r.Name}</div>
@@ -52,12 +61,14 @@
                                 </div>
                             </div>
                             <template if:true={isRejected}>
-                                <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly slds-m-top_small">
-                                    <label class="slds-form-element__label">Rejection Reason</label>
-                                    <div class="slds-form-element__control">
-                                        <div class="slds-form-element__static">{leaveRequest.Rejection_Reason__c}</div>
+                                <template if:true={showRejectionReason}>
+                                    <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly slds-m-top_small">
+                                        <label class="slds-form-element__label">Rejection Reason</label>
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-form-element__static">{leaveRequest.Rejection_Reason__c}</div>
+                                        </div>
                                     </div>
-                                </div>
+                                </template>
                             </template>
                         </div>
                     </div>
@@ -87,7 +98,7 @@
                         <div class="slds-grid slds-wrap slds-m-top_small">
                             <div class="slds-col slds-size_1-of-2 slds-var-p-right_small">
                                 <div class="slds-form-element slds-form-element_readonly slds-form-element_readonly">
-                                    <label class="slds-form-element__label">Leave Balance</label>
+                                    <label class="slds-form-element__label">{leaveRequest.Leave_Balance__r.Leave_Type__c} Leave Balance</label>
                                     <div class="slds-form-element__control">
                                         <div class="slds-form-element__static">{leaveRequest.Leave_Balance__r.Remaining_Days__c}</div>
                                     </div>
