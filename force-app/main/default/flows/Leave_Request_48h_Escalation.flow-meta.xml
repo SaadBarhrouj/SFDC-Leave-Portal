@@ -100,8 +100,7 @@
             <label>Escalate After 48 Hours</label>
             <offsetNumber>1</offsetNumber>
             <offsetUnit>Minutes</offsetUnit>
-            <recordField>CreatedDate</recordField>
-            <timeSource>RecordField</timeSource>
+            <timeSource>RecordTriggerEvent</timeSource>
         </scheduledPaths>
         <triggerType>RecordAfterSave</triggerType>
     </start>
