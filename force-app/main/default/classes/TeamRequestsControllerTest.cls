@@ -55,7 +55,6 @@ private class TeamRequestsControllerTest {
         Test.startTest();
         System.runAs(teamMember) {
             List<Leave_Request__c> requests = TeamRequestsController.getTeamRequests();
-            // Un employé sans équipe d'approbation ne doit rien voir
             System.assertEquals(true, requests.isEmpty(), 'Should return an empty list for a user with no pending approvals.');
         }
         Test.stopTest();
@@ -64,7 +63,6 @@ private class TeamRequestsControllerTest {
     @isTest
     static void testApproveLeaveRequest_Success() {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        // Récupérer une demande qui n'est pas encore approuvée
         Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' AND Leave_Type__c = 'Vacation' LIMIT 1];
         
         Test.startTest();
@@ -77,7 +75,43 @@ private class TeamRequestsControllerTest {
         System.assertEquals('Approved', result.Status__c, 'Status should be updated to Approved.');
     }
     
-    
+    @isTest
+    static void testRejectLeaveRequest_Success() {
+        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
+        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' AND Leave_Type__c = 'RTT' LIMIT 1];
+        String reason = 'Blackout Period';
+        String comment = 'Please reschedule.';
+        
+        Test.startTest();
+        System.runAs(manager) {
+            TeamRequestsController.rejectLeaveRequest(request.Id, reason, comment, false);
+        }
+        Test.stopTest();
+        
+        Leave_Request__c result = [SELECT Status__c, Rejection_Reason__c, Approver_Comments__c FROM Leave_Request__c WHERE Id = :request.Id];
+        System.assertEquals('Rejected', result.Status__c, 'Status should be updated to Rejected.');
+        System.assertEquals(reason, result.Rejection_Reason__c, 'Rejection reason should be updated.');
+        System.assertEquals(comment, result.Approver_Comments__c, 'Approver comment should be updated.');
+    }
+
+    @isTest
+    static void testRejectLeaveRequest_NoReason() {
+        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
+        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' LIMIT 1];
+        
+        Test.startTest();
+        System.runAs(manager) {
+            try {
+                TeamRequestsController.rejectLeaveRequest(request.Id, '', 'some comment', true);
+                System.assert(false, 'An AuraHandledException should have been thrown for missing reason.');
+            } catch (AuraHandledException e) {
+                System.debug('Exception message: ' + e.getMessage());
+                System.assert(true);
+            }
+        }
+        Test.stopTest();
+    }
+
     
     @isTest
     static void testApproveLeaveRequest_Error() {
