@@ -272,7 +272,8 @@ export default class TeamRequests extends LightningElement {
             rejectLeaveRequest({
                 leaveRequestId: this.selectedRequestId,
                 rejectionReason: null,
-                approverComment: null
+                approverComment: null,
+                isReasonRequired: false
             })
             .then(() => {
                 this.showToast('Success', 'Cancellation request rejected.', 'success');
@@ -310,7 +311,8 @@ submitRejection() {
     rejectLeaveRequest({
         leaveRequestId: this.selectedRequestId,
         rejectionReason: this.rejectionReason,
-        approverComment: this.approverComment
+        approverComment: this.approverComment,
+        isReasonRequired: true
     })
     .then(() => {
         this.showToast('Success', 'Request rejected successfully.', 'success');

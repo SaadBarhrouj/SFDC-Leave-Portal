@@ -80,21 +80,24 @@ public with sharing class TeamRequestsController {
     }
     
 
-    @AuraEnabled
-    public static void rejectLeaveRequest(String leaveRequestId, String rejectionReason, String approverComment) {
-        
-        Leave_Request__c req = [SELECT Id FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
-
-        if (String.isNotBlank(rejectionReason)) {
-            req.Rejection_Reason__c = rejectionReason;
-        }
-
-        if (String.isNotBlank(approverComment)) {
-            req.Approver_Comments__c = approverComment;
-        }
-        update req;
-        processApprovalRequest(leaveRequestId, 'Reject', null);
+@AuraEnabled
+public static void rejectLeaveRequest(String leaveRequestId, String rejectionReason, String approverComment, Boolean isReasonRequired) {
+    if (isReasonRequired && String.isBlank(rejectionReason)) {
+        throw new AuraHandledException('Rejection reason is required.');
     }
+
+    Leave_Request__c req = [SELECT Id FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
+
+    if (String.isNotBlank(rejectionReason)) {
+        req.Rejection_Reason__c = rejectionReason;
+    }
+
+    if (String.isNotBlank(approverComment)) {
+        req.Approver_Comments__c = approverComment;
+    }
+    update req;
+    processApprovalRequest(leaveRequestId, 'Reject', null);
+}
     
     private static void processApprovalRequest(String leaveRequestId, String action, String comment) {
         try {
