@@ -36,6 +36,32 @@ export default class LeaveRequestCalendar extends LightningElement {
     _context = 'my';
     _managerId;
     scriptsLoaded = false;
+    subscription = null;
+
+    @wire(MessageContext)
+    messageContext;
+
+    subscribeToMessageChannel() {
+        if (!this.subscription) {
+            this.subscription = subscribe(
+                this.messageContext,
+                LEAVE_REQUEST_MODIFIED_CHANNEL,
+                () => this.handleRefresh()
+            );
+        }
+    }
+
+    handleRefresh() {
+        console.log('[LeaveRequestCalendar] Received leave request modified message, refreshing leave requests data.');            
+        condsole.log(this._context);
+        if (this._context === 'my') {
+            this.loadMyRequestsData();
+        } else if (this._context === 'team') {
+            this.loadTeamRequestsData();
+        } else if (this._context === 'managerTeam' && this.managerId) {
+            this.loadManagerTeamRequestsData(this.managerId);
+        }
+    }
 
     @api
     set managerId(value) {
