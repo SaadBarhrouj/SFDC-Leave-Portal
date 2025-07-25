@@ -7,7 +7,7 @@ public with sharing class TeamRequestsController {
         List<User> teamMembers = [SELECT Id FROM User WHERE ManagerId = :managerId];
         Set<Id> teamMemberIds = new Set<Id>();
         for (User u : teamMembers) teamMemberIds.add(u.Id);
-
+        
         return [
             SELECT Id, Name, Start_Date__c, End_Date__c, Leave_Type__c, Status__c, Requester__r.Name
             FROM Leave_Request__c
@@ -21,7 +21,7 @@ public with sharing class TeamRequestsController {
         Id currentUserId = UserInfo.getUserId();
         Set<Id> actorIds = new Set<Id>();
         actorIds.add(currentUserId);
-
+        
         for (GroupMember gm : [
             SELECT GroupId
             FROM GroupMember
@@ -29,7 +29,7 @@ public with sharing class TeamRequestsController {
         ]) {
             actorIds.add(gm.GroupId);
         }
-
+        
         Set<Id> leaveRequestIds = new Set<Id>();
         for (ProcessInstanceWorkitem workItem : [
             SELECT ProcessInstance.TargetObjectId, ActorId
@@ -53,7 +53,7 @@ public with sharing class TeamRequestsController {
             ORDER BY CreatedDate DESC
         ];
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static List<Leave_Request__c> getTeamLeavesForRequester(Id requesterId) {
         User requester = [SELECT ManagerId FROM User WHERE Id = :requesterId LIMIT 1];
@@ -63,7 +63,7 @@ public with sharing class TeamRequestsController {
         List<User> teamMembers = [SELECT Id FROM User WHERE ManagerId = :requester.ManagerId];
         Set<Id> teamMemberIds = new Set<Id>();
         for (User u : teamMembers) teamMemberIds.add(u.Id);
-
+        
         return [
             SELECT Id, Name, Start_Date__c, End_Date__c, Leave_Type__c, Status__c, Requester__r.Name
             FROM Leave_Request__c
@@ -79,25 +79,25 @@ public with sharing class TeamRequestsController {
         processApprovalRequest(leaveRequestId, 'Approve', null);
     }
     
-
-@AuraEnabled
-public static void rejectLeaveRequest(String leaveRequestId, String rejectionReason, String approverComment, Boolean isReasonRequired) {
-    if (isReasonRequired && String.isBlank(rejectionReason)) {
-        throw new AuraHandledException('Rejection reason is required.');
+    
+    @AuraEnabled
+    public static void rejectLeaveRequest(String leaveRequestId, String rejectionReason, String approverComment, Boolean isReasonRequired) {
+        if (isReasonRequired && String.isBlank(rejectionReason)) {
+            throw new AuraHandledException('Rejection reason is required.');
+        }
+        
+        Leave_Request__c req = [SELECT Id FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
+        
+        if (String.isNotBlank(rejectionReason)) {
+            req.Rejection_Reason__c = rejectionReason;
+        }
+        
+        if (String.isNotBlank(approverComment)) {
+            req.Approver_Comments__c = approverComment;
+        }
+        update req;
+        processApprovalRequest(leaveRequestId, 'Reject', null);
     }
-
-    Leave_Request__c req = [SELECT Id FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
-
-    if (String.isNotBlank(rejectionReason)) {
-        req.Rejection_Reason__c = rejectionReason;
-    }
-
-    if (String.isNotBlank(approverComment)) {
-        req.Approver_Comments__c = approverComment;
-    }
-    update req;
-    processApprovalRequest(leaveRequestId, 'Reject', null);
-}
     
     private static void processApprovalRequest(String leaveRequestId, String action, String comment) {
         try {
@@ -111,13 +111,13 @@ public static void rejectLeaveRequest(String leaveRequestId, String rejectionRea
             ]) {
                 actorIds.add(gm.GroupId);
             }
-
+            
             if (action == 'Approve') {
                 Leave_Request__c reqToUpdate = [SELECT Id, Last_Approver__c FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
                 reqToUpdate.Last_Approver__c = currentUserId;
                 update reqToUpdate;
             }
-
+            
             ProcessInstanceWorkitem workItem = [
                 SELECT Id, ActorId
                 FROM ProcessInstanceWorkitem
@@ -126,7 +126,7 @@ public static void rejectLeaveRequest(String leaveRequestId, String rejectionRea
                   AND ProcessInstance.Status = 'Pending'
                 LIMIT 1
             ];
-
+            
             Approval.ProcessWorkitemRequest req = new Approval.ProcessWorkitemRequest();
             req.setWorkitemId(workItem.Id);
             req.setAction(action);
@@ -141,5 +141,5 @@ public static void rejectLeaveRequest(String leaveRequestId, String rejectionRea
             throw new AuraHandledException('Error processing request: ' + e.getMessage());
         }
     }
-
+    
 }
