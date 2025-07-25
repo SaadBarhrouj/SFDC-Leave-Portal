@@ -13,7 +13,7 @@ import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequ
 import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest';
 
 const COLUMNS = [
-    { label: 'Request Number', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestNumber' }, name: 'show_details',variant: 'base'  } },
+    { label: 'Request Number', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestNumber' }, name: 'show_details', variant: 'base' } },
     { label: 'Leave Type', fieldName: 'Leave_Type__c' },
     { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local' },
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },
@@ -28,11 +28,11 @@ export default class MyRequestContainer extends LightningElement {
     @track selectedStatus = 'All';
     @track showCreateModal = false;
     @track recordIdToEdit = null;
-    
+
     columns = COLUMNS;
     wiredRequestsResult;
     subscriptionClearSelection;
-    
+
     statusOptions = [
         { label: 'All Status', value: 'All' }, { label: 'Approved', value: 'Approved' }, { label: 'Submitted', value: 'Submitted' },
         { label: 'Pending Manager Approval', value: 'Pending Manager Approval' }, { label: 'Pending HR Approval', value: 'Pending HR Approval' },
@@ -73,11 +73,11 @@ export default class MyRequestContainer extends LightningElement {
     handleRowAction(event) {
         const { action, row } = event.detail;
         switch (action.name) {
-            case 'show_details': this.publishSelection(row.Id, true);break;
+            case 'show_details': this.publishSelection(row.Id, true); break;
             case 'edit': this.editRequest(row); break;
             case 'cancel': this.cancelRequest(row); break;
             case 'request_cancellation': this.requestCancellation(row); break;
-            case 'withdraw_cancellation': this.withdrawCancellation(row); break; 
+            case 'withdraw_cancellation': this.withdrawCancellation(row); break;
             default: break;
         }
     }
@@ -88,7 +88,7 @@ export default class MyRequestContainer extends LightningElement {
             this.publishSelection(selectedRows[0].Id, false);
         }
     }
-    
+
     editRequest(row) {
         this.recordIdToEdit = row.Id;
         this.showCreateModal = true;
@@ -101,15 +101,15 @@ export default class MyRequestContainer extends LightningElement {
 
     handleModalSuccess(event) {
         const { recordId } = event.detail || {};
-        
+
         if (!this.showCreateModal || !recordId) {
             return;
         }
-        
+
         const message = this.recordIdToEdit ? 'Leave request updated successfully!' : 'Leave request created successfully!';
         this.showSuccess(message);
         this.closeCreateModal();
-        
+
         this.refreshRequests().then(() => {
             this.publishRefreshRequest(recordId);
             this.publishSelection(recordId, true);
@@ -120,25 +120,26 @@ export default class MyRequestContainer extends LightningElement {
         this.publishRefreshRequest(event.detail.recordId);
     }
 
-    async refreshRequests() {
+    refreshRequests() {
         this.isLoading = true;
-        try {
-            await refreshApex(this.wiredRequestsResult);
-            publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
-        } catch (error) {
-            this.showError('Error refreshing data.');
-        } finally {
-            this.isLoading = false;
-        }
+        publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
+        return refreshApex(this.wiredRequestsResult)
+            .finally(() => {
+                this.isLoading = false;
+            });
     }
 
     handleRefresh() {
-        return refreshApex(this.wiredRequestsResult).finally(() => {
-            const payload = {
-                context: 'my'
-            };
-            publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
-        });
+        this.isLoading = true;
+        const payload = {
+            context: 'my'
+        };
+        publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
+        publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
+        return refreshApex(this.wiredRequestsResult)
+            .finally(() => {
+                this.isLoading = false;
+            });
     }
 
     cancelRequest(row) {
@@ -167,7 +168,7 @@ export default class MyRequestContainer extends LightningElement {
         }
     }
 
-     withdrawCancellation(row) {
+    withdrawCancellation(row) {
         if (confirm(`Are you sure you want to withdraw the cancellation request for ${row.RequestNumber}?`)) {
             this.isLoading = true;
             withdrawCancellationRequest({ leaveRequestId: row.Id })
@@ -197,8 +198,8 @@ export default class MyRequestContainer extends LightningElement {
     publishRefreshRequest(recordId) {
         publish(this.messageContext, REFRESH_LEAVE_DATA_CHANNEL, { recordId });
     }
-    
-  
+
+
 
     processRequestsForDisplay(rawData) {
         return rawData.map(request => {
@@ -210,18 +211,18 @@ export default class MyRequestContainer extends LightningElement {
                         availableActions.push({ label: 'Request cancellation', name: 'request_cancellation' });
                     }
                     break;
-                
+
                 case 'Cancellation Requested':
                     availableActions.push(
-                        { label: 'Show details', name: 'show_details' }, 
+                        { label: 'Show details', name: 'show_details' },
                         { label: 'Withdraw cancellation request', name: 'withdraw_cancellation' }
                     );
                     break;
-                
+
                 case 'Pending HR Approval':
                     availableActions.push(
                         { label: 'Show details', name: 'show_details' },
-                        { label: 'Cancel', name: 'cancel' } 
+                        { label: 'Cancel', name: 'cancel' }
                     );
                     break;
 
@@ -229,12 +230,12 @@ export default class MyRequestContainer extends LightningElement {
                 case 'Pending Manager Approval':
                 case 'Escalated to Senior Manager':
                     availableActions.push(
-                        { label: 'Show details', name: 'show_details' }, 
-                        { label: 'Edit', name: 'edit' }, 
+                        { label: 'Show details', name: 'show_details' },
+                        { label: 'Edit', name: 'edit' },
                         { label: 'Cancel', name: 'cancel' }
                     );
                     break;
-                    
+
                 default:
                     availableActions.push({ label: 'Show details', name: 'show_details' });
             }
