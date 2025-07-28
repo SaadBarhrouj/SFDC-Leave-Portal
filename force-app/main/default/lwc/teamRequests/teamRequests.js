@@ -31,31 +31,20 @@ const COLUMNS = [
         label: 'Requester',
         fieldName: 'requesterUrl',
         type: 'url',
-        sortable: true,
         typeAttributes: {
             label: { fieldName: 'RequesterName' },
             target: '_self'
         }
     },
-    {
-        label: 'Request ID',
-        fieldName: 'requestUrl',
-        type: 'url',
-        sortable: true,
-        typeAttributes: {
-            label: { fieldName: 'Name' },
-            target: '_self'
-        }
-    },
-    { label: 'Leave Type', fieldName: 'Leave_Type__c', sortable: true },
-    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local', sortable: true },
-    { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local', sortable: true },
-    { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', sortable: true, cellAttributes: { alignment: 'left' } },
+    { label: 'Request Name', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestName' }, name: 'show_details', variant: 'base' } },
+    { label: 'Leave Type', fieldName: 'Leave_Type__c' },
+    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local' },
+    { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },
+    { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number',  cellAttributes: { alignment: 'left' } },
     {
         label: 'Status',
         fieldName: 'Status__c',
         type: 'customBadge',
-        sortable: true,
         typeAttributes: {
             value: { fieldName: 'Status__c' },
             class: { fieldName: 'statusBadgeClass' }
@@ -66,7 +55,6 @@ const COLUMNS = [
         label: 'Manager',
         fieldName: 'managerUrl',
         type: 'url',
-        sortable: true,
         typeAttributes: {
             label: { fieldName: 'ManagerName' },
             target: '_self'
@@ -177,7 +165,7 @@ export default class TeamRequests extends LightningElement {
                     ...req,
                     RequesterName: requesterName,
                     requesterUrl: `/lightning/r/User/${req.Requester__c}/view`,
-                    requestUrl: `/lightning/r/Leave_Request__c/${req.Id}/view`,
+                    RequestName: req.Name,
                     ManagerName: managerName,
                     ManagerId: req.Requester__r ? req.Requester__r.ManagerId : '',
                     managerUrl,
@@ -280,7 +268,7 @@ export default class TeamRequests extends LightningElement {
                     const payload = {
                         managerId: row.ManagerId,
                         context: 'managerTeam',
-                        selectedRequestId: row.Id 
+                        selectedRequestId: row.Id
                     };
                     publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
                 }
@@ -306,24 +294,24 @@ export default class TeamRequests extends LightningElement {
     handleRejectCancellation() {
         if (confirm('Are you sure you want to reject this cancellation request? The leave will remain approved.')) {
             this.isLoading = true;
-            
+
             rejectLeaveRequest({
                 leaveRequestId: this.selectedRequestId,
                 rejectionReason: null,
                 approverComment: null,
                 isReasonRequired: false
             })
-            .then(() => {
-                this.showToast('Success', 'Cancellation request rejected.', 'success');
-                return this.refreshData();
-            })
-            .catch(error => {
-                this.showToast('Error', error.body.message, 'error');
-                this.isLoading = false;
-            });
+                .then(() => {
+                    this.showToast('Success', 'Cancellation request rejected.', 'success');
+                    return this.refreshData();
+                })
+                .catch(error => {
+                    this.showToast('Error', error.body.message, 'error');
+                    this.isLoading = false;
+                });
         }
     }
-    
+
     openRejectModal() {
         this.showModal = true;
     }
@@ -352,33 +340,33 @@ export default class TeamRequests extends LightningElement {
             approverComment: this.approverComment,
             isReasonRequired: true
         })
-        .then(() => {
-            this.showToast('Success', 'Request rejected successfully.', 'success');
-            this.closeModal();
-            return this.refreshData();
-        })
-        .catch(error => {
-            console.error('Error Details:', JSON.stringify(error));
+            .then(() => {
+                this.showToast('Success', 'Request rejected successfully.', 'success');
+                this.closeModal();
+                return this.refreshData();
+            })
+            .catch(error => {
+                console.error('Error Details:', JSON.stringify(error));
 
-            let errorMessage = 'An unknown error occurred.'; 
+                let errorMessage = 'An unknown error occurred.';
 
-            if (error && error.body && error.body.fieldErrors && error.body.fieldErrors.Approver_Comments__c) {
-                
-                errorMessage = error.body.fieldErrors.Approver_Comments__c[0].message;
-                
-                let commentField = this.template.querySelector('[data-field="Approver_Comments__c"]');
-                if (commentField) {
-                    commentField.setCustomValidity(errorMessage);
-                    commentField.reportValidity();
+                if (error && error.body && error.body.fieldErrors && error.body.fieldErrors.Approver_Comments__c) {
+
+                    errorMessage = error.body.fieldErrors.Approver_Comments__c[0].message;
+
+                    let commentField = this.template.querySelector('[data-field="Approver_Comments__c"]');
+                    if (commentField) {
+                        commentField.setCustomValidity(errorMessage);
+                        commentField.reportValidity();
+                    }
+
+                } else if (error && error.body && error.body.message) {
+                    errorMessage = error.body.message;
+                    this.showToast('Error', errorMessage, 'error');
                 }
 
-            } else if (error && error.body && error.body.message) {
-                errorMessage = error.body.message;
-                this.showToast('Error', errorMessage, 'error');
-            }
-            
-            this.isLoading = false;
-        });
+                this.isLoading = false;
+            });
     }
 
     handleRefresh() {
@@ -407,7 +395,7 @@ export default class TeamRequests extends LightningElement {
         });
         this.dispatchEvent(event);
     }
-     
+
     clearSelection() {
         const datatable = this.template.querySelector('lightning-datatable');
         if (datatable) {

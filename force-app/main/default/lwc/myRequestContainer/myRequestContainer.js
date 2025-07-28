@@ -13,7 +13,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { LightningElement, track, wire } from 'lwc';
 
 const COLUMNS = [
-    { label: 'Request Number', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestNumber' }, name: 'show_details', variant: 'base' } },
+    { label: 'Request Name', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestNumber' }, name: 'show_details', variant: 'base' } },
     { label: 'Leave Type', fieldName: 'Leave_Type__c' },
     { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local' },
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },
