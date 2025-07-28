@@ -27,4 +27,8 @@
         <tab>Leave_Requests</tab>
         <visibility>Visible</visibility>
     </tabSettings>
+    <tabSettings>
+        <tab>Team_Leave_Management</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>
