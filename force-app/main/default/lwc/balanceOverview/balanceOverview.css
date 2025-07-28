@@ -1,0 +1,9 @@
+.balance-number {
+    font-weight: 300;
+}
+
+@media (min-width: 48em) {
+    .custom-border-right {
+        border-right: 1px solid #dddbda;
+    }
+}

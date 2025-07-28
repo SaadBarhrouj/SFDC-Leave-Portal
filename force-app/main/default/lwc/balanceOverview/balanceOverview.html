@@ -1,0 +1,31 @@
+<template>
+    <div class="slds-m-around_medium">
+        <lightning-layout multiple-rows="true" pull-to-boundary="small">
+
+            <lightning-layout-item size="12" medium-device-size="6" padding="around-small" class="custom-border-right">
+                <h2 class="slds-text-heading_small slds-m-bottom_small slds-text-align_center">Available to Use</h2>
+                <div class="slds-grid slds-wrap slds-grid_align-center">
+                    <template for:each={remainingBalances} for:item="balance">
+                        <div key={balance.type} class="slds-col slds-size_1-of-2 slds-p-bottom_medium slds-text-align_center">
+                            <span class="slds-text-title">{balance.type}</span>
+                            <p class="slds-text-heading_large slds-text-color_success balance-number">{balance.days}</p>
+                        </div>
+                    </template>
+                </div>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" medium-device-size="6" padding="around-small">
+                <h2 class="slds-text-heading_small slds-m-bottom_small slds-text-align_center">Consumed This Year</h2>
+                <div class="slds-grid slds-wrap slds-grid_align-center">
+                    <template for:each={consumedBalances} for:item="balance">
+                        <div key={balance.type} class="slds-col slds-size_1-of-2 slds-p-bottom_medium slds-text-align_center">
+                            <span class="slds-text-title">{balance.type}</span>
+                            <p class="slds-text-heading_large balance-number">{balance.days}</p>
+                        </div>
+                    </template>
+                </div>
+            </lightning-layout-item>
+
+        </lightning-layout>
+    </div>
+</template>

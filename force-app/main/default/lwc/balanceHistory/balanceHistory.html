@@ -1,0 +1,34 @@
+<template>
+    <lightning-card variant="Narrow">
+        <c-balance-overview
+            remaining-balances={remainingBalances}
+            consumed-balances={consumedBalances}>
+        </c-balance-overview>
+
+        <hr class="slds-m-vertical_small" />
+
+        <div class="slds-p-horizontal_medium">
+            <h2 class="slds-text-heading_small slds-m-bottom_small">Transaction Details</h2>
+        </div>
+
+        <div class="slds-p-bottom_medium">
+            <template if:true={hasData}>
+                <c-requests-datatable
+                    lwc:ref="datatable"
+                    key-field="Name"
+                    data={historyData}
+                    columns={historyColumns}
+                    resize-column-disabled="true"
+                    hide-checkbox-column="true">
+                </c-requests-datatable>
+            </template>
+
+            <template if:false={hasData}>
+                <div class="slds-align_absolute-center slds-p-around_medium">
+                    <c-no-data-svg message="You haven't submitted any leave requests yet."></c-no-data-svg>
+                </div>
+            </template>
+        </div>
+        
+    </lightning-card>
+</template>

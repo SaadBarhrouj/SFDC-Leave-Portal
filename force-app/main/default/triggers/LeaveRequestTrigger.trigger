@@ -56,4 +56,8 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
             LeaveRequestUtils.validateNoOverlappingRequests(Trigger.new, Trigger.oldMap);
         }
     }
+
+        if (Trigger.isAfter && Trigger.isUpdate) {
+            LeaveRequestHistoryHelper.createHistoryOnStatusChange(Trigger.new, Trigger.oldMap);
+        }
 }
