@@ -11,7 +11,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3v7WAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -52,7 +52,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3ofWAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -93,7 +93,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3ofWAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -134,7 +134,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3n3WAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -175,7 +175,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3lRWAQ</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -216,7 +216,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3ofWAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -257,7 +257,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3tVWAQ</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -298,7 +298,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3rtWAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -656,13 +656,34 @@
     </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
     <recordLookups>
+        <name>Get_Custom_Notification_for_Approver</name>
+        <label>Get Custom Notification for Approver</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Check_Notification_Scenario</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>New_Request_for_Approval</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>CustomNotificationType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
         <name>Get_RH_Queue_ID</name>
         <label>Get RH Queue ID</label>
         <locationX>0</locationX>
         <locationY>0</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Check_Notification_Scenario</targetReference>
+            <targetReference>Get_Custom_Notification_for_Approver</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>

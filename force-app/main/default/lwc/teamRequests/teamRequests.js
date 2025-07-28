@@ -4,8 +4,8 @@ import getTeamRequests from '@salesforce/apex/TeamRequestsController.getTeamRequ
 import rejectLeaveRequest from '@salesforce/apex/TeamRequestsController.rejectLeaveRequest';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
-import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
 import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequestModifiedChannel__c';
+import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
 import LEAVE_REQUEST_OBJECT from '@salesforce/schema/Leave_Request__c';
 import REJECTION_REASON_FIELD from '@salesforce/schema/Leave_Request__c.Rejection_Reason__c';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
@@ -21,19 +21,6 @@ const BASE_ACTIONS = [
 
 function getStatusClass(status) {
     switch (status) {
-        /* case 'Approved':
-            return 'slds-badge slds-theme_success';
-        case 'Rejected':
-            return 'slds-badge slds-theme_error';
-        case 'Cancelled':
-            return 'slds-badge slds-theme_warning';
-        case 'Cancellation Requested':
-            return 'slds-badge slds-badge_inverse';
-        case 'Submitted':
-        case 'Pending Manager Approval':
-        case 'Pending HR Approval':
-        case 'Escalated to Senior Manager':
-            return 'slds-badge'; */
         default:
             return 'slds-badge slds-badge';
     }
@@ -91,9 +78,18 @@ const COLUMNS = [
     },
 ];
 
+const DEFAULT_FILTERS = {
+    status: 'All',
+    requesterName: '',
+    leaveType: '',
+    startDate: null,
+    endDate: null
+};
+
 export default class TeamRequests extends LightningElement {
     @track columns = COLUMNS;
-    @track requests = [];
+    allRequests = [];
+    @track filteredData = [];
     @track rejectionReasonOptions = [];
     wiredRequestsResult;
     subscriptionClearSelection;
@@ -101,18 +97,28 @@ export default class TeamRequests extends LightningElement {
     isLoading = true;
     error;
 
-    showModal = false;
+    showFilterPopover = false;
     selectedRequestId;
+    showModal = false;
     rejectionReason = '';
     approverComment = '';
 
-    @track selectedStatus = 'All';
+    @track filterValues = { ...DEFAULT_FILTERS };
+
     statusOptions = [
-        { label: 'All Status', value: 'All' },
+        { label: 'All Statuses', value: 'All' },
         { label: 'Pending Manager Approval', value: 'Pending Manager Approval' },
         { label: 'Pending HR Approval', value: 'Pending HR Approval' },
         { label: 'Escalated to Senior Manager', value: 'Escalated to Senior Manager' },
         { label: 'Cancellation Requested', value: 'Cancellation Requested' }
+    ];
+
+    leaveTypeOptions = [
+        { label: 'All Types', value: '' },
+        { label: 'Vacation', value: 'Vacation' },
+        { label: 'RTT', value: 'RTT' },
+        { label: 'Sick Leave', value: 'Sick Leave' },
+        { label: 'Training', value: 'Training' },
     ];
 
     @wire(MessageContext)
@@ -149,7 +155,7 @@ export default class TeamRequests extends LightningElement {
         this.isLoading = true;
         this.wiredRequestsResult = result;
         if (result.data) {
-            this.requests = result.data.map(req => {
+            this.allRequests = result.data.map(req => {
                 let rowActions = [...BASE_ACTIONS];
                 if (req.Status__c === 'Pending HR Approval' || req.Status__c === 'Escalated to Senior Manager') {
                     rowActions.push({ label: "View manager's team calendar", name: 'view_manager_calendar' });
@@ -166,41 +172,74 @@ export default class TeamRequests extends LightningElement {
                     managerName = 'No manager';
                     managerUrl = '';
                 }
+                const requesterName = req.Requester__r ? req.Requester__r.Name : '';
                 return {
                     ...req,
-                    RequesterName: req.Requester__r.Name,
+                    RequesterName: requesterName,
                     requesterUrl: `/lightning/r/User/${req.Requester__c}/view`,
                     requestUrl: `/lightning/r/Leave_Request__c/${req.Id}/view`,
                     ManagerName: managerName,
-                    ManagerId: req.Requester__r.ManagerId,
+                    ManagerId: req.Requester__r ? req.Requester__r.ManagerId : '',
                     managerUrl,
                     rowActions,
                     statusBadgeClass: getStatusClass(req.Status__c)
                 };
             });
+            this.applyFilters();
             this.error = undefined;
         } else if (result.error) {
             this.error = result.error;
-            this.requests = [];
+            this.allRequests = [];
+            this.filteredData = [];
             console.error('TeamRequests error:', JSON.stringify(result.error));
             this.showToast('Error', 'Could not retrieve team requests.', 'error');
         }
         this.isLoading = false;
     }
 
-    get filteredRequests() {
-        if (this.selectedStatus === 'All') {
-            return this.requests;
-        }
-        return this.requests.filter(r => r.Status__c === this.selectedStatus);
-    }
-
     get hasRequests() {
-        return this.filteredRequests && this.filteredRequests.length > 0;
+        return this.filteredData && this.filteredData.length > 0;
     }
 
-    handleStatusChange(event) {
-        this.selectedStatus = event.detail.value;
+    get filterButtonVariant() {
+        return this.showFilterPopover ? 'brand' : 'neutral';
+    }
+
+    toggleFilterPopover() {
+        this.showFilterPopover = !this.showFilterPopover;
+    }
+
+    handleFilterChange(event) {
+        const { name, value } = event.target;
+        this.filterValues = { ...this.filterValues, [name]: value };
+    }
+
+    clearFilters() {
+        this.filterValues = { ...DEFAULT_FILTERS };
+        this.applyFilters();
+    }
+
+    applyFilters() {
+        let data = [...this.allRequests];
+        const { status, requesterName, leaveType, startDate, endDate } = this.filterValues;
+
+        if (status && status !== 'All') {
+            data = data.filter(req => req.Status__c === status);
+        }
+        if (requesterName) {
+            const lowerCaseName = requesterName.toLowerCase();
+            data = data.filter(req => req.RequesterName && req.RequesterName.toLowerCase().includes(lowerCaseName));
+        }
+        if (leaveType) {
+            data = data.filter(req => req.Leave_Type__c === leaveType);
+        }
+        if (startDate) {
+            data = data.filter(req => req.Start_Date__c >= startDate);
+        }
+        if (endDate) {
+            data = data.filter(req => req.End_Date__c <= endDate);
+        }
+        this.filteredData = data;
     }
 
     handleRowSelection(event) {
@@ -225,10 +264,10 @@ export default class TeamRequests extends LightningElement {
                 break;
             case 'reject':
                 if (row.Status__c === 'Cancellation Requested') {
-                this.handleRejectCancellation();
-            } else {
-                this.openRejectModal();
-            }
+                    this.handleRejectCancellation();
+                } else {
+                    this.openRejectModal();
+                }
                 break;
             case 'show_details':
                 publish(this.messageContext, LEAVE_REQUEST_SELECTED_CHANNEL, {
@@ -264,8 +303,7 @@ export default class TeamRequests extends LightningElement {
             });
     }
 
-
-        handleRejectCancellation() {
+    handleRejectCancellation() {
         if (confirm('Are you sure you want to reject this cancellation request? The leave will remain approved.')) {
             this.isLoading = true;
             
@@ -305,43 +343,43 @@ export default class TeamRequests extends LightningElement {
         this.approverComment = event.target.value;
     }
 
-submitRejection() {
-    this.isLoading = true;
+    submitRejection() {
+        this.isLoading = true;
 
-    rejectLeaveRequest({
-        leaveRequestId: this.selectedRequestId,
-        rejectionReason: this.rejectionReason,
-        approverComment: this.approverComment,
-        isReasonRequired: true
-    })
-    .then(() => {
-        this.showToast('Success', 'Request rejected successfully.', 'success');
-        this.closeModal();
-        return this.refreshData();
-    })
-    .catch(error => {
-        console.error('Error Details:', JSON.stringify(error));
+        rejectLeaveRequest({
+            leaveRequestId: this.selectedRequestId,
+            rejectionReason: this.rejectionReason,
+            approverComment: this.approverComment,
+            isReasonRequired: true
+        })
+        .then(() => {
+            this.showToast('Success', 'Request rejected successfully.', 'success');
+            this.closeModal();
+            return this.refreshData();
+        })
+        .catch(error => {
+            console.error('Error Details:', JSON.stringify(error));
 
-        let errorMessage = 'An unknown error occurred.'; 
+            let errorMessage = 'An unknown error occurred.'; 
 
-        if (error && error.body && error.body.fieldErrors && error.body.fieldErrors.Approver_Comments__c) {
-            
-            errorMessage = error.body.fieldErrors.Approver_Comments__c[0].message;
-            
-            let commentField = this.template.querySelector('[data-field="Approver_Comments__c"]');
-            if (commentField) {
-                commentField.setCustomValidity(errorMessage);
-                commentField.reportValidity();
+            if (error && error.body && error.body.fieldErrors && error.body.fieldErrors.Approver_Comments__c) {
+                
+                errorMessage = error.body.fieldErrors.Approver_Comments__c[0].message;
+                
+                let commentField = this.template.querySelector('[data-field="Approver_Comments__c"]');
+                if (commentField) {
+                    commentField.setCustomValidity(errorMessage);
+                    commentField.reportValidity();
+                }
+
+            } else if (error && error.body && error.body.message) {
+                errorMessage = error.body.message;
+                this.showToast('Error', errorMessage, 'error');
             }
-
-        } else if (error && error.body && error.body.message) {
-            errorMessage = error.body.message;
-            this.showToast('Error', errorMessage, 'error');
-        }
-        
-        this.isLoading = false;
-    });
-}
+            
+            this.isLoading = false;
+        });
+    }
 
     handleRefresh() {
         this.isLoading = true;
