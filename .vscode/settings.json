@@ -4,5 +4,6 @@
     "**/bower_components": true,
     "**/.sfdx": true
   },
-  "salesforcedx-vscode-core.enable-sobject-refresh-on-startup": true
+  "salesforcedx-vscode-core.enable-sobject-refresh-on-startup": true,
+  "salesforce.einsteinForDevelopers.enableAutocompletions": false
 }

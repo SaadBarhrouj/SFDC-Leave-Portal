@@ -11,7 +11,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3VJWAY</stringValue>
+                <elementReference>Get_Custom_Notification_for_Requester.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -52,7 +52,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3YXWAY</stringValue>
+                <elementReference>Get_Custom_Notification_for_Requester.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -93,7 +93,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3a9WAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Requester.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -134,7 +134,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3WvWAI</stringValue>
+                <elementReference>Get_Custom_Notification_for_Requester.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -175,7 +175,7 @@
         <inputParameters>
             <name>customNotifTypeId</name>
             <value>
-                <stringValue>0MLgL000000p3jpWAA</stringValue>
+                <elementReference>Get_Custom_Notification_for_Requester.Id</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -342,11 +342,32 @@
         </value>
     </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_Custom_Notification_for_Requester</name>
+        <label>Get Custom Notification for Requester</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Prepare_Recipient_List</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>DeveloperName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Leave_Request_Status_Update</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>CustomNotificationType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
     <start>
         <locationX>0</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Prepare_Recipient_List</targetReference>
+            <targetReference>Get_Custom_Notification_for_Requester</targetReference>
         </connector>
         <object>Leave_Request__c</object>
         <recordTriggerType>CreateAndUpdate</recordTriggerType>

@@ -81,6 +81,7 @@ const COLUMNS = [
 const DEFAULT_FILTERS = {
     status: 'All',
     requesterName: '',
+    leaveType: '',
     startDate: null,
     endDate: null
 };
@@ -98,6 +99,7 @@ export default class TeamRequests extends LightningElement {
 
     showFilterPopover = false;
     selectedRequestId;
+    showModal = false;
     rejectionReason = '';
     approverComment = '';
 
@@ -109,6 +111,14 @@ export default class TeamRequests extends LightningElement {
         { label: 'Pending HR Approval', value: 'Pending HR Approval' },
         { label: 'Escalated to Senior Manager', value: 'Escalated to Senior Manager' },
         { label: 'Cancellation Requested', value: 'Cancellation Requested' }
+    ];
+
+    leaveTypeOptions = [
+        { label: 'All Types', value: '' },
+        { label: 'Vacation', value: 'Vacation' },
+        { label: 'RTT', value: 'RTT' },
+        { label: 'Sick Leave', value: 'Sick Leave' },
+        { label: 'Training', value: 'Training' },
     ];
 
     @wire(MessageContext)
@@ -211,7 +221,7 @@ export default class TeamRequests extends LightningElement {
 
     applyFilters() {
         let data = [...this.allRequests];
-        const { status, requesterName, startDate, endDate } = this.filterValues;
+        const { status, requesterName, leaveType, startDate, endDate } = this.filterValues;
 
         if (status && status !== 'All') {
             data = data.filter(req => req.Status__c === status);
@@ -219,6 +229,9 @@ export default class TeamRequests extends LightningElement {
         if (requesterName) {
             const lowerCaseName = requesterName.toLowerCase();
             data = data.filter(req => req.RequesterName && req.RequesterName.toLowerCase().includes(lowerCaseName));
+        }
+        if (leaveType) {
+            data = data.filter(req => req.Leave_Type__c === leaveType);
         }
         if (startDate) {
             data = data.filter(req => req.Start_Date__c >= startDate);

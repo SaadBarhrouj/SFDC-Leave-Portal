@@ -17,6 +17,7 @@
     <navType>Standard</navType>
     <tabs>Leave_Balance__c</tabs>
     <tabs>Leave_Requests</tabs>
+    <tabs>Team_Leave_Management</tabs>
     <tabs>Leave_Request__c</tabs>
     <tabs>Leave_Balance_History__c</tabs>
     <tabs>Holiday__c</tabs>

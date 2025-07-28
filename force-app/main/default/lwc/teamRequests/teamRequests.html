@@ -22,7 +22,18 @@
                 </div>
                 <div class="slds-popover__body">
                     <div class="slds-grid slds-wrap slds-gutters">
-                        <!-- Ligne 1 : Statut et Nom -->
+                        <!-- Ligne 1 :  Nom -->
+                        <div class="slds-col slds-size_1-of-1 slds-p-bottom_small">
+                            <lightning-input
+                                type="search"
+                                name="requesterName"
+                                label="Requester Name"
+                                value={filterValues.requesterName}
+                                onchange={handleFilterChange}>
+                            </lightning-input>
+                        </div>
+
+                        <!-- Ligne 2 : Statut et Leave Type -->
                         <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
                             <lightning-combobox
                                 name="status"
@@ -33,16 +44,16 @@
                             </lightning-combobox>
                         </div>
                         <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
-                            <lightning-input
-                                type="search"
-                                name="requesterName"
-                                label="Requester Name"
-                                value={filterValues.requesterName}
+                            <lightning-combobox
+                                name="leaveType"
+                                label="Leave Type"
+                                value={filterValues.leaveType}
+                                options={leaveTypeOptions}
                                 onchange={handleFilterChange}>
-                            </lightning-input>
+                            </lightning-combobox>
                         </div>
 
-                        <!-- Ligne 2 : Dates -->
+                        <!-- Ligne 3 : Dates -->
                         <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
                             <lightning-input
                                 type="date"

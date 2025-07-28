@@ -1,16 +1,16 @@
-import { LightningElement, track, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { publish, subscribe, MessageContext } from 'lightning/messageService';
-import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 import cancelLeaveRequest from '@salesforce/apex/LeaveRequestController.cancelLeaveRequest';
+import getMyLeaves from '@salesforce/apex/LeaveRequestController.getMyLeaves';
 import requestCancellation from '@salesforce/apex/LeaveRequestController.requestCancellation';
-import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
-import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
+import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest';
 import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionChannel__c';
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequestModifiedChannel__c';
-import withdrawCancellationRequest from '@salesforce/apex/LeaveRequestController.withdrawCancellationRequest';
+import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
+import { MessageContext, publish, subscribe } from 'lightning/messageService';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { LightningElement, track, wire } from 'lwc';
 
 const COLUMNS = [
     { label: 'Request Number', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestNumber' }, name: 'show_details', variant: 'base' } },
@@ -22,12 +22,22 @@ const COLUMNS = [
     { type: 'action', typeAttributes: { rowActions: { fieldName: 'availableActions' } } }
 ];
 
+const DEFAULT_FILTERS = {
+    status: 'All',
+    leaveType: '',
+    startDate: null,
+    endDate: null
+};
+
 export default class MyRequestContainer extends LightningElement {
     @track requests = [];
     @track isLoading = false;
     @track selectedStatus = 'All';
     @track showCreateModal = false;
     @track recordIdToEdit = null;
+    @track filterValues = { ...DEFAULT_FILTERS };
+    @track filteredRequestsData = [];
+    showFilterPopover = false;
 
     columns = COLUMNS;
     wiredRequestsResult;
@@ -40,6 +50,14 @@ export default class MyRequestContainer extends LightningElement {
         { label: 'Cancelled', value: 'Cancelled' }, { label: 'Cancellation Requested', value: 'Cancellation Requested' }
     ];
 
+    leaveTypeOptions = [
+        { label: 'All Types', value: '' },
+        { label: 'Vacation', value: 'Vacation' },
+        { label: 'RTT', value: 'RTT' },
+        { label: 'Sick Leave', value: 'Sick Leave' },
+        { label: 'Training', value: 'Training' },
+    ];
+
     @wire(MessageContext) messageContext;
 
     @wire(getMyLeaves)
@@ -47,6 +65,7 @@ export default class MyRequestContainer extends LightningElement {
         this.wiredRequestsResult = result;
         if (result.data) {
             this.requests = this.processRequestsForDisplay(result.data);
+            this.applyFilters();
         } else if (result.error) {
             this.showError(result.error?.body?.message || 'Error loading requests.');
         }
@@ -57,14 +76,56 @@ export default class MyRequestContainer extends LightningElement {
     }
 
     get filteredRequests() {
-        if (this.selectedStatus === 'All') return this.requests;
-        return this.requests.filter(r => r.Status__c === this.selectedStatus);
+        return this.filteredRequestsData.length || this.hasActiveFilters() ? this.filteredRequestsData : this.requests;
     }
 
-    handleStatusChange(event) {
-        this.selectedStatus = event.detail.value;
+    get filterButtonVariant() {
+        return this.showFilterPopover ? 'brand' : 'neutral';
     }
 
+    hasActiveFilters() {
+        const { status, leaveType, startDate, endDate } = this.filterValues;
+        return (
+            (status && status !== 'All') ||
+            leaveType ||
+            startDate ||
+            endDate
+        );
+    }
+
+    toggleFilterPopover() {
+        this.showFilterPopover = !this.showFilterPopover;
+    }
+
+    handleFilterChange(event) {
+        const { name, value } = event.target;
+        this.filterValues = { ...this.filterValues, [name]: value };
+    }
+
+    clearFilters() {
+        this.filterValues = { ...DEFAULT_FILTERS };
+        this.applyFilters();
+    }
+
+    applyFilters() {
+        let data = [...this.requests];
+        const { status, leaveType, startDate, endDate } = this.filterValues;
+
+        if (status && status !== 'All') {
+            data = data.filter(req => req.Status__c === status);
+        }
+        if (leaveType) {
+            data = data.filter(req => req.Leave_Type__c === leaveType);
+        }
+        if (startDate) {
+            data = data.filter(req => req.Start_Date__c >= startDate);
+        }
+        if (endDate) {
+            data = data.filter(req => req.End_Date__c <= endDate);
+        }
+        this.filteredRequestsData = data;
+    }
+    
     handleNewRequest() {
         this.recordIdToEdit = null;
         this.showCreateModal = true;
@@ -198,8 +259,6 @@ export default class MyRequestContainer extends LightningElement {
     publishRefreshRequest(recordId) {
         publish(this.messageContext, REFRESH_LEAVE_DATA_CHANNEL, { recordId });
     }
-
-
 
     processRequestsForDisplay(rawData) {
         return rawData.map(request => {

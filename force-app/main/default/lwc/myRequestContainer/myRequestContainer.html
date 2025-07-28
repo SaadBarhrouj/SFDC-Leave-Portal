@@ -1,19 +1,6 @@
 <template>
     <lightning-card title="Leave Requests" icon-name="utility:task">
-        <div class="slds-grid slds-gutters" slot="actions">
-            <div class="slds-col slds-grid slds-align-middle">
-                <div class="slds-align_absolute-center">
-                    <lightning-icon icon-name="utility:filter" size="x-small" class="slds-m-right_x-small"></lightning-icon>
-                </div>
-                <lightning-combobox
-                    name="statusFilter"
-                    value={selectedStatus}
-                    options={statusOptions}
-                    onchange={handleStatusChange}
-                    label="Status"
-                    variant="label-hidden">
-                </lightning-combobox>
-            </div>
+        <div class="slds-grid" slot="actions">
             <div class="slds-col">
                 <lightning-button 
                     label="Refresh" 
@@ -31,7 +18,69 @@
                     class="slds-m-right_x-small">
                 </lightning-button>
             </div>
+            <lightning-button-icon
+                icon-name="utility:filterList"
+                variant={filterButtonVariant}
+                onclick={toggleFilterPopover}
+                alternative-text="Show Filters"
+                title="Show Filters">
+            </lightning-button-icon>
         </div>
+
+        <!-- Popover pour les filtres avancés -->
+        <template if:true={showFilterPopover}>
+            <div class="slds-popover slds-popover_medium slds-nubbin_top-right" role="dialog" style="position: absolute; top: 60px; right: 10px; width: 420px;">
+                <div class="slds-popover__header">
+                    <h2 class="slds-text-heading_medium">Filters</h2>
+                </div>
+                <div class="slds-popover__body">
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <!-- Ligne 1 : Statut et Type de congé -->
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-combobox
+                                name="status"
+                                label="Status"
+                                value={filterValues.status}
+                                options={statusOptions}
+                                onchange={handleFilterChange}>
+                            </lightning-combobox>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-combobox
+                                name="leaveType"
+                                label="Leave Type"
+                                value={filterValues.leaveType}
+                                options={leaveTypeOptions}
+                                onchange={handleFilterChange}>
+                            </lightning-combobox>
+                        </div>
+                        <!-- Ligne 2 : Dates -->
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-input
+                                type="date"
+                                name="startDate"
+                                label="Start Date From"
+                                value={filterValues.startDate}
+                                onchange={handleFilterChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-input
+                                type="date"
+                                name="endDate"
+                                label="End Date Until"
+                                value={filterValues.endDate}
+                                onchange={handleFilterChange}>
+                            </lightning-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-popover__footer slds-text-align_right">
+                    <lightning-button label="Clear" onclick={clearFilters} class="slds-m-right_x-small"></lightning-button>
+                    <lightning-button label="Apply" variant="brand" onclick={applyFilters}></lightning-button>
+                </div>
+            </div>
+        </template>
 
         <template if:true={isLoading}>
             <div class="spinner-overlay">
