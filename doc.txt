@@ -1,16 +1,29 @@
-// This script schedules the annual synchronization of public holidays.
-// It must be executed only once after deployment.
+// ===================================================================
+// SCRIPT TO SCHEDULE ALL ANNUAL JOBS
+// This script should be executed only once after deployment.
+// ===================================================================
 
-String jobName = 'Annual Holiday Synchronization';
+// --- Job 1: Annual Holiday Synchronization ---
+// Description: This job synchronizes public holidays for the upcoming year.
+String holidayJobName = 'Annual Holiday Synchronization';
 
-// CRON Expression: s m h day_of_month month day_of_week year
-// Here: At 2:00 AM, on the 1st day of November, every year.
-String cronExpression = '0 0 2 1 11 ? *';
-
-// Create an instance of the class to be scheduled
-ScheduledHolidaySync jobToSchedule = new ScheduledHolidaySync();
+// CRON Expression: At 2:00 AM, on the 1st day of November, every year.
+String holidayCronExpression = '0 0 2 1 11 ? *';
 
 // Schedule the job
-System.schedule(jobName, cronExpression, jobToSchedule);
+ScheduledHolidaySync holidayJob = new ScheduledHolidaySync();
+System.schedule(holidayJobName, holidayCronExpression, holidayJob);
+System.debug('Job "' + holidayJobName + '" has been scheduled.');
 
-System.debug('The job "' + jobName + '" has been scheduled)
+
+// --- Job 2: Annual Paid Leave Balance Creation ---
+// Description: This job creates the new Paid Leave balances for all active employees for the upcoming year.
+String leaveBalanceJobName = 'Annual Paid Leave Creation - Batch';
+
+// CRON Expression: At 2:00 AM, on the 15th day of December, every year.
+String leaveBalanceCronExpression = '0 0 2 15 12 ? *';
+
+// Schedule the job
+AnnualLeaveBalanceScheduler leaveBalanceJob = new AnnualLeaveBalanceScheduler();
+System.schedule(leaveBalanceJobName, leaveBalanceCronExpression, leaveBalanceJob);
+System.debug('Job "' + leaveBalanceJobName + '" has been scheduled.');
