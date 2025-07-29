@@ -25,7 +25,7 @@ public class LeaveRequestHistoryHelper {
 
             if (newReq.Status__c != oldReq.Status__c) {
 
-                if (newReq.Leave_Type__c == 'RTT' || newReq.Leave_Type__c == 'Vacation') {
+                if (newReq.Leave_Type__c == 'RTT' || newReq.Leave_Type__c == 'Paid Leave') {
                     
                     Leave_Balance__c currentBalance = balanceMap.get(newReq.Leave_Balance__c);
                     Decimal newBalanceValue = (currentBalance != null) ? currentBalance.Remaining_Days__c : null;

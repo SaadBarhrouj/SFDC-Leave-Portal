@@ -52,7 +52,7 @@ export default class MyRequestContainer extends LightningElement {
 
     leaveTypeOptions = [
         { label: 'All Types', value: '' },
-        { label: 'Vacation', value: 'Vacation' },
+        { label: 'Paid Leave', value: 'Paid Leave' },
         { label: 'RTT', value: 'RTT' },
         { label: 'Sick Leave', value: 'Sick Leave' },
         { label: 'Training', value: 'Training' },

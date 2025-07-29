@@ -18,7 +18,7 @@ public with sharing class LeaveBalanceController {
             for (Leave_Balance__c balance : [
                 SELECT Leave_Type__c, Remaining_Days__c, Used_Days__c
                 FROM Leave_Balance__c
-                WHERE Employee__c = :currentUserId AND Leave_Type__c IN ('RTT', 'Vacation')
+                WHERE Employee__c = :currentUserId AND Leave_Type__c IN ('RTT', 'Paid Leave')
                 And Year__c = :Date.today().year()
             ]) {
                 BalanceOverview overview = new BalanceOverview();

@@ -9,11 +9,11 @@ private class TeamRequestsControllerTest {
         teamMember.ManagerId = manager.Id;
         update teamMember;
         
-        Leave_Balance__c vacationBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Vacation', 50);
+        Leave_Balance__c paidLeaveBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Paid Leave', 50);
         Leave_Balance__c rttBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'RTT', 10);
         
         Leave_Request__c pendingRequest1 = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(11), vacationBalance.Id
+            teamMember.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(11), paidLeaveBalance.Id
             );
         Leave_Request__c pendingRequest2 = TestDataFactory.createLeaveRequest(
             teamMember.Id, 'RTT', Date.today().addDays(12), Date.today().addDays(14), rttBalance.Id
@@ -22,19 +22,19 @@ private class TeamRequestsControllerTest {
             teamMember.Id, 'RTT', Date.today().addDays(15), Date.today().addDays(18), rttBalance.Id
             );
         Leave_Request__c approvedRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today().addDays(20), Date.today().addDays(21), vacationBalance.Id
+            teamMember.Id, 'Paid Leave', Date.today().addDays(20), Date.today().addDays(21), paidLeaveBalance.Id
             );
         approvedRequest.Status__c = 'Approved';
         pendingRequest1.Status__c = 'Submitted';
         pendingRequest2.Status__c = 'Submitted';
         pendingRequest3.Status__c = 'Submitted';
         
-        Leave_Request__c vacation25DaysRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today().addDays(30), Date.today().addDays(55), vacationBalance.Id
+        Leave_Request__c paidLeave25DaysRequest = TestDataFactory.createLeaveRequest(
+            teamMember.Id, 'Paid Leave', Date.today().addDays(30), Date.today().addDays(55), paidLeaveBalance.Id
             );
-        vacation25DaysRequest.Status__c = 'Submitted';
+        paidLeave25DaysRequest.Status__c = 'Submitted';
         
-        insert new List<Leave_Request__c>{pendingRequest1, pendingRequest2,pendingRequest3, approvedRequest, vacation25DaysRequest};
+        insert new List<Leave_Request__c>{pendingRequest1, pendingRequest2,pendingRequest3, approvedRequest, paidLeave25DaysRequest};
     }
     
     @isTest
@@ -63,7 +63,7 @@ private class TeamRequestsControllerTest {
     @isTest
     static void testApproveLeaveRequest_Success() {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' AND Leave_Type__c = 'Vacation' LIMIT 1];
+        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' AND Leave_Type__c = 'Paid Leave' LIMIT 1];
         
         Test.startTest();
         System.runAs(manager) {
@@ -136,9 +136,9 @@ private class TeamRequestsControllerTest {
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
         User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb' LIMIT 1];
         
-        Leave_Balance__c vacationBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Vacation', 5);
+        Leave_Balance__c paidLeaveBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Paid Leave', 5);
         Leave_Request__c request = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today().addDays(70), Date.today().addDays(71), vacationBalance.Id
+            teamMember.Id, 'Paid Leave', Date.today().addDays(70), Date.today().addDays(71), paidLeaveBalance.Id
             );
         request.Status__c = 'Submitted';
         insert request;
@@ -170,21 +170,21 @@ private class TeamRequestsControllerTest {
         GroupMember gm = new GroupMember(UserOrGroupId = hrUser.Id, GroupId = hrQueue.Id);
         insert gm;
         
-        Leave_Request__c vacation25DaysRequest = [
+        Leave_Request__c paidLeave25DaysRequest = [
             SELECT Id FROM Leave_Request__c 
             WHERE Status__c != 'Approved' AND Number_of_Days_Requested__c > 15 LIMIT 1
         ];
         
         Test.startTest();
         System.runAs(manager) {
-            TeamRequestsController.approveLeaveRequest(vacation25DaysRequest.Id);
+            TeamRequestsController.approveLeaveRequest(paidLeave25DaysRequest.Id);
         }
         Test.stopTest();
         
         ProcessInstanceWorkitem hrWorkItem = [
             SELECT Id, ActorId
             FROM ProcessInstanceWorkitem
-            WHERE ProcessInstance.TargetObjectId = :vacation25DaysRequest.Id
+            WHERE ProcessInstance.TargetObjectId = :paidLeave25DaysRequest.Id
             LIMIT 1
         ];
         System.assertEquals(hrQueue.Id, hrWorkItem.ActorId, 'Le workitem doit être assigné à la queue HR Approvals.');
@@ -200,17 +200,17 @@ private class TeamRequestsControllerTest {
         User otherManager = TestDataFactory.createTestUser('other', 'OM');
         
         User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb' LIMIT 1];
-        Leave_Balance__c vacationBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Vacation', 5);
-        Leave_Request__c vacationRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Vacation', Date.today().addDays(80), Date.today().addDays(81), vacationBalance.Id
+        Leave_Balance__c paidLeaveBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Paid Leave', 5);
+        Leave_Request__c paidLeaveRequest = TestDataFactory.createLeaveRequest(
+            teamMember.Id, 'Paid Leave', Date.today().addDays(80), Date.today().addDays(81), paidLeaveBalance.Id
             );
-        vacationRequest.Status__c = 'Submitted';
-        insert vacationRequest;
+        paidLeaveRequest.Status__c = 'Submitted';
+        insert paidLeaveRequest;
         
         Test.startTest();
         System.runAs(otherManager) {
             try {
-                TeamRequestsController.approveLeaveRequest(vacationRequest.Id);
+                TeamRequestsController.approveLeaveRequest(paidLeaveRequest.Id);
                 System.assert(false, 'An exception should have been thrown for an unauthorized user.');
             } catch (AuraHandledException e) {
                 System.debug('Exception message: ' + e.getMessage());

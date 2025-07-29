@@ -12,9 +12,9 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Vacation</fullName>
+                <fullName>Paid Leave</fullName>
                 <default>false</default>
-                <label>Vacation</label>
+                <label>Paid Leave</label>
             </value>
             <value>
                 <fullName>RTT</fullName>
@@ -30,6 +30,11 @@
                 <fullName>Training</fullName>
                 <default>false</default>
                 <label>Training</label>
+            </value>
+            <value>
+                <fullName>Unpaid Leave</fullName>
+                <default>false</default>
+                <label>Unpaid Leave</label>
             </value>
         </valueSetDefinition>
     </valueSet>

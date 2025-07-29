@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Leave_Type__c</fullName>
-    <description>Categorizes the type of leave being requested (e.g., Vacation, RTT)</description>
+    <description>Categorizes the type of leave being requested (e.g., Paid Leave, RTT)</description>
     <label>Leave Type</label>
     <required>true</required>
     <trackHistory>false</trackHistory>
@@ -12,9 +12,9 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>Vacation</fullName>
+                <fullName>Paid Leave</fullName>
                 <default>false</default>
-                <label>Vacation</label>
+                <label>Paid Leave</label>
             </value>
             <value>
                 <fullName>RTT</fullName>
