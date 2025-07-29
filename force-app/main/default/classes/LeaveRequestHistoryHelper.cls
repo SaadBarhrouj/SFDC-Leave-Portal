@@ -25,31 +25,34 @@ public class LeaveRequestHistoryHelper {
 
             if (newReq.Status__c != oldReq.Status__c) {
 
-                Leave_Balance__c currentBalance = balanceMap.get(newReq.Leave_Balance__c);
-                Decimal newBalanceValue = (currentBalance != null) ? currentBalance.Remaining_Days__c : null;
+                if (newReq.Leave_Type__c == 'RTT' || newReq.Leave_Type__c == 'Vacation') {
+                    
+                    Leave_Balance__c currentBalance = balanceMap.get(newReq.Leave_Balance__c);
+                    Decimal newBalanceValue = (currentBalance != null) ? currentBalance.Remaining_Days__c : null;
 
-                if (newReq.Status__c == 'Approved' && oldReq.Status__c != 'Approved') {
-                    historiesToCreate.add(new Leave_Balance_History__c(
-                        Employee__c = newReq.Requester__c,
-                        Leave_Type__c = newReq.Leave_Type__c,
-                        Movement_Date__c = Date.today(),
-                        Movement_Type__c = 'Deduction',
-                        Number_of_Days__c = -math.abs(newReq.Number_of_Days_Requested__c),
-                        Source_of_Movement__c = 'Leave Request ' + newReq.Name + ' Approved',
-                        New_Balance__c = newBalanceValue
-                    ));
-                }
+                    if (newReq.Status__c == 'Approved' && oldReq.Status__c != 'Approved') {
+                        historiesToCreate.add(new Leave_Balance_History__c(
+                            Employee__c = newReq.Requester__c,
+                            Leave_Type__c = newReq.Leave_Type__c,
+                            Movement_Date__c = Date.today(),
+                            Movement_Type__c = 'Deduction',
+                            Number_of_Days__c = -math.abs(newReq.Number_of_Days_Requested__c),
+                            Source_of_Movement__c = 'Leave Request ' + newReq.Name + ' Approved',
+                            New_Balance__c = newBalanceValue
+                        ));
+                    }
 
-                if (newReq.Status__c == 'Cancelled' && oldReq.Status__c == 'Approved') {
-                     historiesToCreate.add(new Leave_Balance_History__c(
-                        Employee__c = newReq.Requester__c,
-                        Leave_Type__c = newReq.Leave_Type__c,
-                        Movement_Date__c = Date.today(),
-                        Movement_Type__c = 'Accrual',
-                        Number_of_Days__c = math.abs(newReq.Number_of_Days_Requested__c),
-                        Source_of_Movement__c = 'Leave Request ' + newReq.Name + ' Cancelled',
-                        New_Balance__c = newBalanceValue 
-                    ));
+                    if (newReq.Status__c == 'Cancelled' && oldReq.Status__c == 'Cancellation Requested') {
+                        historiesToCreate.add(new Leave_Balance_History__c(
+                            Employee__c = newReq.Requester__c,
+                            Leave_Type__c = newReq.Leave_Type__c,
+                            Movement_Date__c = Date.today(),
+                            Movement_Type__c = 'Accrual',
+                            Number_of_Days__c = math.abs(newReq.Number_of_Days_Requested__c),
+                            Source_of_Movement__c = 'Leave Request ' + newReq.Name + ' Cancelled',
+                            New_Balance__c = newBalanceValue 
+                        ));
+                    }
                 }
             }
         }
