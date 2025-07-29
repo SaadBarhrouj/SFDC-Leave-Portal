@@ -1,27 +1,31 @@
 <template>
-    <lightning-card >
-        <div class="slds-p-horizontal_medium">
-            <h2 class="slds-text-heading_small slds-m-bottom_small">Transaction Details</h2>
+    <lightning-card title="Balance Transaction History" icon-name="utility:budget_period">
+
+        <div class="slds-grid slds-gutters" slot="actions">            
+            <div class="slds-col">
+                <lightning-button label="Refresh" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
+            </div>
+            <lightning-button-icon
+                icon-name="utility:filterList"
+                variant={filterButtonVariant}
+                onclick={toggleFilterPopover}
+                alternative-text="Show Filters"
+                title="Show Filters"
+                class="slds-p-right_small">
+            </lightning-button-icon>
         </div>
 
-        <div class="slds-p-bottom_medium">
+        <div class="slds-p-horizontal_small">
             <template if:true={hasData}>
-                <c-requests-datatable
-                    lwc:ref="datatable"
-                    key-field="Name"
-                    data={historyData}
-                    columns={historyColumns}
-                    resize-column-disabled="true"
-                    hide-checkbox-column="true">
+                <c-requests-datatable lwc:ref="datatable" key-field="Name" data={historyData} columns={historyColumns} resize-column-disabled="true" hide-checkbox-column="true">
                 </c-requests-datatable>
             </template>
 
             <template if:false={hasData}>
                 <div class="slds-align_absolute-center slds-p-around_medium">
-                    <c-no-data-svg message="You haven't submitted any leave requests yet."></c-no-data-svg>
+                    <c-no-data-svg message="No balance history available yet. Your transactions will appear here once recorded."></c-no-data-svg>
                 </div>
             </template>
         </div>
-        
     </lightning-card>
 </template>
