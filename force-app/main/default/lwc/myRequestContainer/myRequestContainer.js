@@ -7,6 +7,7 @@ import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionCh
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_MODIFIED_CHANNEL from '@salesforce/messageChannel/LeaveRequestModifiedChannel__c';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
+import REFRESH_BALANCE_CHANNEL from '@salesforce/messageChannel/RefreshBalanceChannel__c';
 import REFRESH_LEAVE_DATA_CHANNEL from '@salesforce/messageChannel/RefreshLeaveDataChannel__c';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -184,6 +185,7 @@ export default class MyRequestContainer extends LightningElement {
     refreshRequests() {
         this.isLoading = true;
         publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
+        publish(this.messageContext, REFRESH_BALANCE_CHANNEL, {});
         return refreshApex(this.wiredRequestsResult)
             .finally(() => {
                 this.isLoading = false;
@@ -197,6 +199,7 @@ export default class MyRequestContainer extends LightningElement {
         };
         publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
         publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
+        publish(this.messageContext, REFRESH_BALANCE_CHANNEL, {});
         return refreshApex(this.wiredRequestsResult)
             .finally(() => {
                 this.isLoading = false;

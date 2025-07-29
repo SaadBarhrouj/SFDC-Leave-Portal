@@ -1,3 +1,7 @@
 :host {
     --sds-c-card-color-background: rgb(243, 243, 243);
 }
+
+.team-requests-wrapper {
+    min-height: 552px;
+}
