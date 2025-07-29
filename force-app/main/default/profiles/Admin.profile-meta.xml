@@ -42,6 +42,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>LeaveBalanceController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>LeaveBalanceHandler</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -59,6 +63,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>LeaveRequestDetailControllerTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>LeaveRequestHistoryHelper</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -277,6 +285,10 @@
     </tabVisibilities>
     <tabVisibilities>
         <tab>Leave_Requests</tab>
+        <visibility>DefaultOn</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
+        <tab>Team_Leave_Management</tab>
         <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <userLicense>Salesforce</userLicense>
