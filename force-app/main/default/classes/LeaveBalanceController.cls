@@ -8,7 +8,7 @@ public with sharing class LeaveBalanceController {
     }
 
   
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<BalanceOverview> getLeaveBalanceOverviews() {
         try {
             List<BalanceOverview> overviews = new List<BalanceOverview>();
