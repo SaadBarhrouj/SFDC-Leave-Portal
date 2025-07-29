@@ -103,7 +103,7 @@ export default class TeamRequests extends LightningElement {
 
     leaveTypeOptions = [
         { label: 'All Types', value: '' },
-        { label: 'Vacation', value: 'Vacation' },
+        { label: 'Paid Leave', value: 'Paid Leave' },
         { label: 'RTT', value: 'RTT' },
         { label: 'Sick Leave', value: 'Sick Leave' },
         { label: 'Training', value: 'Training' },
@@ -388,9 +388,18 @@ export default class TeamRequests extends LightningElement {
     }
 
     showToast(title, message, type) {
+        let displayMessage = message;
+
+        if (typeof displayMessage === 'string' && displayMessage.includes('FIELD_CUSTOM_VALIDATION_EXCEPTION')) {
+            const parts = displayMessage.split('FIELD_CUSTOM_VALIDATION_EXCEPTION,');
+            if (parts.length > 1) {
+                displayMessage = parts[1].split(':')[0].trim();
+            }
+        }
+
         const event = new ShowToastEvent({
             title: title,
-            message: message,
+            message: displayMessage,
             variant: type
         });
         this.dispatchEvent(event);

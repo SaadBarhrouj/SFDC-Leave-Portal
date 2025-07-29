@@ -5,7 +5,7 @@ public class ContentDocumentLinkTriggerTest {
         User testUser = TestDataFactory.createTestUser('docuser', 'US');
         
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
-            testUser.Id, 'Vacation', 
+            testUser.Id, 'Paid Leave', 
             Date.today().addDays(10), 
             Date.today().addDays(11), 
             null
@@ -40,7 +40,7 @@ public class ContentDocumentLinkTriggerTest {
         User testUser = TestDataFactory.createTestUser('docuser2', 'US');
         
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
-            testUser.Id, 'Vacation', 
+            testUser.Id, 'Paid Leave', 
             Date.today().addDays(10), 
             Date.today().addDays(11), 
             null

@@ -34,10 +34,10 @@ private class LeaveRequestControllerTest {
     @isTest
     static void testGetLeaveBalanceId_Success() {
         User testUser = TestDataFactory.createTestUser('testuser', 'US');
-        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
+        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
 
         Test.startTest();
-        Id balanceId = LeaveRequestController.getLeaveBalanceId(testUser.Id, 'Vacation');
+        Id balanceId = LeaveRequestController.getLeaveBalanceId(testUser.Id, 'Paid Leave');
         Test.stopTest();
 
         System.assertEquals(leaveBalance.Id, balanceId, 'Leave balance ID should match the created record.');
@@ -69,11 +69,11 @@ private class LeaveRequestControllerTest {
         User testUser = TestDataFactory.createTestUser('testuser', 'US');
         
         System.runAs(testUser) {
-            Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
+            Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
             
             Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
                 testUser.Id, 
-                'Vacation', 
+                'Paid Leave', 
                 Date.today().addDays(10), 
                 Date.today().addDays(12), 
                 leaveBalance.Id
@@ -184,8 +184,8 @@ private class LeaveRequestControllerTest {
         testUser.ManagerId = manager.Id;
         update testUser;
         System.runAs(testUser) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
+            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 10);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Submitted';
             insert request;
             Exception ex;
@@ -217,8 +217,8 @@ private class LeaveRequestControllerTest {
         testUser.ManagerId = manager.Id;
         update testUser;
         System.runAs(testUser) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
+            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 10);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Pending Manager Approval';
             insert request;
             Test.startTest();
@@ -234,8 +234,8 @@ private class LeaveRequestControllerTest {
     static void testCancelLeaveRequest_RefusedStatus() {
         User testUser = TestDataFactory.createTestUser('testuser', 'US');
         System.runAs(testUser) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
+            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 10);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Approved';
             insert request;
             Exception ex;
@@ -260,8 +260,8 @@ private class LeaveRequestControllerTest {
         requester.ManagerId = manager.Id;
         update requester;
         System.runAs(requester) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(requester.Id, 'Vacation', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(requester.Id, 'Vacation', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
+            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(requester.Id, 'Paid Leave', 10);
+            Leave_Request__c request = TestDataFactory.createLeaveRequest(requester.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
             request.Status__c = 'Pending Manager Approval';
             insert request;
             Test.startTest();

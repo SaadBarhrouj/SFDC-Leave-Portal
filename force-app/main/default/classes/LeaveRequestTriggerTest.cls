@@ -4,7 +4,7 @@ private class LeaveRequestTriggerTest {
     @isTest
     static void testLeaveRequestTrigger_Insert() {
         User testUser = TestDataFactory.createTestUser('tstuser', 'US');
-        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
+        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
 
         Date startDate = System.today().addDays(10); 
         Date endDate = startDate.addDays(4);
@@ -20,7 +20,7 @@ private class LeaveRequestTriggerTest {
         }
 
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
-            testUser.Id, 'Vacation', 
+            testUser.Id, 'Paid Leave', 
             startDate, 
             endDate, 
             leaveBalance.Id
@@ -42,13 +42,13 @@ private class LeaveRequestTriggerTest {
     @isTest
     static void testLeaveRequestTrigger_Update() {
         User testUser = TestDataFactory.createTestUser('tstuser2', 'US');
-        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
+        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
 
         Date startDate = System.today().addDays(20);
         Date endDate = System.today().addDays(24);
 
         Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
-            testUser.Id, 'Vacation', 
+            testUser.Id, 'Paid Leave', 
             startDate, 
             endDate, 
             leaveBalance.Id

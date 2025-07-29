@@ -141,9 +141,10 @@ public with sharing class TeamRequestsController {
             if (!result.isSuccess()) {
                 throw new AuraHandledException(result.getErrors()[0].getMessage());
             }
+        } catch (AuraHandledException ahe) {
+            throw ahe;
         } catch (Exception e) {
-            throw new AuraHandledException('Error processing request: ' + e.getMessage());
+            throw new AuraHandledException(e.getMessage());
         }
     }
-    
 }

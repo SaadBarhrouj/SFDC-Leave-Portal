@@ -1,7 +1,7 @@
 import { LightningElement } from 'lwc';
 
 const STATIC_REMAINING_BALANCES = [
-    { type: 'Vacation', days: 15.5 },
+    { type: 'Paid Leave', days: 15.5 },
     { type: 'RTT', days: 8 }
 ];
 const STATIC_CONSUMED_BALANCES = [
@@ -56,9 +56,9 @@ const HISTORY_COLUMNS_DEFINITION = [
 ];
 
 const STATIC_HISTORY_DATA = [
-    { Movement_Date__c: '2025-07-21', Source_of_Movement__c: 'Approved Vacation Request (5 days)', Movement_Type__c: 'Leave Taken', Leave_Type__c: 'Vacation', Number_of_Days__c: -5, New_Balance__c: 15.5 },
+    { Movement_Date__c: '2025-07-21', Source_of_Movement__c: 'Approved Paid Leave Request (5 days)', Movement_Type__c: 'Leave Taken', Leave_Type__c: 'Paid Leave', Number_of_Days__c: -5, New_Balance__c: 15.5 },
     { Movement_Date__c: '2025-05-15', Source_of_Movement__c: 'HR Correction: End of year bonus day', Movement_Type__c: 'Adjustment', Leave_Type__c: 'N/A', Number_of_Days__c: 1, New_Balance__c: 20.5 },
-    { Movement_Date__c: '2025-01-01', Source_of_Movement__c: 'Annual Allocation for new year', Movement_Type__c: 'Allocation', Leave_Type__c: 'Vacation', Number_of_Days__c: 21.5, New_Balance__c: 21.5 }
+    { Movement_Date__c: '2025-01-01', Source_of_Movement__c: 'Annual Allocation for new year', Movement_Type__c: 'Allocation', Leave_Type__c: 'Paid Leave', Number_of_Days__c: 21.5, New_Balance__c: 21.5 }
 ];
 
 export default class BalanceHistory extends LightningElement {

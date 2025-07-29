@@ -24,9 +24,9 @@ insert teamMember;
 // 3. Créer les soldes de congés pour ce nouvel utilisateur
 Integer currentYear = Date.today().year();
 
-Leave_Balance__c vacationBalance = new Leave_Balance__c(
+Leave_Balance__c paidLeaveBalance = new Leave_Balance__c(
     Employee__c = teamMember.Id,
-    Leave_Type__c = 'Vacation',
+    Leave_Type__c = 'Paid Leave',
     Year__c = currentYear,
     Allocated_Days__c = 25
 );
@@ -38,19 +38,19 @@ Leave_Balance__c rttBalance = new Leave_Balance__c(
     Allocated_Days__c = 10
 );
 
-insert new List<Leave_Balance__c>{vacationBalance, rttBalance};
+insert new List<Leave_Balance__c>{paidLeaveBalance, rttBalance};
 
 // 4. Créer des demandes de congé pour ce collaborateur
 List<Leave_Request__c> requestsToCreate = new List<Leave_Request__c>();
 
-Leave_Request__c vacationRequest = new Leave_Request__c(
-    Leave_Balance__c = vacationBalance.Id,
+Leave_Request__c paidLeaveRequest = new Leave_Request__c(
+    Leave_Balance__c = paidLeaveBalance.Id,
     Requester__c = teamMember.Id,
-    Leave_Type__c = 'Vacation',
+    Leave_Type__c = 'Paid Leave',
     Start_Date__c = Date.today().addMonths(1),
     End_Date__c = Date.today().addMonths(1).addDays(4)
 );
-requestsToCreate.add(vacationRequest);
+requestsToCreate.add(paidLeaveRequest);
 
 Leave_Request__c rttRequest = new Leave_Request__c(
     Leave_Balance__c = rttBalance.Id,

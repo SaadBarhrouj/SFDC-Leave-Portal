@@ -5,11 +5,11 @@ private class LeaveRequestDetailControllerTest {
     static void makeData(){
         User testUser = TestDataFactory.createTestUser('testu', 'MA');
 
-        Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Vacation', 20);
+        Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
 
         Leave_Request__c request = TestDataFactory.createLeaveRequest(
             testUser.Id, 
-            'Vacation', 
+            'Paid Leave', 
             Date.today().addDays(10), 
             Date.today().addDays(12), 
             balance.Id

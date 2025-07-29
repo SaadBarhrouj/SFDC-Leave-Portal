@@ -49,7 +49,7 @@ private class FlowApprovalSynchronizerTest {
         requester.ManagerId = manager.Id;
         update requester;
         
-        String leaveType = 'Vacation';
+        String leaveType = 'Paid Leave';
         Date startDate = Date.today().addDays(10);
         Date endDate = startDate.addDays(2);
         Leave_Request__c req = TestDataFactory.createLeaveRequest(requester.Id, leaveType, startDate, endDate, null);
