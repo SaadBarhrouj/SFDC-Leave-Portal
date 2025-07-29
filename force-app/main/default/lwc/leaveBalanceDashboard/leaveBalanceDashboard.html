@@ -1,0 +1,31 @@
+<template>
+    <div class="slds-box slds-theme_default">
+        <lightning-layout multiple-rows="true" pull-to-boundary="small">
+            
+            <template for:each={balances} for:item="balance">
+                <lightning-layout-item
+                    key={balance.id}
+                    size="12"
+                    small-device-size="6"
+                    medium-device-size="3"
+                    padding="around-small">
+                    
+                    <c-leave-balance-card
+                        label={balance.label}
+                        value={balance.value}
+                        unit={balance.unit}>
+                    </c-leave-balance-card>
+
+                </lightning-layout-item>
+            </template>
+        </lightning-layout>
+
+        <template if:true={error}>
+            <p class="slds-text-color_error slds-m-top_medium">
+                An error occurred while loading leave balances.
+            </p>
+        </template>
+    </div>
+</template>
+
+
