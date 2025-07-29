@@ -4,11 +4,12 @@ import { LightningElement, wire } from 'lwc';
 const LEAVE_TYPE_CONFIG = {
     'RTT':        { unit: 'Days Available',  sourceField: 'remaining' },
     'Paid Leave':   { unit: 'Days Available',  sourceField: 'remaining' },
+    'Unpaid Leave': { unit: 'Days Consumed',   sourceField: 'consumed' },
     'Sick Leave': { unit: 'Days Consumed',   sourceField: 'consumed' },
     'Training':   { unit: 'Days Consumed',   sourceField: 'consumed' },
 };
 
-const DISPLAYED_TYPES = ['RTT', 'Paid Leave', 'Sick Leave', 'Training'];
+const DISPLAYED_TYPES = ['RTT', 'Paid Leave', 'Unpaid Leave', 'Sick Leave', 'Training'];
 
 export default class LeaveBalanceDashboard extends LightningElement {
     balances = [];

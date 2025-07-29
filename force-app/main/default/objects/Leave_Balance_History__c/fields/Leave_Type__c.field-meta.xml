@@ -31,6 +31,12 @@
                 <default>false</default>
                 <label>Training</label>
             </value>
+            <value>
+                <fullName>Vacation</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Vacation</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

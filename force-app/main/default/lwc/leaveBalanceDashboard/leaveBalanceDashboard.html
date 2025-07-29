@@ -1,24 +1,17 @@
 <template>
     <div class="slds-box slds-theme_default">
-        <lightning-layout multiple-rows="true" pull-to-boundary="small">
-            
+
+        <div class="slds-grid slds-wrap slds-gutters">
             <template for:each={balances} for:item="balance">
-                <lightning-layout-item
-                    key={balance.id}
-                    size="12"
-                    small-device-size="6"
-                    medium-device-size="3"
-                    padding="around-small">
-                    
+                <div key={balance.id} class="slds-large-size_1-of-5 slds-medium-size_1-of-3 slds-small-size_1-of-2 slds-p-around_small">
                     <c-leave-balance-card
                         label={balance.label}
                         value={balance.value}
                         unit={balance.unit}>
                     </c-leave-balance-card>
-
-                </lightning-layout-item>
+                </div>
             </template>
-        </lightning-layout>
+        </div>
 
         <template if:true={error}>
             <p class="slds-text-color_error slds-m-top_medium">
@@ -27,5 +20,3 @@
         </template>
     </div>
 </template>
-
-
