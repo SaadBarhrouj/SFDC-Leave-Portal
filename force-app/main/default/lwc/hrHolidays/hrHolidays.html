@@ -1,3 +1,131 @@
 <template>
-    
+    <lightning-card title="Holiday Manager" icon-name="standard:event">
+        <div slot="actions">
+            <lightning-button label="Refresh" title="Refresh the list" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
+            <lightning-button label="Add Holiday" variant="brand" onclick={handleNew} class="slds-m-left_x-small"></lightning-button>
+            <lightning-button label="Sync Holidays" icon-name="utility:sync" onclick={openSyncModal} class="slds-m-left_x-small"></lightning-button>
+            <lightning-button-icon
+                icon-name="utility:filterList"
+                variant={filterButtonVariant}
+                onclick={toggleFilterPopover}
+                alternative-text="Show Filters"
+                title="Show Filters"
+                class="slds-m-left_x-small">
+            </lightning-button-icon>
+        </div>
+
+        <template if:true={showFilterPopover}>
+            <section class="slds-popover slds-popover_medium slds-nubbin_top-right" role="dialog" style="position: absolute; right: 5px; z-index: 10;">
+                <div class="slds-popover__header"><h2 class="slds-text-heading_medium">Filters</h2></div>
+                <div class="slds-popover__body slds-p-around_medium">
+                    <lightning-combobox
+                        name="country"
+                        label="Filter by Country"
+                        value={filterValues.country}
+                        options={countryOptions}
+                        onchange={handleFilterValueChange}
+                        class="slds-m-bottom_small">
+                    </lightning-combobox>
+                    <lightning-input
+                        type="number"
+                        name="year"
+                        label="Filter by Year"
+                        value={filterValues.year}
+                        onchange={handleFilterValueChange}>
+                    </lightning-input>
+                </div>
+                <div class="slds-popover__footer slds-text-align_right">
+                    <lightning-button label="Clear" onclick={clearFilters}></lightning-button>
+                    <lightning-button label="Apply" variant="brand" onclick={applyFilters} class="slds-m-left_x-small"></lightning-button>
+                </div>
+            </section>
+        </template>
+
+        <div class="slds-is-relative">
+            <template if:true={isLoading}>
+                <div class="spinner-overlay">
+                    <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+                </div>
+            </template>
+            <template if:true={hasHolidays}>
+                <lightning-datatable
+                    key-field="Id"
+                    data={filteredHolidays}
+                    columns={columns}
+                    onrowaction={handleRowAction}
+                    hide-checkbox-column="true"
+                    resize-column-disabled="true">
+                </lightning-datatable>
+            </template>
+            <template if:false={hasHolidays}>
+                     <div class="slds-align_absolute-center slds-var-p-around_medium">
+                        <c-no-data-svg message="No holidays to display for the selected filters."></c-no-data-svg>
+                    </div>
+            </template>
+        </div>
+    </lightning-card>
+
+    <template if:true={isSyncModalOpen}>
+        <section role="dialog" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">Sync Holidays</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p class="slds-m-bottom_small">Select a country to fetch holidays from the external API.</p>
+                    <lightning-combobox
+                        name="syncCountry"
+                        label="Country to Sync"
+                        value={countryToSync}
+                        placeholder="Select a country..."
+                        options={syncCountryOptions}
+                        onchange={handleSyncCountryChange}
+                        required>
+                    </lightning-combobox>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={closeSyncModal}></lightning-button>
+                    <lightning-button label="Sync Now" variant="brand" onclick={handleSync} disabled={isSyncDisabled} class="slds-m-left_x-small"></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <template if:true={isModalOpen}>
+        <section role="dialog" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header"><h2 class="slds-text-heading_medium">{modalTitle}</h2></header>
+                <lightning-record-edit-form
+                    object-api-name={holidayObjectApiName}
+                    record-id={recordIdToEdit}
+                    onsuccess={handleSuccess}
+                    onerror={handleError}>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-messages></lightning-messages>
+                        <div class="slds-grid slds-gutters slds-wrap">
+                            <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
+                                <lightning-input-field field-name={holidayNameField} required></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
+                                <lightning-input-field field-name={holidayDateField} required></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
+                                <lightning-input-field field-name={holidayCountryCodeField} required></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
+                                <lightning-input-field field-name={holidayDeductionField}></lightning-input-field>
+                            </div>
+                        </div>
+                        <lightning-input-field field-name={holidayDescriptionField}></lightning-input-field>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={closeModal}></lightning-button>
+                        <lightning-button type="submit" label="Save" variant="brand" class="slds-m-left_x-small"></lightning-button>
+                    </footer>
+                </lightning-record-edit-form>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
 </template>
