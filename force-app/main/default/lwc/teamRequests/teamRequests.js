@@ -302,7 +302,6 @@ export default class TeamRequests extends LightningElement {
             })
                 .then(() => {
                     this.showToast('Success', 'Cancellation request rejected.', 'success');
-                    publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
                     return this.refreshData();
                 })
                 .catch(error => {
@@ -382,10 +381,9 @@ export default class TeamRequests extends LightningElement {
 
     refreshData() {
         this.isLoading = true;
+        publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
         return refreshApex(this.wiredRequestsResult).finally(() => {
             this.isLoading = false;
-            publish(this.messageContext, LEAVE_REQUEST_MODIFIED_CHANNEL, {});
-
         });
     }
 
