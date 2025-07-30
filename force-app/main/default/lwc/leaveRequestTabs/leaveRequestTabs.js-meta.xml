@@ -5,4 +5,15 @@
      <targets>
         <target>lightning__AppPage</target>
     </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property
+                name="initialContext"
+                type="String"
+                label="Initial Context"
+                description="Set the initial context to determine which calendar to display by default."
+                datasource="my,team"
+                default="my" />
+        </targetConfig>
+    </targetConfigs>
 </LightningComponentBundle>

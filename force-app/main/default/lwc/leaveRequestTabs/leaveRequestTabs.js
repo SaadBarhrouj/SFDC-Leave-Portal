@@ -2,20 +2,24 @@ import CLEAR_SELECTION_CHANNEL from '@salesforce/messageChannel/ClearSelectionCh
 import LEAVE_DATA_FOR_CALENDAR_CHANNEL from '@salesforce/messageChannel/LeaveDataForCalendarChannel__c';
 import LEAVE_REQUEST_SELECTED_CHANNEL from '@salesforce/messageChannel/LeaveRequestSelectedChannel__c';
 import { MessageContext, publish, subscribe } from 'lightning/messageService';
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, track, wire, api } from 'lwc';
 
 export default class LeaveRequestTabs extends LightningElement {
     activeTab = 'calendar';
     subscriptionDetails;
     subscriptionCalendar;
 
+    @api initialContext;
+
     @wire(MessageContext)
     messageContext;
     @track selectedRecordId;
     @track selectedContext;
     @track selectedManagerId;
+
     connectedCallback() {
         console.log('[LeaveRequestTabs] connectedCallback');
+        this.selectedContext = this.initialContext;
         this.subscribeToChannels();
     }
 

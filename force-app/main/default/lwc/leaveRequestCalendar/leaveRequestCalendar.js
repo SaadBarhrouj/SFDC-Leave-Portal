@@ -33,7 +33,7 @@ export default class LeaveRequestCalendar extends LightningElement {
     calendar;
     holidays = [];
     currentLeaveRequests = [];
-    _context = 'my';
+    _context;
     _managerId;
     scriptsLoaded = false;
     subscription = null;
