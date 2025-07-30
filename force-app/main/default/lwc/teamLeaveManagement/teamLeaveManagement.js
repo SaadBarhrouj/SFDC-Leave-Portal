@@ -16,4 +16,14 @@ export default class TeamLeaveManagement extends LightningElement {
         };
         publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
     }
+        connectedCallback() {
+             const payload = {
+            context: this.activetabContent
+                      };
+
+         publish(this.messageContext, LEAVE_DATA_FOR_CALENDAR_CHANNEL, payload);
+        console.log('Published initial leave data for calendar with context:', this.activetabContent);  
+        }
+
+    
 }

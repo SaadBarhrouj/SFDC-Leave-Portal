@@ -33,7 +33,7 @@ export default class LeaveRequestCalendar extends LightningElement {
     calendar;
     holidays = [];
     currentLeaveRequests = [];
-    _context = 'my';
+    _context;
     _managerId;
     scriptsLoaded = false;
     subscription = null;
@@ -149,8 +149,10 @@ export default class LeaveRequestCalendar extends LightningElement {
 
     connectedCallback() {
         this.subscribeToMessageChannel();
+        console.log('LeaveRequestCalendar connectedCallback called with context:', this._context);
         if (this._context === 'team') {
             this.loadTeamRequestsData();
+            console.log('Loading team requests data for calendar.');
         } else {
             this.loadMyRequestsData();
         }

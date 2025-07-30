@@ -74,7 +74,7 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
 
         const fields = { ...event.detail.fields }; 
         try {
-            if (fields.Leave_Type__c !== 'Sick Leave' && fields.Leave_Type__c !== 'Training') {
+            if (fields.Leave_Type__c !== 'Sick Leave' && fields.Leave_Type__c !== 'Training' && fields.Leave_Type__c !== 'Unpaid Leave') {
                 fields.Leave_Balance__c = await getLeaveBalanceId({ employeeId: userId, leaveType: fields.Leave_Type__c });
             }
             if (this.isNewRecord) {

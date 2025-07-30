@@ -17,6 +17,10 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
+                <componentInstanceProperties>
+                    <name>initialContext</name>
+                    <value>team</value>
+                </componentInstanceProperties>
                 <componentName>leaveRequestTabs</componentName>
                 <identifier>c_leaveRequestTabs</identifier>
             </componentInstance>

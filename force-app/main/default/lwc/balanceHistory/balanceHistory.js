@@ -1,29 +1,66 @@
-import { LightningElement, wire } from 'lwc';
+import { refreshApex } from '@salesforce/apex';
 import getBalanceHistoryForCurrentUser from '@salesforce/apex/LeaveBalanceController.getBalanceHistoryForCurrentUser';
+import REFRESH_BALANCE_CHANNEL from '@salesforce/messageChannel/RefreshBalanceChannel__c';
+import { MessageContext, publish } from 'lightning/messageService';
+import { LightningElement, track, wire } from 'lwc';
 
 const HISTORY_COLUMNS_DEFINITION = [
     { label: 'Movement Date', fieldName: 'Movement_Date__c', type: 'date-local' },
-    { label: 'Movement Type', fieldName: 'Movement_Type__c', type: 'text' },
+    {
+        label: 'Movement Type',
+        fieldName: 'Movement_Type__c',
+        type: 'customBadge',
+        typeAttributes: {
+            value: { fieldName: 'Movement_Type__c' },
+            class: { fieldName: 'movementTypeBadgeClass' }
+        }
+    },
     { label: 'Leave Type', fieldName: 'Leave_Type__c', type: 'text' },
     { label: 'Description', fieldName: 'Source_of_Movement__c', type: 'text', wrapText: true, initialWidth: 350 },
     { label: 'Change (Days)', fieldName: 'Number_of_Days__c', type: 'text', cellAttributes: { alignment: 'left' } },
     { label: 'New Balance', fieldName: 'New_Balance__c', type: 'number', cellAttributes: { alignment: 'left' } }
 ];
 
+const DEFAULT_FILTERS = {
+    movementType: '',
+    leaveType: '',
+    startDate: null,
+    endDate: null
+};
+
 export default class BalanceHistory extends LightningElement {
-    remainingBalances = [];
-    consumedBalances = [];
-    historyData;
-    error;
-    historyColumns = HISTORY_COLUMNS_DEFINITION;
-    
+    @track historyData = [];
+    @track filteredData = [];
+    @track filterValues = { ...DEFAULT_FILTERS };
+    @track historyColumns = HISTORY_COLUMNS_DEFINITION;
+    @track showFilterPopover = false;
+    isLoading = true;
+    wiredHistoryResult;
+
+    leaveTypeOptions = [
+        { label: 'All Types', value: '' },
+        { label: 'Paid Leave', value: 'Paid Leave' },
+        { label: 'RTT', value: 'RTT' },
+        { label: 'Sick Leave', value: 'Sick Leave' },
+        { label: 'Training', value: 'Training' },
+    ];
+
+    movementTypeOptions = [
+        { label: 'All Types', value: '' },
+        { label: 'Accrual', value: 'Accrual' },
+        { label: 'Deduction', value: 'Deduction' },
+        { label: 'Correction', value: 'Correction' },
+    ];
+
     @wire(getBalanceHistoryForCurrentUser)
-    wiredHistory({ error, data }) {
-        if (data) {
-            this.historyData = data.map(row => {
+    wiredHistory(result) {
+        this.isLoading = true;
+        this.wiredHistoryResult = result;
+        if (result.data) {
+            this.historyData = result.data.map(row => {
                 const newRow = { ...row };
                 const days = newRow.Number_of_Days__c;
-                
+
                 if (days != null && !isNaN(days)) {
                     if (days > 0) {
                         newRow.Number_of_Days__c = `+${days}`;
@@ -31,17 +68,76 @@ export default class BalanceHistory extends LightningElement {
                         newRow.Number_of_Days__c = String(days);
                     }
                 }
+
+                newRow.movementTypeBadgeClass = this.getMovementTypeClass(newRow.Movement_Type__c);
+
                 return newRow;
             });
-            this.error = undefined;
-        } else if (error) {
-            this.error = error;
-            console.error('Error loading balance history:', error);
-            this.historyData = undefined;
+            this.applyFilters();
+        } else if (result.error) {
+            console.error('Error loading balance history:', result.error);
+            this.historyData = [];
+            this.filteredData = [];
+        }
+        this.isLoading = false;
+    }
+
+    @wire(MessageContext)
+    messageContext;
+
+    handleRefresh() {
+        this.isLoading = true;
+        publish(this.messageContext, REFRESH_BALANCE_CHANNEL, {});
+        return refreshApex(this.wiredHistoryResult).finally(() => {
+            this.isLoading = false;
+        });
+    }
+
+    toggleFilterPopover() {
+        this.showFilterPopover = !this.showFilterPopover;
+    }
+
+    handleFilterChange(event) {
+        const { name, value } = event.target;
+        this.filterValues = { ...this.filterValues, [name]: value };
+    }
+
+    clearFilters() {
+        this.filterValues = { ...DEFAULT_FILTERS };
+        this.applyFilters();
+    }
+
+    applyFilters() {
+        let data = [...this.historyData];
+        const { movementType, leaveType, startDate, endDate } = this.filterValues;
+
+        if (movementType) {
+            data = data.filter(row => row.Movement_Type__c === movementType);
+        }
+        if (leaveType) {
+            data = data.filter(row => row.Leave_Type__c === leaveType);
+        }
+        if (startDate) {
+            data = data.filter(row => row.Movement_Date__c >= startDate);
+        }
+        if (endDate) {
+            data = data.filter(row => row.Movement_Date__c <= endDate);
+        }
+        this.filteredData = data;
+    }
+
+    get filterButtonVariant() {
+        return this.showFilterPopover ? 'brand' : 'neutral';
+    }
+
+    getMovementTypeClass(movementType) {
+        switch (movementType) {
+            default:
+                return 'slds-badge';
         }
     }
 
     get hasData() {
-        return this.historyData && this.historyData.length > 0;
+        return this.filteredData && this.filteredData.length > 0;
     }
 }

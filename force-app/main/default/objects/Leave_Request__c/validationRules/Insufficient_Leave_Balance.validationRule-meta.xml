@@ -3,6 +3,14 @@
     <fullName>Insufficient_Leave_Balance</fullName>
     <active>true</active>
     <description>Prevents submitting a leave request when the number of requested days exceeds the employee&apos;s remaining leave balance.</description>
-    <errorConditionFormula>Leave_Balance__r.Remaining_Days__c &lt; Number_of_Days_Requested__c</errorConditionFormula>
+    <errorConditionFormula>AND(
+            OR(
+                ISNEW(),
+                ISCHANGED(Number_of_Days_Requested__c),
+                ISPICKVAL(Status__c, &quot;Approved&quot;)
+            ),
+            NOT(ISPICKVAL(PRIORVALUE(Status__c), &quot;Cancellation Requested&quot;)),
+            Leave_Balance__r.Remaining_Days__c &lt; Number_of_Days_Requested__c
+        )</errorConditionFormula>
     <errorMessage>The number of requested days exceeds the available leave balance.</errorMessage>
 </ValidationRule>

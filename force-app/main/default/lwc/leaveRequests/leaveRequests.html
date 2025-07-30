@@ -1,12 +1,14 @@
 <template>
     <lightning-card>
-        <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
-            <lightning-tab label="My Leave Requests" value="my" default onactive={tabChangeHandler}>
-                <c-my-request-container></c-my-request-container>
-            </lightning-tab>
-            <lightning-tab label="Balance History" value="history">
-                <c-balance-history></c-balance-history> 
-            </lightning-tab>
-        </lightning-tabset>
+        <div class="leave-requests-wrapper">
+            <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
+                <lightning-tab label="My Leave Requests" value="my" default onactive={tabChangeHandler}>
+                    <c-my-request-container></c-my-request-container>
+                </lightning-tab>
+                <lightning-tab label="Balance History" value="history">
+                    <c-balance-history></c-balance-history> 
+                </lightning-tab>
+            </lightning-tabset>
+        </div>
     </lightning-card>
 </template>
