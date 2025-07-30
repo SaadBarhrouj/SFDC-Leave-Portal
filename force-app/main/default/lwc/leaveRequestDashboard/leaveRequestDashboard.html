@@ -1,0 +1,21 @@
+<template>
+    <div class="slds-box slds-theme_default">
+        <div class="slds-grid slds-wrap slds-gutters">
+            <template for:each={requestCounts} for:item="request">
+                <div key={request.id} class="slds-large-size_1-of-5 slds-medium-size_1-of-3 slds-small-size_1-of-2 slds-p-around_small">
+                    <c-summary-card
+                        label={request.label}
+                        value={request.value}
+                        unit={request.unit}>
+                    </c-summary-card>
+                </div>
+            </template>
+        </div>
+
+        <template if:true={error}>
+            <p class="slds-text-color_error slds-m-top_medium">
+                An error occurred while loading leave request counts.
+            </p>
+        </template>
+    </div>
+</template>

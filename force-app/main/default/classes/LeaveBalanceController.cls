@@ -8,7 +8,7 @@ public with sharing class LeaveBalanceController {
     }
 
   
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<BalanceOverview> getLeaveBalanceOverviews() {
         try {
             List<BalanceOverview> overviews = new List<BalanceOverview>();
@@ -33,7 +33,7 @@ public with sharing class LeaveBalanceController {
                 SELECT SUM(Number_of_Days_Requested__c) totalDays, Leave_Type__c
                 FROM Leave_Request__c
                 WHERE Requester__c = :currentUserId
-                  AND Leave_Type__c IN ('Sick Leave', 'Training', 'Unpaid Leave')
+                  AND Leave_Type__c IN ('Sick Leave', 'Training')
                   AND (Status__c = 'Approved' OR Status__c = 'Cancellation Requested')
                   AND CALENDAR_YEAR(Start_Date__c) = :Date.today().year()
                 GROUP BY Leave_Type__c
@@ -54,12 +54,6 @@ public with sharing class LeaveBalanceController {
             training.remaining = null; 
             training.consumed = consumedMap.containsKey('Training') ? consumedMap.get('Training') : 0;
             overviews.add(training);
-
-            BalanceOverview unpaidLeave = new BalanceOverview();
-            unpaidLeave.type = 'Unpaid Leave';
-            unpaidLeave.remaining = null; 
-            unpaidLeave.consumed = consumedMap.containsKey('Unpaid Leave') ? consumedMap.get('Unpaid Leave') : 0;
-            overviews.add(unpaidLeave);
 
             return overviews;
 
