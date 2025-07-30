@@ -4,11 +4,11 @@
         <div class="slds-grid slds-wrap slds-gutters">
             <template for:each={balances} for:item="balance">
                 <div key={balance.id} class="slds-large-size_1-of-5 slds-medium-size_1-of-3 slds-small-size_1-of-2 slds-p-around_small">
-                    <c-leave-balance-card
+                    <c-summary-card
                         label={balance.label}
                         value={balance.value}
                         unit={balance.unit}>
-                    </c-leave-balance-card>
+                    </c-summary-card>
                 </div>
             </template>
         </div>
