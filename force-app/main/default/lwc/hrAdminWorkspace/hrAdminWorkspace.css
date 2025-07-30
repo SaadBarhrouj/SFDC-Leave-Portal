@@ -1,0 +1,7 @@
+:host {
+    --sds-c-card-color-background: rgb(243, 243, 243);
+}
+
+.leave-requests-wrapper {
+    min-height: 552px;
+}
