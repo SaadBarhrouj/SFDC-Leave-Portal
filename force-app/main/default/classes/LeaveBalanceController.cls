@@ -90,7 +90,7 @@ public with sharing class LeaveBalanceController {
                        Source_of_Movement__c, Number_of_Days__c, New_Balance__c
                 FROM Leave_Balance_History__c
                 WHERE Employee__c = :UserInfo.getUserId()
-                ORDER BY Movement_Date__c DESC
+                ORDER BY CreatedDate DESC
                 LIMIT 100
             ];
         } catch (Exception e) {
@@ -108,6 +108,8 @@ public with sharing class LeaveBalanceController {
                 LIMIT 1
             ];
             delete balanceToDelete;
+        } catch (DmlException e) {
+            throw new AuraHandledException('This balance cannot be deleted because it is associated with existing leave requests.');
         } catch (Exception e) {
             throw new AuraHandledException('Error deleting balance: ' + e.getMessage());
         }
