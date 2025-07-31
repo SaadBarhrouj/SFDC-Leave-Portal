@@ -11,7 +11,7 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
         Map<Id, User> requesterMap = new Map<Id, User>();
         if (!requesterIds.isEmpty()) {
             requesterMap = new Map<Id, User>([
-                SELECT Country_Code__c 
+                SELECT Work_Country__c 
                 FROM User 
                 WHERE Id IN :requesterIds
             ]);
@@ -20,7 +20,7 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
         for (Leave_Request__c request : Trigger.new) {
             if (request.Requester__c != null) {
                 User theRequester = requesterMap.get(request.Requester__c);
-                String countryCode = (theRequester != null) ? theRequester.Country_Code__c : null;
+                String countryCode = (theRequester != null) ? theRequester.Work_Country__c : null;
                 
                 if (request.Start_Date__c != null && request.End_Date__c != null && countryCode != null) {
                     Decimal days = LeaveRequestUtils.calculateRequestedDays(
@@ -58,6 +58,6 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
     }
 
         if (Trigger.isAfter && Trigger.isUpdate) {
-            LeaveRequestHistoryHelper.createHistoryOnStatusChange(Trigger.new, Trigger.oldMap);
+            BalanceHistoryHelper.createHistoryOnStatusChange(Trigger.new, Trigger.oldMap);
         }
 }

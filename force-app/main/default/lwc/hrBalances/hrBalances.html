@@ -3,7 +3,7 @@
         <div class="slds-grid slds-gutters" slot="actions">
             <div class="slds-col">
                 <lightning-button label="Refresh" icon-name="utility:refresh" onclick={handleRefresh} class="slds-m-right_small"></lightning-button>
-                <lightning-button label="New" variant="brand" icon-name="utility:add" onclick={handleNewBalance}></lightning-button>
+                <lightning-button label="Add Balance" variant="brand" icon-name="utility:add" onclick={handleNewBalance}></lightning-button>
             </div>
             <lightning-button-icon
                 icon-name="utility:filterList"
@@ -41,7 +41,7 @@
                                     name="leaveType"
                                     label="Leave Type"
                                     value={filterValues.leaveType}
-                                    options={leaveTypeOptions}
+                                    options={leaveTypeBalanceOptions}
                                     onchange={handleFilterChange}>
                                 </lightning-combobox>
                             </div>
@@ -98,12 +98,20 @@
                         object-api-name="Leave_Balance__c"
                         record-id={selectedBalanceId}
                         onsuccess={handleBalanceSuccess}
-                        onerror={handleBalanceError}>
+                        onerror={handleBalanceError}
+                        onsubmit={handleBalanceSubmit}>
                         <div class="slds-modal__content slds-var-p-around_medium">
                             <lightning-input-field field-name="Employee__c" required></lightning-input-field>
-                            <lightning-input-field field-name="Leave_Type__c" required></lightning-input-field>
+                            <lightning-combobox
+                                name="Leave_Type__c"
+                                label="Leave Type"
+                                required
+                                value={leaveTypeValue}
+                                options={leaveTypeBalanceOptions}
+                                onchange={handleLeaveTypeChange}>
+                            </lightning-combobox>
                             <lightning-input-field field-name="Allocated_Days__c" required></lightning-input-field>
-                            <lightning-input-field field-name="Year__c" required></lightning-input-field> <!-- Added Year__c -->
+                            <lightning-input-field field-name="Year__c" required></lightning-input-field>
                         </div>
                         <footer class="slds-modal__footer">
                             <lightning-button label="Cancel" onclick={closeBalanceModal} class="slds-m-right_small"></lightning-button>

@@ -37,15 +37,13 @@ export default class HrBalances extends LightningElement {
     @track showBalanceModal = false;
     @track modalTitle = 'New Balance';
     @track selectedBalanceId = null;
+    @track leaveTypeValue = '';
     isLoading = true;
     wiredBalancesResult;
 
-    leaveTypeOptions = [
-        { label: 'All Types', value: '' },
-        { label: 'Paid Leave', value: 'Paid Leave' },
+    leaveTypeBalanceOptions = [
         { label: 'RTT', value: 'RTT' },
-        { label: 'Sick Leave', value: 'Sick Leave' },
-        { label: 'Training', value: 'Training' }
+        { label: 'Paid Leave', value: 'Paid Leave' }
     ];
 
     @wire(getBalances)
@@ -100,7 +98,7 @@ export default class HrBalances extends LightningElement {
             data = data.filter(balance => balance.Leave_Type__c === leaveType);
         }
         if (employeeId) {
-            data = data.filter(balance => balance.Employee__c === employeeId); // Filter by Employee__c
+            data = data.filter(balance => balance.Employee__c === employeeId);
         }
         this.filteredBalances = data;
     }
@@ -121,6 +119,7 @@ export default class HrBalances extends LightningElement {
             case 'edit':
                 this.modalTitle = 'Edit Balance';
                 this.selectedBalanceId = row.Id;
+                this.leaveTypeValue = row.Leave_Type__c;
                 this.showBalanceModal = true;
                 break;
             case 'delete':
@@ -133,7 +132,13 @@ export default class HrBalances extends LightningElement {
                         })
                         .catch(error => {
                             console.error('Error deleting balance:', error);
-                            this.showToast('Error', error.body.message, 'error');
+
+                            let errorMessage = 'Unable to delete this leave balance.';
+                            if (error && error.body && error.body.message) {
+                                errorMessage = error.body.message;
+                            }
+
+                            this.showToast('Deletion Failed', errorMessage, 'error');
                         })
                         .finally(() => {
                             this.isLoading = false;
@@ -148,6 +153,7 @@ export default class HrBalances extends LightningElement {
     handleNewBalance() {
         this.modalTitle = 'New Balance';
         this.selectedBalanceId = null;
+        this.leaveTypeValue = '';
         this.showBalanceModal = true;
     }
 
@@ -158,6 +164,11 @@ export default class HrBalances extends LightningElement {
 
     handleBalanceSuccess() {
         this.showBalanceModal = false;
+        if (this.selectedBalanceId) {
+            this.showToast('Success', 'The balance has been successfully updated.', 'success');
+        } else {
+            this.showToast('Success', 'The balance has been successfully created.', 'success');
+        }
         this.handleRefresh();
     }
 
@@ -177,11 +188,18 @@ export default class HrBalances extends LightningElement {
         this.showToast('Error', errorMessage, 'error');
     }
 
-    submitBalanceForm() {
-        const form = this.template.querySelector('lightning-record-edit-form');
-        if (form) {
-            form.submit();
+    handleBalanceSubmit(event) {
+        event.preventDefault();
+        const fields = event.detail.fields;
+        fields.Leave_Type__c = this.leaveTypeValue;
+        if (!this.selectedBalanceId) {
+            fields.Used_Days__c = 0;
         }
+        event.target.submit(fields);
+    }
+
+    handleLeaveTypeChange(event) {
+        this.leaveTypeValue = event.detail.value;
     }
 
     showToast(title, message, variant) {

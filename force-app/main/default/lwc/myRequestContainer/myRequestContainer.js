@@ -214,7 +214,10 @@ export default class MyRequestContainer extends LightningElement {
                     this.showSuccess(result);
                     this.refreshRequests();
                 })
-                .catch(error => this.showError(error.body.message))
+                .catch(error => {
+                    console.error('Error in cancelRequest:', error);
+                    this.showError(error.body.message);
+                })
                 .finally(() => this.isLoading = false);
         }
     }
@@ -227,7 +230,10 @@ export default class MyRequestContainer extends LightningElement {
                     this.showSuccess('Cancellation request submitted.');
                     this.refreshRequests();
                 })
-                .catch(error => this.showError(error.body.message))
+                .catch(error => {
+                    console.error('Error in requestCancellation:', error);
+                    this.showError(error.body.message);
+                })
                 .finally(() => this.isLoading = false);
         }
     }
@@ -240,7 +246,10 @@ export default class MyRequestContainer extends LightningElement {
                     this.showSuccess('Cancellation request withdrawn.');
                     this.refreshRequests();
                 })
-                .catch(error => this.showError(error.body.message))
+                .catch(error => {
+                    console.error('Error in withdrawCancellation:', error);
+                    this.showError(error.body.message);
+                })
                 .finally(() => this.isLoading = false);
         }
     }
