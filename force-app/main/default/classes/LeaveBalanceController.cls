@@ -67,8 +67,20 @@ public with sharing class LeaveBalanceController {
             throw new AuraHandledException('Error retrieving balance overviews: ' + e.getMessage());
         }
     }
-    
 
+    @AuraEnabled(cacheable=true)
+    public static List<Leave_Balance__c> getBalances() {
+        try {
+            return [
+                SELECT Id, Employee__c, Employee__r.Name, Leave_Type__c, Allocated_Days__c, 
+                       Used_Days__c, Remaining_Days__c, Year__c, LastModifiedDate
+                FROM Leave_Balance__c
+                ORDER BY Employee__r.Name, Leave_Type__c
+            ];
+        } catch (Exception e) {
+            throw new AuraHandledException('Error retrieving balances: ' + e.getMessage());
+        }
+    }
     
     @AuraEnabled(cacheable=true)
     public static List<Leave_Balance_History__c> getBalanceHistoryForCurrentUser() {
@@ -83,6 +95,21 @@ public with sharing class LeaveBalanceController {
             ];
         } catch (Exception e) {
             throw new AuraHandledException('Error retrieving balance history: ' + e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static void deleteBalance(Id balanceId) {
+        try {
+            Leave_Balance__c balanceToDelete = [
+                SELECT Id 
+                FROM Leave_Balance__c 
+                WHERE Id = :balanceId
+                LIMIT 1
+            ];
+            delete balanceToDelete;
+        } catch (Exception e) {
+            throw new AuraHandledException('Error deleting balance: ' + e.getMessage());
         }
     }
 }
