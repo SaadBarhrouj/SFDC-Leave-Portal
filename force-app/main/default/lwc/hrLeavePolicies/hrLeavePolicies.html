@@ -1,3 +1,48 @@
 <template>
-    
+    <lightning-card title="Leave Policy Settings" icon-name="utility:setup">
+        <div slot="actions">
+            <template if:false={isEditMode}>
+                <lightning-button
+                    label="Edit"
+                    icon-name="utility:edit"
+                    onclick={handleEdit}>
+                </lightning-button>
+            </template>
+            <template if:true={isEditMode}>
+                <lightning-button
+                    label="Cancel"
+                    onclick={handleCancel}>
+                </lightning-button>
+                <lightning-button
+                    label="Save Changes"
+                    variant="brand"
+                    onclick={handleSave}
+                    disabled={isLoading}
+                    class="slds-m-left_x-small">
+                </lightning-button>
+            </template>
+        </div>
+
+        <div class="slds-p-around_medium">
+            <template if:true={isLoading}>
+                <div class="spinner-overlay">
+                    <lightning-spinner alternative-text="Loading..." variant="brand"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:false={isLoading}>
+                <p class="slds-text-body_small slds-m-bottom_medium">
+                    Manage the global settings for employee leave policies. These values affect all users.
+                </p>
+                <lightning-input
+                    type="number"
+                    name="Annual_Paid_Leave_Days__c"
+                    label="Annual Paid Leave Days"
+                    value={settings.Annual_Paid_Leave_Days__c}
+                    onchange={handleInputChange}
+                    disabled={isReadOnly}>
+                </lightning-input>
+            </template>
+        </div>
+    </lightning-card>
 </template>

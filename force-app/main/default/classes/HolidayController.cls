@@ -15,4 +15,24 @@ public with sharing class HolidayController {
             WHERE Country_Code__c = :userCountryCode
         ];
     }
+
+
+     @AuraEnabled(cacheable=true)
+    public static List<Holiday__c> getAllHolidays() {
+        return [
+            SELECT Id, Name, Holiday_Date__c, Description__c, Country_Code__c, Deduction_Value__c
+            FROM Holiday__c
+            ORDER BY Holiday_Date__c DESC
+        ];
+    }
+
+     @AuraEnabled
+    public static void deleteHoliday(Id holidayId) {
+        try {
+            Holiday__c holidayToDelete = [SELECT Id FROM Holiday__c WHERE Id = :holidayId];
+            delete holidayToDelete;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 }
