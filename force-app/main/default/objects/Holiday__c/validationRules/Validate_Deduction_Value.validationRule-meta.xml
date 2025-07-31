@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Validate_Deduction_Value</fullName>
+    <active>true</active>
+    <errorConditionFormula>OR(Deduction_Value__c &lt; 0, Deduction_Value__c &gt; 1)</errorConditionFormula>
+    <errorDisplayField>Deduction_Value__c</errorDisplayField>
+    <errorMessage>The deduction value must be between 0 and 1 (e.g., 0.5 for a half-day).</errorMessage>
+</ValidationRule>

@@ -34,6 +34,8 @@ public with sharing class LeaveRequestController {
             throw new AuraHandledException('Error retrieving leave requests: ' + e.getMessage());
         }
     }
+
+    
     @AuraEnabled
     public static List<Leave_Request__c> getMyLeavesForCalendar() {
         return getMyLeaves();
@@ -45,11 +47,11 @@ public with sharing class LeaveRequestController {
             return 0;
         }
         
-        User u = [SELECT Country_Code__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
-        if (u.Country_Code__c == null || String.isBlank(u.Country_Code__c)) {
+        User u = [SELECT Work_Country__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.Work_Country__c == null || String.isBlank(u.Work_Country__c)) {
             return 0;
         }
-        return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Country_Code__c);
+        return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Work_Country__c);
     }
     
     

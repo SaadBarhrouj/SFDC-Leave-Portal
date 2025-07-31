@@ -4,13 +4,15 @@ import { refreshApex } from '@salesforce/apex';
 
 import getAllHolidays from '@salesforce/apex/HolidayController.getAllHolidays';
 import deleteHoliday from '@salesforce/apex/HolidayController.deleteHoliday';
+import getCountryOptions from '@salesforce/apex/HolidayController.getCountryOptions';
+import syncHolidaysForCountry from '@salesforce/apex/HolidayController.syncHolidaysForCountry';
 
 import HOLIDAY_OBJECT from '@salesforce/schema/Holiday__c';
 import HOLIDAY_NAME_FIELD from '@salesforce/schema/Holiday__c.Name';
 import HOLIDAY_DATE_FIELD from '@salesforce/schema/Holiday__c.Holiday_Date__c';
-import HOLIDAY_COUNTRY_CODE_FIELD from '@salesforce/schema/Holiday__c.Country_Code__c';
 import HOLIDAY_DEDUCTION_FIELD from '@salesforce/schema/Holiday__c.Deduction_Value__c';
 import HOLIDAY_DESCRIPTION_FIELD from '@salesforce/schema/Holiday__c.Description__c';
+import bulkDeleteHolidays from '@salesforce/apex/HolidayController.bulkDeleteHolidays';
 
 const ACTIONS = [{ label: 'Edit', name: 'edit' }, { label: 'Delete', name: 'delete' }];
 const COLUMNS = [
@@ -22,12 +24,6 @@ const COLUMNS = [
     { type: 'action', typeAttributes: { rowActions: ACTIONS } }
 ];
 
-const STATIC_COUNTRIES = [
-    { label: 'France', value: 'FR' },
-    { label: 'United States', value: 'US' },
-    { label: 'Morocco', value: 'MA' },
-];
-
 export default class HrHolidays extends LightningElement {
     @track columns = COLUMNS;
     @track allHolidays = [];
@@ -37,15 +33,20 @@ export default class HrHolidays extends LightningElement {
     holidayObjectApiName = HOLIDAY_OBJECT;
     holidayNameField = HOLIDAY_NAME_FIELD;
     holidayDateField = HOLIDAY_DATE_FIELD;
-    holidayCountryCodeField = HOLIDAY_COUNTRY_CODE_FIELD;
     holidayDeductionField = HOLIDAY_DEDUCTION_FIELD;
     holidayDescriptionField = HOLIDAY_DESCRIPTION_FIELD;
     
-    countryOptions = [{ label: 'All Countries', value: '' }, ...STATIC_COUNTRIES];
-    syncCountryOptions = STATIC_COUNTRIES;
+    @track countryOptions = [];
+    @track syncCountryOptions = [];
+    @track holidayCountryCodeValue = '';
 
     @track filterValues = {};
     @track activeFilters = {};
+
+
+    @track isBulkDeleteModalOpen = false;
+    @track countryToDelete = '';
+    @track yearToDelete = null;
 
     isLoading = true;
     isModalOpen = false;
@@ -54,6 +55,16 @@ export default class HrHolidays extends LightningElement {
     modalTitle = '';
     countryToSync = '';
     recordIdToEdit = null;
+
+    @wire(getCountryOptions)
+    wiredCountryValues({ error, data }) {
+        if (data) {
+            this.syncCountryOptions = data;
+            this.countryOptions = [{ label: 'All Countries', value: '' }, ...data];
+        } else if (error) {
+            this.showToast('Error', 'Could not load country list.', 'error');
+        }
+    }
 
     @wire(getAllHolidays)
     wiredHolidays(result) {
@@ -138,8 +149,24 @@ export default class HrHolidays extends LightningElement {
     }
 
     handleSync() {
-        this.showToast('Info', 'Sync action is not implemented yet.', 'info');
-        this.closeSyncModal();
+        this.isLoading = true;
+        const yearToSync = this.filterValues.year || new Date().getFullYear();
+
+        syncHolidaysForCountry({ countryCode: this.countryToSync, year: yearToSync })
+            .then(() => {
+                this.showToast('Success', `Holiday sync for ${this.countryToSync} has been started.`, 'success');
+
+                setTimeout(() => {
+                    this.handleRefresh();
+                }, 3000); 
+            })
+            .catch(error => {
+                this.showToast('Error', 'Could not start holiday sync.', 'error');
+                this.isLoading = false; 
+            })
+            .finally(() => {
+                this.closeSyncModal();
+            });
     }
 
     handleRefresh() {
@@ -154,6 +181,7 @@ export default class HrHolidays extends LightningElement {
         if (action.name === 'edit') {
             this.modalTitle = 'Edit Holiday';
             this.recordIdToEdit = row.Id;
+            this.holidayCountryCodeValue = row.Country_Code__c;
             this.isModalOpen = true;
         } else if (action.name === 'delete') {
             this.handleDelete(row);
@@ -180,11 +208,69 @@ export default class HrHolidays extends LightningElement {
     handleNew() {
         this.modalTitle = 'Add Holiday';
         this.recordIdToEdit = null;
+        this.holidayCountryCodeValue = '';
         this.isModalOpen = true;
     }
 
     closeModal() {
         this.isModalOpen = false;
+    }
+
+    handleHolidayCountryChange(event) {
+        this.holidayCountryCodeValue = event.detail.value;
+    }
+
+    openBulkDeleteModal() {
+    this.countryToDelete = '';
+    this.yearToDelete = null;
+    this.isBulkDeleteModalOpen = true;
+    }
+
+    closeBulkDeleteModal() {
+        this.isBulkDeleteModalOpen = false;
+    }
+
+    handleBulkDeleteChange(event) {
+        const field = event.target.name;
+        if (field === 'countryToDelete') {
+            this.countryToDelete = event.target.value;
+        } else if (field === 'yearToDelete') {
+            this.yearToDelete = event.target.value;
+        }
+    }
+
+        handleBulkDelete() {
+            if (!this.yearToDelete) {
+                this.showToast('Error', 'Please select a year to proceed with the deletion.', 'error');
+                return;
+            }
+
+            this.isLoading = true;
+            bulkDeleteHolidays({ countryCode: this.countryToDelete, year: this.yearToDelete })
+                .then(result => {
+                    this.showToast('Success', `${result} holidays have been deleted successfully.`, 'success');
+                    this.closeBulkDeleteModal();
+                    return this.handleRefresh();
+                })
+                .catch(error => {
+                    this.showToast('Error', error.body.message, 'error');
+                })
+                .finally(() => {
+                    this.isLoading = false;
+                });
+        }
+
+    handleSubmit(event) {
+        event.preventDefault();
+        const fields = event.detail.fields;
+        fields.Country_Code__c = this.holidayCountryCodeValue;
+        
+        if (!fields.Country_Code__c) {
+            this.showToast('Error', 'Country is a required field.', 'error');
+            return;
+        }
+
+        this.template.querySelector('lightning-record-edit-form').submit(fields);
     }
 
     handleSuccess(event) {

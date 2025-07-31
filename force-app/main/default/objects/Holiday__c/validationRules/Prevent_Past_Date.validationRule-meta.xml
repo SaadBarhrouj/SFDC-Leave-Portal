@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Prevent_Past_Date</fullName>
+    <active>true</active>
+    <errorConditionFormula>YEAR(Holiday_Date__c) &lt; YEAR(TODAY())</errorConditionFormula>
+    <errorDisplayField>Holiday_Date__c</errorDisplayField>
+    <errorMessage>The year of the holiday cannot be in the past. Please select a date in the current year or a future year.</errorMessage>
+</ValidationRule>

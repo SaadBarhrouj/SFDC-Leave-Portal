@@ -1,3 +1,119 @@
 <template>
+    <lightning-card title="Balances" icon-name="utility:people_score">
+        <div class="slds-grid slds-gutters" slot="actions">
+            <div class="slds-col">
+                <lightning-button label="Refresh" icon-name="utility:refresh" onclick={handleRefresh} class="slds-m-right_small"></lightning-button>
+                <lightning-button label="New" variant="brand" icon-name="utility:add" onclick={handleNewBalance}></lightning-button>
+            </div>
+            <lightning-button-icon
+                icon-name="utility:filterList"
+                variant={filterButtonVariant}
+                onclick={toggleFilterPopover}
+                alternative-text="Show Filters"
+                title="Show Filters"
+                class="slds-p-right_small">
+            </lightning-button-icon>
+        </div>
+
+        <div class="hr-balances-wrapper">
+            <!-- Filter Popover -->
+            <template if:true={showFilterPopover}>
+                <div class="slds-popover slds-popover_medium slds-nubbin_top-right" role="dialog" style="position: absolute; top: 60px; right: 10px; width: 420px;">
+                    <div class="slds-popover__header">
+                        <h2 class="slds-text-heading_medium">Filters</h2>
+                    </div>
+                    <div class="slds-popover__body">
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <!-- Employee Name -->
+                            <div class="slds-col slds-size_1-of-1 slds-p-bottom_small">
+                                <lightning-input
+                                    type="search"
+                                    name="employeeName"
+                                    label="Employee Name"
+                                    value={filterValues.employeeName}
+                                    onchange={handleFilterChange}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Leave Type -->
+                            <div class="slds-col slds-size_1-of-1 slds-p-bottom_small">
+                                <lightning-combobox
+                                    name="leaveType"
+                                    label="Leave Type"
+                                    value={filterValues.leaveType}
+                                    options={leaveTypeOptions}
+                                    onchange={handleFilterChange}>
+                                </lightning-combobox>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="slds-popover__footer slds-text-align_right">
+                        <lightning-button label="Clear" onclick={clearFilters} class="slds-m-right_x-small"></lightning-button>
+                        <lightning-button label="Apply" variant="brand" onclick={applyFilters}></lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <div class="slds-is-relative">
+                <!-- Loading Spinner -->
+                <template if:true={isLoading}>
+                    <div class="spinner-overlay">
+                        <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+                    </div>
+                </template>
+
+                <div class="slds-p-horizontal_small">
+                    <template if:false={hasBalances}>
+                        <div class="slds-align_absolute-center slds-var-p-around_medium">
+                            <c-no-data-svg message="No balances available."></c-no-data-svg>
+                        </div>
+                    </template>
     
+                    <template if:true={hasBalances}>
+                        <lightning-datatable
+                            key-field="Id"
+                            data={filteredBalances}
+                            columns={columns}
+                            resize-column-disabled="true"
+                            hide-checkbox-column="true"
+                            onrowaction={handleRowAction}>
+                        </lightning-datatable>
+                    </template>
+                </div>
+                
+            </div>
+        </div>
+
+        <template if:true={showBalanceModal}>
+            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title slds-hyphenate">{modalTitle}</h2>
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeBalanceModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                        </button>
+                    </header>
+                    <lightning-record-edit-form
+                        object-api-name="Leave_Balance__c"
+                        record-id={selectedBalanceId}
+                        onsuccess={handleBalanceSuccess}
+                        onerror={handleBalanceError}
+                        onsubmit={handleBalanceSubmit}>
+                        <div class="slds-modal__content slds-var-p-around_medium">
+                            <lightning-input-field field-name="Employee__c" required></lightning-input-field>
+                            <lightning-input-field field-name="Leave_Type__c" required></lightning-input-field>
+                            <lightning-input-field field-name="Allocated_Days__c" required></lightning-input-field>
+                            <lightning-input-field field-name="Year__c" required></lightning-input-field>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning-button label="Cancel" onclick={closeBalanceModal} class="slds-m-right_small"></lightning-button>
+                            <lightning-button label="Save" variant="brand" type="submit"></lightning-button>
+                        </footer>
+                    </lightning-record-edit-form>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </lightning-card>
 </template>

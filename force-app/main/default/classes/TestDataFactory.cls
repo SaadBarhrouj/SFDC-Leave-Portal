@@ -26,7 +26,7 @@ public class TestDataFactory {
             ProfileId = p.Id,
             TimeZoneSidKey = 'America/Los_Angeles',
             UserName = 'testuser' + userCounter + '@test.com' + System.currentTimeMillis(),
-            Country_Code__c = countryCode != null ? countryCode : 'US'
+            Work_Country__c = countryCode != null ? countryCode : 'US'
         );
         
         insert testUser;
@@ -57,7 +57,7 @@ public class TestDataFactory {
             ProfileId = p.Id,
             TimeZoneSidKey = 'America/Los_Angeles',
             UserName = 'testuser' + userCounter + '@test.com' + System.currentTimeMillis(),
-            Country_Code__c = countryCode != null ? countryCode : 'MA'
+            Work_Country__c = countryCode != null ? countryCode : 'MA'
         );
         
         insert testUser;

@@ -1,11 +1,9 @@
 <template>
     <lightning-card>
-        <div class="team-requests-wrapper">
-            <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
-                <lightning-tab label="Team Requests" value="team" onactive={tabChangeHandler}>
-                    <c-team-requests></c-team-requests> 
-                </lightning-tab>
-            </lightning-tabset>
-        </div>
+        <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
+            <lightning-tab label="Team Requests" value="team" onactive={tabChangeHandler}>
+                <c-team-requests></c-team-requests> 
+            </lightning-tab>
+        </lightning-tabset>
     </lightning-card>
 </template>

@@ -28,7 +28,7 @@
         <name>CustomApplication</name>
     </types>
     <types>
-        <members>User.Country_Code__c</members>
+        <members>User.Work_Country__c</members>
         <name>CustomField</name>
     </types>
     <types>

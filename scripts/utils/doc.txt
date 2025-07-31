@@ -27,3 +27,11 @@ String leaveBalanceCronExpression = '0 0 2 15 12 ? *';
 AnnualLeaveBalanceScheduler leaveBalanceJob = new AnnualLeaveBalanceScheduler();
 System.schedule(leaveBalanceJobName, leaveBalanceCronExpression, leaveBalanceJob);
 System.debug('Job "' + leaveBalanceJobName + '" has been scheduled.');
+
+
+
+
+used APIS:
+country codes : https://datahub.io/core/country-list
+calendrier : FullCalendar
+Holidays :https://date.nager.at/api/v3/publicholidays/2025/AT

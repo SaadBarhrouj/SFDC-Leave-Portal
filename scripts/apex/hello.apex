@@ -15,7 +15,7 @@ User teamMember = new User(
     ProfileId = userProfile.Id,
     TimeZoneSidKey = 'Europe/Paris',
     UserName = 'team.member+' + System.currentTimeMillis() + '@example.com',
-    Country_Code__c = 'MR',
+    Work_Country__c = 'MR',
     ManagerId = managerId
 );
 
