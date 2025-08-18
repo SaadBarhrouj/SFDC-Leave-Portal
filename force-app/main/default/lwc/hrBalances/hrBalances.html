@@ -1,5 +1,5 @@
 <template>
-    <lightning-card title="Balances" icon-name="utility:people_score">
+    <lightning-card title="Balance Management" icon-name="utility:people_score">
         <div class="slds-grid slds-gutters" slot="actions">
             <div class="slds-col">
                 <lightning-button label="Refresh" icon-name="utility:refresh" onclick={handleRefresh} class="slds-m-right_small"></lightning-button>
@@ -16,7 +16,6 @@
         </div>
 
         <div class="hr-balances-wrapper">
-            <!-- Filter Popover -->
             <template if:true={showFilterPopover}>
                 <div class="slds-popover slds-popover_medium slds-nubbin_top-right" role="dialog" style="position: absolute; top: 60px; right: 10px; width: 420px;">
                     <div class="slds-popover__header">
@@ -41,7 +40,7 @@
                                     name="leaveType"
                                     label="Leave Type"
                                     value={filterValues.leaveType}
-                                    options={leaveTypeOptions}
+                                    options={leaveTypeBalanceOptions}
                                     onchange={handleFilterChange}>
                                 </lightning-combobox>
                             </div>
@@ -56,61 +55,115 @@
             </template>
 
             <div class="slds-is-relative">
-                <!-- Loading Spinner -->
                 <template if:true={isLoading}>
-                    <div class="spinner-overlay">
-                        <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
-                    </div>
+                    <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
                 </template>
-
                 <div class="slds-p-horizontal_small">
-                    <template if:false={hasBalances}>
-                        <div class="slds-align_absolute-center slds-var-p-around_medium">
-                            <c-no-data-svg message="No balances available."></c-no-data-svg>
-                        </div>
-                    </template>
-    
                     <template if:true={hasBalances}>
-                        <lightning-datatable
-                            key-field="Id"
-                            data={filteredBalances}
-                            columns={columns}
-                            resize-column-disabled="true"
-                            hide-checkbox-column="true"
-                            onrowaction={handleRowAction}>
-                        </lightning-datatable>
+                        <c-requests-datatable 
+                          key-field="Id"
+                          data={filteredBalances}
+                          columns={columns} 
+                          onrowaction={handleRowAction}
+                          hide-checkbox-column="true"
+                          resize-column-disabled="true">
+                        </c-requests-datatable>
+                    </template>
+                    <template if:false={hasBalances}>
+                        <div class="slds-align_absolute-center slds-p-around_large">No balances found.</div>
                     </template>
                 </div>
-                
             </div>
         </div>
 
         <template if:true={showBalanceModal}>
-            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
                 <div class="slds-modal__container">
-                    <header class="slds-modal__header">
-                        <h2 class="slds-modal__title slds-hyphenate">{modalTitle}</h2>
-                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeBalanceModal}>
-                            <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
-                        </button>
-                    </header>
-                    <lightning-record-edit-form
-                        object-api-name="Leave_Balance__c"
-                        record-id={selectedBalanceId}
-                        onsuccess={handleBalanceSuccess}
-                        onerror={handleBalanceError}
-                        onsubmit={handleBalanceSubmit}>
-                        <div class="slds-modal__content slds-var-p-around_medium">
+                    <lightning-record-edit-form object-api-name="Leave_Balance__c" record-id={selectedBalanceId} onsuccess={handleBalanceSuccess} onerror={handleBalanceError} onsubmit={handleBalanceSubmit}>
+                        <header class="slds-modal__header">
+                            <h2 class="slds-modal__title slds-hyphenate">{modalTitle}</h2>
+                            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeBalanceModal}>
+                                <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                            </button>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
                             <lightning-input-field field-name="Employee__c" required></lightning-input-field>
-                            <lightning-input-field field-name="Leave_Type__c" required></lightning-input-field>
-                            <lightning-input-field field-name="Allocated_Days__c" required></lightning-input-field>
-                            <lightning-input-field field-name="Year__c" required></lightning-input-field>
+                            <lightning-combobox
+                                name="Leave_Type__c"
+                                label="Leave Type"
+                                value={leaveTypeValue}
+                                placeholder="Select Leave Type"
+                                options={leaveTypeOptions}
+                                onchange={handleLeaveTypeChange}
+                                required>
+                            </lightning-combobox>
+                            <lightning-input
+                                type="number"
+                                name="Allocated_Days__c"
+                                label="Allocated Days"
+                                value={allocatedDaysValue}
+                                onchange={handleAllocatedDaysChange}
+                                required>
+                            </lightning-input>
+                            <lightning-input-field field-name="Year__c" value={currentYear} required></lightning-input-field>
                         </div>
                         <footer class="slds-modal__footer">
                             <lightning-button label="Cancel" onclick={closeBalanceModal} class="slds-m-right_small"></lightning-button>
                             <lightning-button label="Save" variant="brand" type="submit"></lightning-button>
                         </footer>
                     </lightning-record-edit-form>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <template if:true={showCorrectionModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title slds-hyphenate">Justify Balance Correction</h2>
+                         <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeCorrectionModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                        </button>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-input label="Employee" value={correctionData.EmployeeName} disabled></lightning-input>
+                        <lightning-input label="Leave Type" value={correctionData.Leave_Type__c} disabled></lightning-input>
+                        <lightning-input type="number" step="0.5" name="Allocated_Days__c" label="New Allocated Days" value={correctionData.Allocated_Days__c} onchange={handleCorrectionChange} required></lightning-input>
+                        <lightning-textarea name="justification" label="Justification for change (mandatory)" value={correctionData.justification} onchange={handleCorrectionChange} required></lightning-textarea>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={closeCorrectionModal} class="slds-m-right_small"></lightning-button>
+                        <lightning-button label="Save" variant="brand" onclick={saveCorrection} disabled={isSaveCorrectionDisabled}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <template if:true={showDeleteModal}>
+            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 class="slds-modal__title slds-hyphenate">Justify Balance Deletion</h2>
+                         <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeDeleteModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                        </button>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <p class="slds-m-bottom_small">Are you sure you want to delete the <b>{balanceToDelete.EmployeeName} - {balanceToDelete.Leave_Type__c}</b> balance? This action cannot be undone.</p>
+                        <lightning-textarea 
+                            name="deleteJustification" 
+                            label="Justification for deletion (mandatory)" 
+                            value={deleteJustification} 
+                            onchange={handleDeleteJustificationChange} 
+                            required>
+                        </lightning-textarea>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={closeDeleteModal} class="slds-m-right_small"></lightning-button>
+                        <lightning-button label="Delete" variant="destructive" onclick={handleDeleteWithJustification} disabled={isDeleteDisabled}></lightning-button>
+                    </footer>
                 </div>
             </section>
             <div class="slds-backdrop slds-backdrop_open"></div>

@@ -1,0 +1,51 @@
+<apex:page controller="HRAllBalancesHistoryExportController" renderAs="pdf">
+    <div style="text-align:center; margin-bottom:20px;">
+        <span style="font-size:22px; font-weight:bold; color:#222;">Leave Balance History</span><br/>
+        <span style="font-size:13px; color:#555;">
+            Generated on: 
+            <apex:outputText value="{0,date,yyyy-MM-dd}">
+                <apex:param value="{!TODAY()}"/>
+            </apex:outputText>
+        </span>
+    </div>
+    
+    <apex:pageMessages />
+
+    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <tr style="background:#eee; color:#222;">
+            <th style="border:1px solid #bbb; padding:6px 10px;">Employee</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Type</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Date</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Movement</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Source</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Justification</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Days</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">New Balance</th>
+        </tr>
+
+        <apex:repeat value="{!histories}" var="h">
+            <tr>
+                <td style="border:1px solid #bbb; padding:6px 10px;">{!h.Employee__r.Name}</td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">{!h.Leave_Type__c}</td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">
+                    <apex:outputText value="{0,date,yyyy-MM-dd}">
+                        <apex:param value="{!h.Movement_Date__c}"/>
+                    </apex:outputText>
+                </td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">{!h.Movement_Type__c}</td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">{!h.Source_of_Movement__c}</td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">{!h.Justification__c}</td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">
+                    <apex:outputText value="{0,number,#.##}">
+                        <apex:param value="{!h.Number_of_Days__c}"/>
+                    </apex:outputText>
+                </td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">
+                    <apex:outputText value="{0,number,#.##}">
+                        <apex:param value="{!h.New_Balance__c}"/>
+                    </apex:outputText>
+                </td>
+            </tr>
+        </apex:repeat>
+    </table>
+</apex:page>

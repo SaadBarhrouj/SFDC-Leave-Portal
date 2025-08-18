@@ -1,0 +1,38 @@
+<apex:page controller="AbsentEmployeesPDFController" renderAs="pdf">
+    <div style="text-align:center; margin-bottom:20px;">
+        <span style="font-size:22px; font-weight:bold; color:#222;">List of Absent Employees</span>
+        <br/>
+        <span style="font-size:13px; color:#555;">
+            Generated on: 
+            <apex:outputText value="{0,date,yyyy-MM-dd}">
+                <apex:param value="{!TODAY()}"/>
+            </apex:outputText>
+        </span>
+    </div>
+
+    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <tr style="background:#eee; color:#222;">
+            <th style="border:1px solid #bbb; padding:6px 10px;">Employee</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Leave Type</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">Start Date</th>
+            <th style="border:1px solid #bbb; padding:6px 10px;">End Date</th>
+        </tr>
+
+        <apex:repeat value="{!absences}" var="a">
+            <tr>
+                <td style="border:1px solid #bbb; padding:6px 10px;">{!a.Requester__r.Name}</td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">{!a.Leave_Type__c}</td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">
+                    <apex:outputText value="{0,date,yyyy-MM-dd}">
+                        <apex:param value="{!a.Start_Date__c}"/>
+                    </apex:outputText>
+                </td>
+                <td style="border:1px solid #bbb; padding:6px 10px;">
+                    <apex:outputText value="{0,date,yyyy-MM-dd}">
+                        <apex:param value="{!a.End_Date__c}"/>
+                    </apex:outputText>
+                </td>
+            </tr>
+        </apex:repeat>
+    </table>
+</apex:page>
