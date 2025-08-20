@@ -172,16 +172,6 @@
         <reevaluateOnChange>false</reevaluateOnChange>
     </fieldUpdates>
     <fieldUpdates>
-        <fullName>Update_Approval_Status</fullName>
-        <field>Status__c</field>
-        <literalValue>Pending Approval</literalValue>
-        <name>Update Approval Status</name>
-        <notifyAssignee>false</notifyAssignee>
-        <operation>Literal</operation>
-        <protected>false</protected>
-        <reevaluateOnChange>false</reevaluateOnChange>
-    </fieldUpdates>
-    <fieldUpdates>
         <fullName>Update_Status_to_Approved</fullName>
         <field>Status__c</field>
         <literalValue>Approved</literalValue>

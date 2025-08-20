@@ -4,9 +4,6 @@
     <name>HR Approvals</name>
     <queueMembers>
         <users>
-            <user>chatty.00dgl000005ubltuae.23fb0wxz2roi@chatter.salesforce.com</user>
-            <user>saad.barhrouj2001143@agentforce.com</user>
-            <user>kihlyounes123@gmail.com</user>
         </users>
     </queueMembers>
     <queueSobject>
