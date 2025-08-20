@@ -113,7 +113,7 @@ public without sharing class LeaveBalanceController {
                        Employee__c, Employee__r.Name, Employee__r.FullPhotoUrl
                 FROM Leave_Balance_History__c
                 WHERE Employee__c = :UserInfo.getUserId()
-                ORDER BY Movement_Date__c DESC
+                ORDER BY CreatedDate DESC
                 LIMIT 100
             ];
         } catch (Exception e) {
