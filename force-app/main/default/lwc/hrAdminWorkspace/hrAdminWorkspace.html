@@ -2,11 +2,18 @@
     <lightning-card>
         <div class="hr-workspace-wrapper">
             <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
+
                 <lightning-tab label="Balances" value="balances" default onactive={tabChangeHandler}>
                     <c-hr-balances></c-hr-balances>
                 </lightning-tab>
+                <lightning-tab label="Who is Absent?" value="absences">
+                    <c-hr-absences></c-hr-absences>
+                </lightning-tab>
                 <lightning-tab label="Holidays" value="holidays" onactive={tabChangeHandler}>
                     <c-hr-holidays></c-hr-holidays> 
+                </lightning-tab>
+                <lightning-tab label="Balance History" value="balanceHistory" onactive={tabChangeHandler}>
+                    <c-hr-balance-history></c-hr-balance-history>
                 </lightning-tab>
                 <lightning-tab label="Leave Policies" value="leavePolicies" onactive={tabChangeHandler}>
                     <c-hr-leave-policies></c-hr-leave-policies> 

@@ -2,8 +2,11 @@
     <lightning-card>
         <div class="team-requests-wrapper">
             <lightning-tabset class="slds-tabs_default" active-tab-value={activetabContent}>
-                <lightning-tab label="Team Requests" value="team" onactive={tabChangeHandler}>
+                <lightning-tab label="My Pending Approvals" value="team" onactive={tabChangeHandler}>
                     <c-team-requests></c-team-requests> 
+                </lightning-tab>
+                <lightning-tab label="Team Leave History" value="teamHistory" onactive={tabChangeHandler}>
+                    <c-team-requests-history></c-team-requests-history>
                 </lightning-tab>
             </lightning-tabset>
         </div>

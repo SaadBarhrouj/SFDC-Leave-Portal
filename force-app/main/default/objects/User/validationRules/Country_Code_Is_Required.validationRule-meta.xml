@@ -2,8 +2,8 @@
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Country_Code_Is_Required</fullName>
     <active>true</active>
-    <description>The country code is required for all active users.</description>
-    <errorConditionFormula>AND(ISBLANK(TEXT(Country_Code__c)), IsActive)</errorConditionFormula>
-    <errorDisplayField>Country_Code__c</errorDisplayField>
-    <errorMessage>The Country Code is a required field for any active user.</errorMessage>
+    <description>The Work Country is required for all active users.</description>
+    <errorConditionFormula>AND(ISBLANK(TEXT(Work_Country__c)), IsActive)</errorConditionFormula>
+    <errorDisplayField>Work_Country__c</errorDisplayField>
+    <errorMessage>Please select a Work Country. This is a required field for all active users.</errorMessage>
 </ValidationRule>

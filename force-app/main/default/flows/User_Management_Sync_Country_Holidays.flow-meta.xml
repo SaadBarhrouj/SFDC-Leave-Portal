@@ -11,7 +11,7 @@
         <inputParameters>
             <name>countryCode</name>
             <value>
-                <elementReference>$Record.Country_Code__c</elementReference>
+                <elementReference>$Record.Work_Country__c</elementReference>
             </value>
         </inputParameters>
         <inputParameters>
@@ -99,18 +99,18 @@
             <field>Country_Code__c</field>
             <operator>EqualTo</operator>
             <value>
-                <elementReference>$Record.Country_Code__c</elementReference>
+                <elementReference>$Record.Work_Country__c</elementReference>
             </value>
         </filters>
         <filters>
-            <field>Holiday_Date__c</field>
+            <field>Start_Date__c</field>
             <operator>GreaterThanOrEqualTo</operator>
             <value>
                 <elementReference>StartOfYear</elementReference>
             </value>
         </filters>
         <filters>
-            <field>Holiday_Date__c</field>
+            <field>End_Date__c</field>
             <operator>LessThanOrEqualTo</operator>
             <value>
                 <elementReference>EndOfYear</elementReference>
@@ -126,7 +126,7 @@
         <connector>
             <targetReference>Check_for_Current_Year_Holidays</targetReference>
         </connector>
-        <filterFormula>OR(ISNEW(), ISCHANGED({!$Record.Country_Code__c}))</filterFormula>
+        <filterFormula>OR(ISNEW(), ISCHANGED({!$Record.Work_Country__c}))</filterFormula>
         <object>User</object>
         <recordTriggerType>CreateAndUpdate</recordTriggerType>
         <triggerType>RecordAfterSave</triggerType>

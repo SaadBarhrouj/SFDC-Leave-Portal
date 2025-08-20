@@ -1,4 +1,4 @@
-public with sharing class LeaveRequestController {
+public without sharing class LeaveRequestController {
     
     @AuraEnabled
     public static Id getLeaveBalanceId(Id employeeId, String leaveType) {
@@ -16,6 +16,117 @@ public with sharing class LeaveRequestController {
             throw new AuraHandledException('No leave balance found for ' + leaveType + ' for this year');
         }
     }
+
+
+
+    @AuraEnabled
+    public static String recallAndUpdate(Id recordId, Date startDate, Date endDate, String comments) {
+        System.debug('--- recallAndUpdate START ---');
+        System.debug('Parameters: recordId=' + recordId);
+
+        try {
+            ProcessInstanceWorkitem workItem;
+            try {
+                workItem = [
+                    SELECT Id FROM ProcessInstanceWorkitem
+                    WHERE ProcessInstance.TargetObjectId = :recordId AND ProcessInstance.Status = 'Pending'
+                    LIMIT 1
+                ];
+            } catch (Exception e) {
+            }
+
+            if (workItem != null) {
+                System.debug('Recalling request...');
+                Approval.ProcessWorkitemRequest recallReq = new Approval.ProcessWorkitemRequest();
+                recallReq.setWorkitemId(workItem.Id);
+                recallReq.setAction('Removed');
+                recallReq.setComments('Recalled by user for modification.');
+                Approval.process(recallReq);
+                System.debug('Request recalled.');
+            }
+
+            System.debug('Updating Leave Request record...');
+            Leave_Request__c requestToUpdate = new Leave_Request__c(Id = recordId);
+            requestToUpdate.Start_Date__c = startDate;
+            requestToUpdate.End_Date__c = endDate;
+            requestToUpdate.Employee_Comments__c = comments;
+            Leave_Request__c request = [
+            SELECT 
+                Id, 
+                Status__c, 
+                Approver__c, 
+                Requester__r.ManagerId,
+                Requester__r.Manager.ManagerId ,
+                Last_Approver__c
+            FROM Leave_Request__c 
+            WHERE Id = :recordId 
+            LIMIT 1
+        ];
+
+            if (request.Status__c != 'Escalated to Senior Manager') {
+                requestToUpdate.Status__c = 'Submitted';
+            }
+
+                if (request.Status__c == 'Pending HR Approval') {
+                if (request.Last_Approver__c != null) {
+                    if (request.Last_Approver__c == request.Requester__r.ManagerId) {
+                        requestToUpdate.Status__c = 'Submitted';
+                        System.debug('Le statut est remis à "Submitted".');
+                    }
+                    else if (request.Last_Approver__c == request.Requester__r.Manager.ManagerId) {
+                        requestToUpdate.Status__c = 'Escalated to Senior Manager';
+                        System.debug('Le statut est remis à "Escalated to Senior Manager".');
+                    }
+                }
+                else {
+                    requestToUpdate.Status__c = 'Pending Manager Approval';
+                    System.debug('Le statut est remis à "Pending Manager Approval" car Last_Approver__c est null.');
+                }
+            }
+                          
+            update requestToUpdate;
+            System.debug('Leave Request record updated.');
+
+            System.debug('Calling future method to resubmit...');
+            resubmitForApproval(recordId);
+            
+            System.debug('--- recallAndUpdate END (Success) ---');
+            return 'Request updated. Resubmission initiated.';
+
+        } catch (Exception e) {
+            System.debug('--- recallAndUpdate END (Exception) ---');
+            System.debug('Error: ' + e.getMessage() + ' at line ' + e.getLineNumber());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @future
+    public static void resubmitForApproval(Id recordId) {
+        System.debug('--- @future resubmitForApproval START for recordId: ' + recordId + ' ---');
+        
+        Leave_Request__c requestToSubmit = [SELECT Id FROM Leave_Request__c WHERE Id = :recordId];
+
+        if (requestToSubmit != null) {
+            Approval.ProcessSubmitRequest submitReq = new Approval.ProcessSubmitRequest();
+            submitReq.setObjectId(requestToSubmit.Id);
+            submitReq.setComments('Request resubmitted after modification.');
+
+            try {
+                Approval.ProcessResult result = Approval.process(submitReq);
+                if (result.isSuccess()) {
+                    System.debug('Future resubmission successful.');
+                } else {
+                    System.debug('Future resubmission failed: ' + result.getErrors()[0].getMessage());
+
+                }
+            } catch (Exception e) {
+                 System.debug('Exception in future resubmission: ' + e.getMessage());
+            }
+        }
+         System.debug('--- @future resubmitForApproval END ---');
+    }
+
+
     
     @AuraEnabled(cacheable=true)
     public static List<Leave_Request__c> getMyLeaves() {
@@ -24,16 +135,18 @@ public with sharing class LeaveRequestController {
                 SELECT Id, Name, Leave_Type__c, Start_Date__c, End_Date__c, 
                        Number_of_Days_Requested__c, Status__c, Employee_Comments__c,
                        Approver_Comments__c, Rejection_Reason__c, CreatedDate,
-                       Requester__r.Name, Leave_Balance__r.Leave_Type__c
+                       Requester__r.Name, Leave_Balance__r.Leave_Type__c,lastModifiedDate
                 FROM Leave_Request__c
                 WHERE Requester__c = :UserInfo.getUserId()
-                ORDER BY CreatedDate DESC
+                ORDER BY LastModifiedDate DESC
                 LIMIT 100
             ];
         } catch (Exception e) {
             throw new AuraHandledException('Error retrieving leave requests: ' + e.getMessage());
         }
     }
+
+    
     @AuraEnabled
     public static List<Leave_Request__c> getMyLeavesForCalendar() {
         return getMyLeaves();
@@ -45,11 +158,11 @@ public with sharing class LeaveRequestController {
             return 0;
         }
         
-        User u = [SELECT Country_Code__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
-        if (u.Country_Code__c == null || String.isBlank(u.Country_Code__c)) {
+        User u = [SELECT Work_Country__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        if (u.Work_Country__c == null || String.isBlank(u.Work_Country__c)) {
             return 0;
         }
-        return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Country_Code__c);
+        return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Work_Country__c);
     }
     
     
@@ -155,5 +268,17 @@ public with sharing class LeaveRequestController {
         } catch (Exception e) {
             throw new AuraHandledException('An error occurred: ' + e.getMessage());
         }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Leave_Request__c> getAbsentEmployees() {
+        Date today = Date.today();
+        return [
+            SELECT Id, Requester__c, Requester__r.Name, Requester__r.FullPhotoUrl, Leave_Type__c, Start_Date__c, End_Date__c
+            FROM Leave_Request__c
+            WHERE (Status__c = 'Approved' OR Status__c = 'Cancellation Requested')
+            AND Start_Date__c <= :today
+            AND End_Date__c >= :today
+        ];
     }
 }

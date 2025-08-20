@@ -1,4 +1,8 @@
-trigger LeaveBalanceTrigger on Leave_Balance__c (before insert, before update, after update, before delete) {
+trigger LeaveBalanceTrigger on Leave_Balance__c (before insert, before update, after insert, after update, before delete) {
+
+    if (Trigger.isAfter && Trigger.isInsert) {
+        LeaveBalanaceHistoryHelper.createHistoryOnInsert(Trigger.new);
+    }
 
     if (Trigger.isInsert || Trigger.isUpdate) {
         Set<String> uniqueKeys = new Set<String>();

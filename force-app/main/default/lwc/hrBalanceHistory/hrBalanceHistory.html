@@ -1,0 +1,112 @@
+<template>
+    <lightning-card title="All Balance Transaction History" icon-name="utility:archive">
+
+        <div class="slds-grid slds-gutters" slot="actions"> 
+            <lightning-button
+                label="Download PDF"
+                variant="brand"
+                icon-name="utility:download"
+                onclick={handleExportHRReports}>
+            </lightning-button>       
+            <div class="slds-col">
+                <lightning-button label="Refresh" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
+            </div>
+            <lightning-button-icon
+                icon-name="utility:filterList"
+                variant={filterButtonVariant}
+                onclick={toggleFilterPopover}
+                alternative-text="Show Filters"
+                title="Show Filters"
+                class="slds-p-right_small">
+            </lightning-button-icon>    
+        </div>
+
+        <template if:true={showFilterPopover}>
+            <div class="slds-popover slds-popover_medium slds-nubbin_top-right" role="dialog" style="position: absolute; top: 60px; right: 10px; width: 420px; z-index: 10;">
+                <div class="slds-popover__header">
+                    <h2 class="slds-text-heading_medium">Filters</h2>
+                </div>
+                <div class="slds-popover__body">
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-col slds-size_1-of-1 slds-p-bottom_small">
+                            <lightning-input
+                                type="search"
+                                name="employeeName"
+                                label="Employee Name"
+                                value={filterValues.employeeName}
+                                onchange={handleFilterChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-combobox
+                                name="movementType"
+                                label="Movement Type"
+                                value={filterValues.movementType}
+                                options={movementTypeOptions}
+                                onchange={handleFilterChange}>
+                            </lightning-combobox>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-combobox
+                                name="leaveType"
+                                label="Leave Type"
+                                value={filterValues.leaveType}
+                                options={leaveTypeOptions}
+                                onchange={handleFilterChange}>
+                            </lightning-combobox>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-input
+                                type="date"
+                                name="startDate"
+                                label="Start Date From"
+                                value={filterValues.startDate}
+                                onchange={handleFilterChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2 slds-p-bottom_small">
+                            <lightning-input
+                                type="date"
+                                name="endDate"
+                                label="End Date Until"
+                                value={filterValues.endDate}
+                                onchange={handleFilterChange}>
+                            </lightning-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-popover__footer slds-text-align_right">
+                    <lightning-button label="Clear" onclick={clearFilters} class="slds-m-right_x-small"></lightning-button>
+                    <lightning-button label="Apply" variant="brand" onclick={applyFilters}></lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <div class="slds-is-relative">
+            <template if:true={isLoading}>
+                <div class="spinner-overlay">
+                    <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+                </div>
+            </template>
+
+            <div class="slds-p-horizontal_small">
+                <template if:true={hasHistory}>
+                    <c-requests-datatable 
+                        lwc:ref="datatable" 
+                        key-field="Name" 
+                        data={filteredHistory} 
+                        columns={columns} 
+                        resize-column-disabled="true" 
+                        hide-checkbox-column="true">
+                    </c-requests-datatable>
+                </template>
+
+                <template if:false={hasHistory}>
+                    <div class="slds-align_absolute-center slds-p-around_medium">
+                        <c-no-data-svg message="No balance history available."></c-no-data-svg>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+</template>

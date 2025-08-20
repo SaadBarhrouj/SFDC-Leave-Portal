@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingOwnerRules>
+        <fullName>Share_All_Users_with_HR_Team</fullName>
+        <accessLevel>Read</accessLevel>
+        <label>Share All Users with HR Team</label>
+        <sharedTo>
+            <roleAndSubordinatesInternal>Director_of_HR</roleAndSubordinatesInternal>
+        </sharedTo>
+        <sharedFrom>
+            <allInternalUsers></allInternalUsers>
+        </sharedFrom>
+    </sharingOwnerRules>
+</SharingRules>

@@ -7,5 +7,5 @@
   YEAR(Start_Date__c) &lt;&gt; YEAR(TODAY()),
   YEAR(End_Date__c) &lt;&gt; YEAR(TODAY())
 )</errorConditionFormula>
-    <errorMessage>Prevents leave requests from spanning two different years, and must be in the current year, since balances are managed per year.</errorMessage>
+    <errorMessage>Both start date and end date must be in the current year.</errorMessage>
 </ValidationRule>

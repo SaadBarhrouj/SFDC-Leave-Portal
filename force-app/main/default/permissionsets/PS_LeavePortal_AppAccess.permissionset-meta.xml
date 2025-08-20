@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <applicationVisibilities>
+        <application>Leave_Portal</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+    <description>Provides basic access to Leave Portal application and common tabs.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>PS LeavePortal AppAccess</label>
+    <tabSettings>
+        <tab>Leave_Requests</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+</PermissionSet>

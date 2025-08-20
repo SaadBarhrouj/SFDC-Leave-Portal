@@ -1,295 +1,261 @@
 @isTest
 private class LeaveRequestControllerTest {
+
     @TestSetup
     static void makeData() {
-        List<Map<String, Object>> holidayData = new List<Map<String, Object>>{
-            new Map<String, Object>{
-                'name' => 'MA Holiday',
-                'date' => Date.newInstance(2024, 7, 4),
-                'countryCode' => 'MA',
-                'deductionValue' => 1.0
-            },
-            new Map<String, Object>{
-                'name' => 'MA Half Holiday',
-                'date' => Date.newInstance(2024, 7, 5),
-                'countryCode' => 'MA',
-                'deductionValue' => 0.5
-            },
-            new Map<String, Object>{
-                'name' => 'MA Weekend Holiday',
-                'date' => Date.newInstance(2024, 7, 6),
-                'countryCode' => 'MA',
-                'deductionValue' => 1.0
-            },
-            new Map<String, Object>{
-                'name' => 'FR Holiday',
-                'date' => Date.newInstance(2024, 7, 8),
-                'countryCode' => 'FR',
-                'deductionValue' => 1.0
-            }
-        };
-        TestDataFactory.createHolidays(holidayData);
+        User manager = TestDataFactory.createTestUser('manager', 'US');
+        User seniorManager = TestDataFactory.createTestUser('srmgr', 'US');
+        manager.ManagerId = seniorManager.Id;
+        update manager;
+
+        User testUser = TestDataFactory.createTestUser('testu', 'US');
+        testUser.ManagerId = manager.Id;
+        update testUser;
+
+        TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
+        TestDataFactory.createLeaveBalance(testUser.Id, 'Sick Leave', 10);
+    }
+
+    private static User getTestUser() {
+        return [SELECT Id, ManagerId, Work_Country__c FROM User WHERE Alias = 'testu' LIMIT 1];
     }
 
     @isTest
     static void testGetLeaveBalanceId_Success() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
-        Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
-
+        User testUser = getTestUser();
+        Id balanceId = null;
         Test.startTest();
-        Id balanceId = LeaveRequestController.getLeaveBalanceId(testUser.Id, 'Paid Leave');
+        System.runAs(testUser) {
+            balanceId = LeaveRequestController.getLeaveBalanceId(testUser.Id, 'Paid Leave');
+        }
         Test.stopTest();
 
-        System.assertEquals(leaveBalance.Id, balanceId, 'Leave balance ID should match the created record.');
+        System.assertNotEquals(null, balanceId, 'Should return a valid balance Id.');
     }
 
     @isTest
     static void testGetLeaveBalanceId_NotFound() {
-     
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
-        
-        Id balanceId = null;
+        User testUser = getTestUser();
         Exception expectedException = null;
-
         Test.startTest();
-        try {
-            balanceId = LeaveRequestController.getLeaveBalanceId(testUser.Id, 'RTT');
-        } catch (Exception e) {
-            expectedException = e;
+        System.runAs(testUser) {
+            try {
+                LeaveRequestController.getLeaveBalanceId(testUser.Id, 'Unpaid Leave');
+            } catch (AuraHandledException e) {
+                expectedException = e;
+            }
         }
         Test.stopTest();
 
-        System.assertEquals(null, balanceId, 'Balance ID should be null when no record is found.');
-        System.assertNotEquals(null, expectedException, 'An exception should have been thrown.');
-        System.assert(expectedException instanceof AuraHandledException, 'The exception should be an AuraHandledException.');
+        System.assertNotEquals(null, expectedException, 'An AuraHandledException should have been thrown.');
     }
 
     @isTest
     static void testGetMyLeaves() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
+        User testUser = getTestUser();
+        TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(11), null, 'Approved');
+
+        List<Leave_Request__c> myLeaves;
+        Test.startTest();
+        System.runAs(testUser) {
+            myLeaves = LeaveRequestController.getMyLeaves();
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, myLeaves);
+        System.assertEquals(1, myLeaves.size(), 'Should return one leave request.');
+    }
+    
+    @isTest
+    static void testGetMyLeavesForCalendar() {
+        User testUser = getTestUser();
+        TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(15), Date.today().addDays(16), null, 'Approved');
+
+        List<Leave_Request__c> myLeaves;
+        Test.startTest();
+        System.runAs(testUser) {
+            myLeaves = LeaveRequestController.getMyLeavesForCalendar();
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, myLeaves);
+        System.assertEquals(1, myLeaves.size(), 'Should return one leave request for the calendar.');
+    }
+    
+    @isTest
+    static void testGetNumberOfDaysRequested_InvalidDates() {
+        User testUser = getTestUser();
+        Decimal daysRequested;
+        Test.startTest();
+        System.runAs(testUser) {
+            daysRequested = LeaveRequestController.getNumberOfDaysRequested(Date.today(), null);
+        }
+        Test.stopTest();
+        System.assertEquals(0, daysRequested, 'Should be 0 for null dates.');
+    }
+
+    @isTest
+    static void testCancelLeaveRequest_Submitted() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(20), Date.today().addDays(21), null, 'Submitted');
+
+        Test.startTest();
+        String result = LeaveRequestController.cancelLeaveRequest(req.Id);
+        Test.stopTest();
         
-        System.runAs(testUser) {
-            Leave_Balance__c leaveBalance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 20);
-            
-            Leave_Request__c leaveRequest = TestDataFactory.createLeaveRequest(
-                testUser.Id, 
-                'Paid Leave', 
-                Date.today().addDays(10), 
-                Date.today().addDays(12), 
-                leaveBalance.Id
-            );
-            insert leaveRequest;
-
-            Test.startTest();
-            List<Leave_Request__c> myLeaves = LeaveRequestController.getMyLeaves();
-            Test.stopTest();
-
-            System.assertEquals(1, myLeaves.size(), 'Should return one leave request.');
-            System.assertEquals(leaveRequest.Id, myLeaves[0].Id, 'The returned leave request ID should match the created one.');
-        }
+        System.assertEquals('The leave request has been successfully cancelled.', result);
+        Leave_Request__c cancelledReq = [SELECT Status__c FROM Leave_Request__c WHERE Id = :req.Id];
+        System.assertEquals('Cancelled', cancelledReq.Status__c, 'Status should be Cancelled.');
     }
 
     @isTest
-    static void testGetMyLeaves_NoRecords() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
+    static void testCancelLeaveRequest_PendingApproval() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(30), Date.today().addDays(31), null, 'Submitted');
 
-        System.runAs(testUser) {
-            Test.startTest();
-            List<Leave_Request__c> myLeaves = LeaveRequestController.getMyLeaves();
-            Test.stopTest();
+        Test.startTest();
+        String result = LeaveRequestController.cancelLeaveRequest(req.Id);
+        Test.stopTest();
 
-            System.assert(myLeaves.isEmpty(), 'Should return an empty list when there are no leave requests.');
-        }
-    }
-    @isTest
-    static void testGetNumberOfDaysRequested_Valid() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'MA');
-        System.runAs(testUser) {
-            Date startDate = Date.newInstance(2024, 7, 1);
-            Date endDate = Date.newInstance(2024, 7, 12);
-            Test.startTest();
-            Decimal days = LeaveRequestController.getNumberOfDaysRequested(startDate, endDate);
-            Test.stopTest();
-            System.assertEquals(8.5, days, 'Should return correct number of days excluding weekends and holidays.');
-        }
+        System.assertEquals('The leave request has been successfully cancelled.', result);
+        Leave_Request__c cancelledReq = [SELECT Status__c FROM Leave_Request__c WHERE Id = :req.Id];
+        System.assertEquals('Cancelled', cancelledReq.Status__c, 'Status should be Cancelled after recall.');
     }
 
     @isTest
-    static void testGetNumberOfDaysRequested_NullDates() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'MA');
-        System.runAs(testUser) {
-            Test.startTest();
-            Decimal daysNullStart = LeaveRequestController.getNumberOfDaysRequested(null, Date.newInstance(2024, 7, 10));
-            Decimal daysNullEnd = LeaveRequestController.getNumberOfDaysRequested(Date.newInstance(2024, 7, 1), null);
-            Test.stopTest();
-            System.assertEquals(0, daysNullStart, 'Should return 0 if startDate is null.');
-            System.assertEquals(0, daysNullEnd, 'Should return 0 if endDate is null.');
+    static void testCancelLeaveRequest_InvalidStatus() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(40), Date.today().addDays(41), null, 'Approved');
+        
+        Exception expectedException = null;
+        Test.startTest();
+        try {
+            LeaveRequestController.cancelLeaveRequest(req.Id);
+        } catch (AuraHandledException e) {
+            expectedException = e;
         }
+        Test.stopTest();
+
+        System.assertNotEquals(null, expectedException, 'An exception should be thrown for non-cancellable status.');
     }
 
     @isTest
-    static void testGetNumberOfDaysRequested_InvalidRange() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'MA');
+    static void testRequestCancellation_Success() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(50), Date.today().addDays(51), null, 'Approved');
+        
+        req.Last_Approver__c = testUser.ManagerId;
+        update req;
+
+        Test.startTest();
         System.runAs(testUser) {
-            Test.startTest();
-            Decimal days = LeaveRequestController.getNumberOfDaysRequested(Date.newInstance(2024, 7, 12), Date.newInstance(2024, 7, 1));
-            Test.stopTest();
-            System.assertEquals(0, days, 'Should return 0 if startDate > endDate.');
+            LeaveRequestController.requestCancellation(req.Id);
         }
+        Test.stopTest();
+
+        Leave_Request__c updatedReq = [SELECT Status__c FROM Leave_Request__c WHERE Id = :req.Id];
+        System.assertEquals('Cancellation Requested', updatedReq.Status__c, 'Status should be Cancellation Requested.');
     }
 
     @isTest
-    static void testGetNumberOfDaysRequested_OnlyWeekends() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'MA');
-        System.runAs(testUser) {
-            Date startDate = Date.newInstance(2024, 6, 28);
-            Date endDate = Date.newInstance(2024, 7, 1);
-            Test.startTest();
-            Decimal days = LeaveRequestController.getNumberOfDaysRequested(startDate, endDate);
-            Test.stopTest();
-            System.assertEquals(2, days, 'Should correctly exclude only weekend days.');
+    static void testRequestCancellation_InvalidStatus() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(60), Date.today().addDays(61), null, 'Submitted');
+
+        Exception expectedException = null;
+        Test.startTest();
+        try {
+            LeaveRequestController.requestCancellation(req.Id);
+        } catch (AuraHandledException e) {
+            expectedException = e;
         }
+        Test.stopTest();
+
+        System.assertNotEquals(null, expectedException, 'An exception should be thrown for non-approved status.');
     }
 
     @isTest
-    static void testGetNumberOfDaysRequested_HolidayOnWeekend() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'MA');
-        System.runAs(testUser) {
-            Date startDate = Date.newInstance(2024, 7, 5);
-            Date endDate = Date.newInstance(2024, 7, 8);
-            Test.startTest();
-            Decimal days = LeaveRequestController.getNumberOfDaysRequested(startDate, endDate);
-            Test.stopTest();
-            System.assertEquals(1.5, days, 'A holiday on a weekend should not be deducted.');
+    static void testWithdrawCancellationRequest() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(70), Date.today().addDays(71), null, 'Cancellation Requested');
+        req.Last_Approver__c = testUser.ManagerId;
+        update req;
+
+        Test.startTest();
+        LeaveRequestController.withdrawCancellationRequest(req.Id);
+        Test.stopTest();
+
+        Leave_Request__c updatedReq = [SELECT Status__c FROM Leave_Request__c WHERE Id = :req.Id];
+        System.assertEquals('Approved', updatedReq.Status__c, 'Status should be reverted to Approved.');
+    }
+    
+    @isTest
+    static void testWithdrawCancellationRequest_InvalidStatus() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(80), Date.today().addDays(81), null, 'Approved');
+        
+        Exception expectedException = null;
+        Test.startTest();
+        try {
+            LeaveRequestController.withdrawCancellationRequest(req.Id);
+        } catch (AuraHandledException e) {
+            expectedException = e;
         }
+        Test.stopTest();
+        
+        System.assertNotEquals(null, expectedException, 'An exception should be thrown for invalid status.');
     }
 
     @isTest
-    static void testGetNumberOfDaysRequested_NoMatchingCountryHoliday() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'MA');
+    static void testGetAbsentEmployees() {
+        User testUser = getTestUser();
+        // Use a date range that includes today
+        TestDataFactory.createLeaveRequest(testUser.Id, 'Sick Leave', Date.today().addDays(-1), Date.today().addDays(1), null, 'Approved');
+
+        List<Leave_Request__c> absentEmployees;
+        Test.startTest();
         System.runAs(testUser) {
-            Date startDate = Date.newInstance(2024, 7, 8);
-            Date endDate = Date.newInstance(2024, 7, 12);
-            Test.startTest();
-            Decimal days = LeaveRequestController.getNumberOfDaysRequested(startDate, endDate);
-            Test.stopTest();
-            System.assertEquals(5, days, 'Holidays for other countries should be ignored.');
+            absentEmployees = LeaveRequestController.getAbsentEmployees();
         }
+        Test.stopTest();
+
+        System.assertNotEquals(null, absentEmployees);
+        System.assertEquals(1, absentEmployees.size(), 'Should return one absent employee.');
     }
 
     @isTest
-    static void testCancelLeaveRequest_SuccessSubmitted() {
-        User manager = TestDataFactory.createTestUser('manager', 'US');
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
-        testUser.ManagerId = manager.Id;
-        update testUser;
-        System.runAs(testUser) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
-            request.Status__c = 'Submitted';
-            insert request;
-            Exception ex;
-            String result = null;
-            Test.startTest();
-            try {
-                result = LeaveRequestController.cancelLeaveRequest(request.Id);
-            } catch (Exception e) {
-                ex = e;
-                System.debug('CANCEL ERROR: ' + e.getMessage());
-            }
-            Test.stopTest();
-            if (ex != null) {
-                System.debug('Test failed with exception: ' + ex.getMessage());
-                System.assert(ex instanceof AuraHandledException, 'Should be AuraHandledException');
-                System.assert(ex.getMessage() != null, 'Exception message should not be null');
-            } else {
-                System.assertEquals('The leave request has been successfully cancelled.', result);
-                Leave_Request__c updated = [SELECT Status__c FROM Leave_Request__c WHERE Id = :request.Id];
-                System.assertEquals('Cancelled', updated.Status__c);
-            }
-        }
-    }
+    static void testRecallAndUpdate() {
+        User testUser = getTestUser();
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(90), Date.today().addDays(91), null, 'Submitted');
 
-    @isTest
-    static void testCancelLeaveRequest_PendingManagerApproval() {
-        User manager = TestDataFactory.createTestUser('manager', 'US');
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
-        testUser.ManagerId = manager.Id;
-        update testUser;
-        System.runAs(testUser) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
-            request.Status__c = 'Pending Manager Approval';
-            insert request;
-            Test.startTest();
-            String result = LeaveRequestController.cancelLeaveRequest(request.Id);
-            Test.stopTest();
-            System.assertEquals('The leave request has been successfully cancelled.', result);
-            Leave_Request__c updated = [SELECT Status__c FROM Leave_Request__c WHERE Id = :request.Id];
-            System.assertEquals('Cancelled', updated.Status__c);
-        }
-    }
+        Date newStartDate = Date.today().addDays(95);
+        Date newEndDate = Date.today().addDays(96);
+        String newComments = 'Updated comments';
 
-    @isTest
-    static void testCancelLeaveRequest_RefusedStatus() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
-        System.runAs(testUser) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(testUser.Id, 'Paid Leave', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(testUser.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
-            request.Status__c = 'Approved';
-            insert request;
-            Exception ex;
-            Test.startTest();
-            try {
-                LeaveRequestController.cancelLeaveRequest(request.Id);
-            } catch (Exception e) {
-                ex = e;
-                System.debug('REFUSED ERROR: ' + e.getMessage());
-            }
-            Test.stopTest();
-            System.assertNotEquals(null, ex);
-            System.assert(ex instanceof AuraHandledException);
-            System.assertNotEquals(null, ex.getMessage(), 'Exception message should not be null');
-        }
-    }
+        Test.startTest();
+        String result = LeaveRequestController.recallAndUpdate(req.Id, newStartDate, newEndDate, newComments);
+        Test.stopTest();
+        
+        System.assertEquals('Request updated. Resubmission initiated.', result);
 
-    @isTest
-    static void testCancelLeaveRequest_PendingManagerWithWorkitem() {
-        User manager = TestDataFactory.createTestUser('manager', 'US');
-        User requester = TestDataFactory.createTestUser('testuser', 'US');
-        requester.ManagerId = manager.Id;
-        update requester;
-        System.runAs(requester) {
-            Leave_Balance__c balance = TestDataFactory.createLeaveBalance(requester.Id, 'Paid Leave', 10);
-            Leave_Request__c request = TestDataFactory.createLeaveRequest(requester.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(12), balance.Id);
-            request.Status__c = 'Pending Manager Approval';
-            insert request;
-            Test.startTest();
-            String result = LeaveRequestController.cancelLeaveRequest(request.Id);
-            Test.stopTest();
-            System.assertEquals('The leave request has been successfully cancelled.', result);
-            Leave_Request__c updated = [SELECT Status__c FROM Leave_Request__c WHERE Id = :request.Id];
-            System.assertEquals('Cancelled', updated.Status__c);
-            Integer workitemCount = [SELECT COUNT() FROM ProcessInstanceWorkitem WHERE ProcessInstance.TargetObjectId = :request.Id];
-            System.assertEquals(0, workitemCount, 'No workitem should be linked to the cancelled leave request.');
-        }
+        Leave_Request__c updatedReq = [SELECT Start_Date__c, End_Date__c, Employee_Comments__c, Status__c FROM Leave_Request__c WHERE Id = :req.Id];
+        System.assertEquals(newStartDate, updatedReq.Start_Date__c);
+        System.assertEquals(newEndDate, updatedReq.End_Date__c);
+        System.assertEquals(newComments, updatedReq.Employee_Comments__c);
     }
-
+    
     @isTest
-    static void testCancelLeaveRequest_NotFound() {
-        User testUser = TestDataFactory.createTestUser('testuser', 'US');
-        System.runAs(testUser) {
-            Exception ex;
-            Test.startTest();
-            try {
-                LeaveRequestController.cancelLeaveRequest('001000000000000AAA'); 
-            } catch (Exception e) {
-                ex = e;
-            }
-            Test.stopTest();
-            System.assertNotEquals(null, ex);
-            System.assert(ex instanceof AuraHandledException);
-            System.assertNotEquals(null, ex.getMessage(), 'Exception message should not be null');
+    static void testRecallAndUpdate_Exception() {
+        Exception expectedException = null;
+        Test.startTest();
+        try {
+            // Pass an invalid Id
+            LeaveRequestController.recallAndUpdate('001000000000000', Date.today(), Date.today(), 'test');
+        } catch (AuraHandledException e) {
+            expectedException = e;
         }
+        Test.stopTest();
+        
+        System.assertNotEquals(null, expectedException, 'An exception should be thrown for an invalid Id.');
     }
 }

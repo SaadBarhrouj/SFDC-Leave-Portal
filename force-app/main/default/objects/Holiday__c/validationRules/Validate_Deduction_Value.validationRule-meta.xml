@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Validate_Deduction_Value</fullName>
+    <active>true</active>
+    <errorConditionFormula>OR(
+    AND(
+        Start_Date__c  &lt;&gt;  End_Date__c,
+        Deduction_Value__c  &lt;&gt;  1,
+        Deduction_Value__c  &lt;&gt;  0
+    ),
+    AND(
+        Start_Date__c = End_Date__c,
+        Deduction_Value__c  &lt;&gt;  0,
+        Deduction_Value__c  &lt;&gt;  0.5,
+        Deduction_Value__c  &lt;&gt;  1
+    )
+)</errorConditionFormula>
+    <errorDisplayField>Deduction_Value__c</errorDisplayField>
+    <errorMessage>For a single-day holiday, the Deduction Value must be 0, 0.5, or 1. For a multi-day holiday, it must be 0 or 1.</errorMessage>
+</ValidationRule>

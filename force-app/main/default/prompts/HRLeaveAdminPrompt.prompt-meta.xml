@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>HR Leave Admin Prompt</masterLabel>
+    <promptVersions>
+        <actionButtonLabel>Go to Leave Admin</actionButtonLabel>
+        <actionButtonLink>/lightning/n/HR_Leave_Administration</actionButtonLink>
+        <body>&lt;p&gt;Easily track employee absences, update leave policies, and manage public holidays—all in one place!&lt;/p&gt;&lt;p&gt;• See who is absent and review team leave history&lt;/p&gt;&lt;p&gt;• Adjust and enforce your company’s leave policies&lt;/p&gt;&lt;p&gt;• Add or update public holidays for accurate leave tracking&lt;/p&gt;&lt;p&gt;Want to see how it works?&lt;/p&gt;&lt;p&gt;Watch the demo video: &lt;a href=&quot;https://youtu.be/t9s6_OeOAys?si=P6AM0xJB3W3c0alm&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;How to Manage HR Leave&lt;/a&gt;&lt;/p&gt;</body>
+        <delayDays>1</delayDays>
+        <description>Prompt for HR to manage absences, leave policies, and holidays, with a demo video link and access to the Leave Administration dashboard.</description>
+        <displayType>DockedComposer</displayType>
+        <experience>Lightning</experience>
+        <header>HR Leave Administration</header>
+        <image>hrprompt</image>
+        <imageAltText>Screenshot of the HR Leave Administration dashboard showing absences, policies, and holidays</imageAltText>
+        <imageLocation>Top</imageLocation>
+        <isPublished>true</isPublished>
+        <masterLabel>HR Leave Admin Prompt</masterLabel>
+        <publishedDate>2025-08-15</publishedDate>
+        <shouldDisplayActionButton>true</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>false</shouldIgnoreGlobalDelay>
+        <startDate>2025-08-15</startDate>
+        <timesToDisplay>15</timesToDisplay>
+        <title>Manage Absences, Policies &amp; Holidays</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+</Prompt>

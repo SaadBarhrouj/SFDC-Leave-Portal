@@ -206,6 +206,47 @@
         <offset>0</offset>
     </actionCalls>
     <actionCalls>
+        <name>Send_Notification_to_Manager</name>
+        <label>Send Notification to Manager</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <actionName>customNotificationAction</actionName>
+        <actionType>customNotificationAction</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>customNotifTypeId</name>
+            <value>
+                <elementReference>Get_Custom_Notification_for_Approver.Id</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recipientIds</name>
+            <value>
+                <elementReference>approverRecipientList</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>title</name>
+            <value>
+                <stringValue>Sick Leave Request from  {!$Record.Requester__r.FirstName} {!$Record.Requester__r.LastName} Approved</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>body</name>
+            <value>
+                <stringValue>Hello,  The sick leave request from  {!$Record.Requester__r.FirstName} {!$Record.Requester__r.LastName} has been approved for the period from {!$Record.Start_Date__c} to {!$Record.End_Date__c}.</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>targetId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>customNotificationAction</nameSegment>
+        <offset>0</offset>
+    </actionCalls>
+    <actionCalls>
         <name>Send_Refused_Cancellation_Notification</name>
         <label>Send Refused Cancellation Notification</label>
         <locationX>0</locationX>
@@ -425,6 +466,22 @@
         </connector>
     </assignments>
     <assignments>
+        <name>Prepare_Manager_Notification_for_Approved_Sick_Leave</name>
+        <label>Prepare Manager Notification for Approved Sick Leave</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>approverRecipientList</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>$Record.Requester__r.ManagerId</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Send_Notification_to_Manager</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
         <name>Prepare_New_Request_Recipient</name>
         <label>Prepare New Request Recipient</label>
         <locationX>0</locationX>
@@ -612,6 +669,50 @@
             </connector>
             <label>Is New Request</label>
         </rules>
+        <rules>
+            <name>Is_the_Sick_Leave_Approved</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Leave_Type__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Sick Leave</stringValue>
+                </rightValue>
+            </conditions>
+            <conditions>
+                <leftValueReference>$Record.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Approved</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Prepare_Manager_Notification_for_Approved_Sick_Leave</targetReference>
+            </connector>
+            <label>Is the Sick Leave Approved?</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Manager_Exists</name>
+        <label>Manager Exists?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Yes_Manager_Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Requester_s_User_Record.ManagerId</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Check_Notification_Scenario</targetReference>
+            </connector>
+            <label>Yes, Manager Found</label>
+        </rules>
     </decisions>
     <environments>Default</environments>
     <formulas>
@@ -662,7 +763,7 @@
         <locationY>0</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Check_Notification_Scenario</targetReference>
+            <targetReference>Get_Requester_s_User_Record</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -674,6 +775,27 @@
         </filters>
         <getFirstRecordOnly>true</getFirstRecordOnly>
         <object>CustomNotificationType</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <name>Get_Requester_s_User_Record</name>
+        <label>Get Requester&apos;s User Record</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Manager_Exists</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Requester__c</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>User</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
     <recordLookups>

@@ -57,16 +57,11 @@
     </approvalStep>
     <enableMobileDeviceAccess>false</enableMobileDeviceAccess>
     <entryCriteria>
-        <criteriaItems>
-            <field>Leave_Request__c.Status__c</field>
-            <operation>equals</operation>
-            <value>Submitted</value>
-        </criteriaItems>
-        <criteriaItems>
-            <field>Leave_Request__c.Leave_Type__c</field>
-            <operation>notEqual</operation>
-            <value>Sick Leave</value>
-        </criteriaItems>
+        <formula>AND(
+  ISPICKVAL(Status__c, &apos;Submitted&apos;),
+  NOT(ISPICKVAL(Leave_Type__c, &apos;Sick Leave&apos;)),
+  NOT(ISBLANK(Requester__r.ManagerId)) 
+)</formula>
     </entryCriteria>
     <finalApprovalActions>
         <action>
@@ -105,7 +100,7 @@
         <useApproverFieldOfRecordOwner>false</useApproverFieldOfRecordOwner>
         <userHierarchyField>Manager</userHierarchyField>
     </nextAutomatedApprover>
-    <processOrder>3</processOrder>
+    <processOrder>4</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>

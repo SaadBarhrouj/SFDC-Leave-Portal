@@ -3,6 +3,7 @@ import getBalanceHistoryForCurrentUser from '@salesforce/apex/LeaveBalanceContro
 import REFRESH_BALANCE_CHANNEL from '@salesforce/messageChannel/RefreshBalanceChannel__c';
 import { MessageContext, publish } from 'lightning/messageService';
 import { LightningElement, track, wire } from 'lwc';
+import USER_ID from '@salesforce/user/Id';
 
 const HISTORY_COLUMNS_DEFINITION = [
     { label: 'Movement Date', fieldName: 'Movement_Date__c', type: 'date-local' },
@@ -16,8 +17,9 @@ const HISTORY_COLUMNS_DEFINITION = [
         }
     },
     { label: 'Leave Type', fieldName: 'Leave_Type__c', type: 'text' },
-    { label: 'Description', fieldName: 'Source_of_Movement__c', type: 'text', wrapText: true, initialWidth: 350 },
-    { label: 'Change (Days)', fieldName: 'Number_of_Days__c', type: 'text', cellAttributes: { alignment: 'left' } },
+    { label: 'Source', fieldName: 'Source_of_Movement__c', type: 'text', wrapText: true },
+    { label: 'Justification', fieldName: 'Justification__c', type: 'text', wrapText: true },
+    { label: 'Days', fieldName: 'Number_of_Days__c', type: 'text' },
     { label: 'New Balance', fieldName: 'New_Balance__c', type: 'number', cellAttributes: { alignment: 'left' } }
 ];
 
@@ -34,15 +36,14 @@ export default class BalanceHistory extends LightningElement {
     @track filterValues = { ...DEFAULT_FILTERS };
     @track historyColumns = HISTORY_COLUMNS_DEFINITION;
     @track showFilterPopover = false;
+    @track currentUserName = '';
     isLoading = true;
     wiredHistoryResult;
 
     leaveTypeOptions = [
         { label: 'All Types', value: '' },
         { label: 'Paid Leave', value: 'Paid Leave' },
-        { label: 'RTT', value: 'RTT' },
-        { label: 'Sick Leave', value: 'Sick Leave' },
-        { label: 'Training', value: 'Training' },
+        { label: 'RTT', value: 'RTT' }
     ];
 
     movementTypeOptions = [
@@ -82,6 +83,7 @@ export default class BalanceHistory extends LightningElement {
         this.isLoading = false;
     }
 
+    
     @wire(MessageContext)
     messageContext;
 
@@ -140,4 +142,14 @@ export default class BalanceHistory extends LightningElement {
     get hasData() {
         return this.filteredData && this.filteredData.length > 0;
     }
+
+    handleExportPDF() {
+    const params = [];
+    if (this.filterValues.leaveType) params.push('type=' + encodeURIComponent(this.filterValues.leaveType));
+    if (this.filterValues.startDate) params.push('start=' + this.filterValues.startDate);
+    if (this.filterValues.endDate) params.push('end=' + this.filterValues.endDate);
+    if (this.filterValues.movementType) params.push('movementType=' + encodeURIComponent(this.filterValues.movementType));
+    const url = '/apex/MyBalanceHistoryExport' + (params.length ? '?' + params.join('&') : '');
+    window.open(url, '_blank');
+}
 }

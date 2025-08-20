@@ -20,15 +20,19 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>Name</field>
+                <field>End_Date__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>Holiday_Date__c</field>
+                <field>Name</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Description__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
+                <field>Start_Date__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>
@@ -71,6 +75,7 @@
         <fields>Country_Code__c</fields>
         <fields>Deduction_Value__c</fields>
         <fields>Unique_ID__c</fields>
+        <fields>End_Date__c</fields>
     </miniLayout>
     <relatedLists>
         <fields>TASK.SUBJECT</fields>

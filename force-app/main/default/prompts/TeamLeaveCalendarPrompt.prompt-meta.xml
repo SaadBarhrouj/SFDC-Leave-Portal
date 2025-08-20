@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Team Leave Calendar Prompt</masterLabel>
+    <promptVersions>
+        <actionButtonLabel>Open Team Calendar</actionButtonLabel>
+        <actionButtonLink>/lightning/n/Team_Leave_Management</actionButtonLink>
+        <body>&lt;p&gt;See your team’s approved leaves and public holidays on the calendar.&lt;/p&gt;&lt;p&gt;•Approved absences and holidays are shown&lt;/p&gt;&lt;p&gt;• Click “View in My Team Calendar” on a request to see its position&lt;/p&gt;&lt;p&gt;Use the calendar to check your team’s availability.&lt;/p&gt;</body>
+        <customApplication>Leave_Portal</customApplication>
+        <delayDays>1</delayDays>
+        <description>Prompt for managers to visualize approved team leaves and public holidays on the calendar, and to check team availability.</description>
+        <dismissButtonLabel>Dismiss</dismissButtonLabel>
+        <displayType>Targeted</displayType>
+        <elementRelativePosition>TopCenter</elementRelativePosition>
+        <experience>Lightning</experience>
+        <isPublished>true</isPublished>
+        <masterLabel>Team Leave Calendar Prompt</masterLabel>
+        <publishedDate>2025-08-15</publishedDate>
+        <referenceElementContext>{&quot;scope&quot;:{&quot;scope&quot;:{&quot;attributes&quot;:{&quot;id&quot;:&quot;calendarTab&quot;}},&quot;attributes&quot;:{&quot;id&quot;:&quot;c_leaveRequestTabs&quot;}},&quot;version&quot;:2}</referenceElementContext>
+        <shouldDisplayActionButton>true</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>true</shouldIgnoreGlobalDelay>
+        <startDate>2025-08-15</startDate>
+        <targetPageKey1>Team_Leave_Management</targetPageKey1>
+        <targetPageType>standard__navItemPage</targetPageType>
+        <themeColor>Theme1</themeColor>
+        <themeSaturation>Light</themeSaturation>
+        <timesToDisplay>15</timesToDisplay>
+        <title>View Team Calendar</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+</Prompt>

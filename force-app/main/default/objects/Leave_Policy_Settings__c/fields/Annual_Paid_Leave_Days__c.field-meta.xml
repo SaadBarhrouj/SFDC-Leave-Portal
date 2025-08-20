@@ -3,7 +3,7 @@
     <fullName>Annual_Paid_Leave_Days__c</fullName>
     <externalId>false</externalId>
     <label>Annual Paid Leave Days</label>
-    <precision>2</precision>
+    <precision>3</precision>
     <required>false</required>
     <scale>0</scale>
     <trackTrending>false</trackTrending>

@@ -1,9 +1,15 @@
 <template>
-    <lightning-card title="Holiday Manager" icon-name="standard:event">
+    <lightning-card title="Holiday Manager" icon-name="utility:event">
         <div slot="actions">
             <lightning-button label="Refresh" title="Refresh the list" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
             <lightning-button label="Add Holiday" variant="brand" onclick={handleNew} class="slds-m-left_x-small"></lightning-button>
             <lightning-button label="Sync Holidays" icon-name="utility:sync" onclick={openSyncModal} class="slds-m-left_x-small"></lightning-button>
+            <lightning-button 
+                label="Bulk Delete" 
+                icon-name="utility:delete" 
+                onclick={openBulkDeleteModal} 
+                class="slds-m-left_x-small">
+            </lightning-button>
             <lightning-button-icon
                 icon-name="utility:filterList"
                 variant={filterButtonVariant}
@@ -58,7 +64,7 @@
                 </lightning-datatable>
             </template>
             <template if:false={hasHolidays}>
-                     <div class="slds-align_absolute-center slds-var-p-around_medium">
+                    <div class="slds-align_absolute-center slds-var-p-around_medium">
                         <c-no-data-svg message="No holidays to display for the selected filters."></c-no-data-svg>
                     </div>
             </template>
@@ -92,6 +98,40 @@
         <div class="slds-backdrop slds-backdrop_open"></div>
     </template>
 
+
+    <template if:true={isBulkDeleteModalOpen}>
+        <section role="dialog" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">Bulk Delete Holidays</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p class="slds-m-bottom_medium">Select criteria to delete holidays. Leaving a field blank will ignore it. This action cannot be undone.</p>
+                    <lightning-combobox
+                        name="countryToDelete"
+                        label="Country"
+                        value={countryToDelete}
+                        options={countryOptions}
+                        onchange={handleBulkDeleteChange}>
+                    </lightning-combobox>
+                    <lightning-input
+                        type="number"
+                        name="yearToDelete"
+                        label="Year"
+                        value={yearToDelete}
+                        onchange={handleBulkDeleteChange}
+                        class="slds-m-top_small">
+                    </lightning-input>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={closeBulkDeleteModal}></lightning-button>
+                    <lightning-button label="Delete" variant="destructive" onclick={handleBulkDelete} class="slds-m-left_x-small"></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
     <template if:true={isModalOpen}>
         <section role="dialog" class="slds-modal slds-fade-in-open">
             <div class="slds-modal__container">
@@ -99,19 +139,29 @@
                 <lightning-record-edit-form
                     object-api-name={holidayObjectApiName}
                     record-id={recordIdToEdit}
+                    onsubmit={handleSubmit}
                     onsuccess={handleSuccess}
                     onerror={handleError}>
                     <div class="slds-modal__content slds-p-around_medium">
-                        <lightning-messages></lightning-messages>
                         <div class="slds-grid slds-gutters slds-wrap">
-                            <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
+                            <div class="slds-col slds-size_1-of-1 slds-m-bottom_small">
                                 <lightning-input-field field-name={holidayNameField} required></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
-                                <lightning-input-field field-name={holidayDateField} required></lightning-input-field>
+                                <lightning-input-field field-name={holidayStartDateField} required></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
-                                <lightning-input-field field-name={holidayCountryCodeField} required></lightning-input-field>
+                                <lightning-input-field field-name={holidayEndDateField} required></lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
+                                <lightning-combobox
+                                    name="Country"
+                                    label="Country"
+                                    value={holidayCountryCodeValue}
+                                    options={syncCountryOptions}
+                                    onchange={handleHolidayCountryChange}
+                                    required>
+                                </lightning-combobox>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-m-bottom_small">
                                 <lightning-input-field field-name={holidayDeductionField}></lightning-input-field>

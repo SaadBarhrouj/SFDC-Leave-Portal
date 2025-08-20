@@ -39,7 +39,8 @@ public class HolidayAPIService implements Queueable, Database.AllowsCallouts {
 
                     holidaysToUpsert.add(new Holiday__c(
                         Name = localName,
-                        Holiday_Date__c = holidayDate,
+                        Start_Date__c = holidayDate,
+                        End_Date__c = holidayDate,
                         Country_Code__c = holidayCountryCode,
                         Deduction_Value__c = 1.0,
                         Unique_ID__c = uniqueId
@@ -47,8 +48,20 @@ public class HolidayAPIService implements Queueable, Database.AllowsCallouts {
                 }
 
                 if (!holidaysToUpsert.isEmpty()) {
-                    Database.upsert(holidaysToUpsert, Holiday__c.Fields.Unique_ID__c, false);
+                    Database.UpsertResult[] upsertResults = Database.upsert(holidaysToUpsert, Holiday__c.Fields.Unique_ID__c, false);
                     System.debug('HolidayAPIService: ' + holidaysToUpsert.size() + ' holidays have been synchronized for ' + this.countryCode);
+                    
+                    for (Database.UpsertResult result : upsertResults) {
+                        if (result.isSuccess()) {
+                            System.debug('HolidayAPIService: Successfully upserted record with ID = ' + result.getId());
+                        } else {
+                            for (Database.Error error : result.getErrors()) {
+                                System.debug('HolidayAPIService: Error upserting record - Status: ' 
+                                    + error.getStatusCode() + ', Message: ' + error.getMessage() 
+                                    + ', Fields: ' + error.getFields());
+                            }
+                        }
+                    }
                 } else {
                     System.debug('HolidayAPIService: No holidays to upsert for ' + this.countryCode);
                 }

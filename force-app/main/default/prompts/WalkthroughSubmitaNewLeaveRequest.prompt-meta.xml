@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Walkthrough: Submit a New Leave Request</masterLabel>
+    <promptVersions>
+        <body>&lt;p&gt;To create a new leave request, click the &quot;New&quot; button.&lt;/p&gt;</body>
+        <customApplication>Leave_Portal</customApplication>
+        <delayDays>1</delayDays>
+        <description>Step-by-step guide for employees on how to create and submit their first leave request.</description>
+        <dismissButtonLabel>Dismiss</dismissButtonLabel>
+        <displayType>Targeted</displayType>
+        <experience>Lightning</experience>
+        <isPublished>true</isPublished>
+        <masterLabel>Walkthrough: Submit a New Leave Request Step 1</masterLabel>
+        <publishedDate>2025-08-13</publishedDate>
+        <referenceElementContext>{&quot;scope&quot;:{&quot;scope&quot;:{&quot;attributes&quot;:{&quot;id&quot;:&quot;myTab&quot;}},&quot;attributes&quot;:{&quot;id&quot;:&quot;c_leaveRequests&quot;}},&quot;version&quot;:2}</referenceElementContext>
+        <shouldDisplayActionButton>false</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>true</shouldIgnoreGlobalDelay>
+        <startDate>2025-08-13</startDate>
+        <stepNumber>1</stepNumber>
+        <targetPageKey1>Leave_Requests</targetPageKey1>
+        <targetPageType>standard__navItemPage</targetPageType>
+        <timesToDisplay>3</timesToDisplay>
+        <title>Start Your Request</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+    <promptVersions>
+        <body>&lt;p&gt;First, select the type of leave. Then, choose your start and end dates.&lt;/p&gt;</body>
+        <customApplication>Leave_Portal</customApplication>
+        <dismissButtonLabel>Dismiss</dismissButtonLabel>
+        <displayType>Targeted</displayType>
+        <elementRelativePosition>RightCenter</elementRelativePosition>
+        <experience>Lightning</experience>
+        <isPublished>false</isPublished>
+        <masterLabel>Walkthrough: Submit a New Leave Request Step 2</masterLabel>
+        <referenceElementContext>{&quot;scope&quot;:{&quot;attributes&quot;:{&quot;id&quot;:&quot;c_leaveRequests&quot;}},&quot;version&quot;:2}</referenceElementContext>
+        <shouldDisplayActionButton>false</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>false</shouldIgnoreGlobalDelay>
+        <stepNumber>2</stepNumber>
+        <targetPageKey1>Leave_Requests</targetPageKey1>
+        <targetPageType>standard__navItemPage</targetPageType>
+        <title>Fill in the Details</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+    <promptVersions>
+        <actionButtonLabel>View My Requests</actionButtonLabel>
+        <actionButtonLink>/lightning/n/Leave_Requests</actionButtonLink>
+        <body>&lt;p&gt;When you are ready, click here to submit your request for approval.&lt;/p&gt;</body>
+        <customApplication>Leave_Portal</customApplication>
+        <dismissButtonLabel>Dismiss</dismissButtonLabel>
+        <displayType>Targeted</displayType>
+        <elementRelativePosition>RightBottom</elementRelativePosition>
+        <experience>Lightning</experience>
+        <isPublished>false</isPublished>
+        <masterLabel>Walkthrough: Submit a New Leave Request Step 3</masterLabel>
+        <referenceElementContext>{&quot;scope&quot;:{&quot;attributes&quot;:{&quot;id&quot;:&quot;c_leaveRequests&quot;}},&quot;version&quot;:2}</referenceElementContext>
+        <shouldDisplayActionButton>true</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>false</shouldIgnoreGlobalDelay>
+        <stepNumber>3</stepNumber>
+        <targetPageKey1>Leave_Requests</targetPageKey1>
+        <targetPageType>standard__navItemPage</targetPageType>
+        <title>Submit Your Request</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+</Prompt>

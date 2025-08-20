@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Manager Team Leave History Prompt</masterLabel>
+    <promptVersions>
+        <actionButtonLabel>View Leave History</actionButtonLabel>
+        <actionButtonLink>/lightning/n/Team_Leave_Management</actionButtonLink>
+        <body>&lt;p&gt;Review the full history of leave requests for your team.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;• See who took leave and when&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;p&gt;• Filter by employee, leave type, or date&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;p&gt;• Track absence patterns over time&lt;/p&gt;</body>
+        <customApplication>Leave_Portal</customApplication>
+        <delayDays>1</delayDays>
+        <description>Prompt for managers to view and filter the full leave history of their team, including all approved and past requests.</description>
+        <dismissButtonLabel>Dismiss</dismissButtonLabel>
+        <displayType>Targeted</displayType>
+        <elementRelativePosition>TopRight</elementRelativePosition>
+        <experience>Lightning</experience>
+        <isPublished>true</isPublished>
+        <masterLabel>Manager Team Leave History Prompt</masterLabel>
+        <publishedDate>2025-08-15</publishedDate>
+        <referenceElementContext>{&quot;scope&quot;:{&quot;scope&quot;:{&quot;attributes&quot;:{&quot;id&quot;:&quot;teamHistoryTab&quot;}},&quot;attributes&quot;:{&quot;id&quot;:&quot;c_teamLeaveManagement&quot;}},&quot;version&quot;:2}</referenceElementContext>
+        <shouldDisplayActionButton>true</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>true</shouldIgnoreGlobalDelay>
+        <startDate>2025-08-15</startDate>
+        <targetPageKey1>Team_Leave_Management</targetPageKey1>
+        <targetPageType>standard__navItemPage</targetPageType>
+        <timesToDisplay>15</timesToDisplay>
+        <title>Team Leave History</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+</Prompt>

@@ -19,6 +19,28 @@
     </actionCalls>
     <apiVersion>64.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <decisions>
+        <name>Is_Pending_Manager_Approval</name>
+        <label>Is Pending Manager Approval?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
+        <rules>
+            <name>Pending_Manager_Approval</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Status__c</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>Pending Manager Approval</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Reassign_Task_to_New_Approver</targetReference>
+            </connector>
+            <label>Pending Manager Approval</label>
+        </rules>
+    </decisions>
     <environments>Default</environments>
     <interviewLabel>Leave Request - 24h Escalation {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Leave Request - 48h Escalation</label>
@@ -41,36 +63,6 @@
         </value>
     </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
-    <recordUpdates>
-        <name>Change_Approver_to_N_2</name>
-        <label>Change Approver to N+2</label>
-        <locationX>0</locationX>
-        <locationY>0</locationY>
-        <connector>
-            <targetReference>Reassign_Task_to_New_Approver</targetReference>
-        </connector>
-        <filterLogic>and</filterLogic>
-        <filters>
-            <field>Status__c</field>
-            <operator>EqualTo</operator>
-            <value>
-                <stringValue>Pending Manager Approval</stringValue>
-            </value>
-        </filters>
-        <inputAssignments>
-            <field>Approver__c</field>
-            <value>
-                <elementReference>$Record.Approver__r.ManagerId</elementReference>
-            </value>
-        </inputAssignments>
-        <inputAssignments>
-            <field>Status__c</field>
-            <value>
-                <stringValue>Escalated to Senior Manager</stringValue>
-            </value>
-        </inputAssignments>
-        <inputReference>$Record</inputReference>
-    </recordUpdates>
     <recordUpdates>
         <name>Set_Initial_Approver_N_1</name>
         <label>Set Initial Approver (N+1)</label>
@@ -95,12 +87,13 @@
         <scheduledPaths>
             <name>Escalate_After_48_Hours</name>
             <connector>
-                <targetReference>Change_Approver_to_N_2</targetReference>
+                <targetReference>Is_Pending_Manager_Approval</targetReference>
             </connector>
             <label>Escalate After 48 Hours</label>
             <offsetNumber>1</offsetNumber>
             <offsetUnit>Minutes</offsetUnit>
-            <timeSource>RecordTriggerEvent</timeSource>
+            <recordField>CreatedDate</recordField>
+            <timeSource>RecordField</timeSource>
         </scheduledPaths>
         <triggerType>RecordAfterSave</triggerType>
     </start>

@@ -1,4 +1,4 @@
-public with sharing class TeamRequestsController {
+public without sharing class TeamRequestsController {
     @AuraEnabled
     public static List<Leave_Request__c> getApprovedLeavesByManager(Id managerId) {
         if (managerId == null) {
@@ -12,10 +12,41 @@ public with sharing class TeamRequestsController {
             SELECT Id, Name, Start_Date__c, End_Date__c, Leave_Type__c, Status__c, Requester__r.Name
             FROM Leave_Request__c
             WHERE Requester__c IN :teamMemberIds
+            AND Status__c = 'Approved'
             ORDER BY Start_Date__c ASC
         ];
     }
     
+    @AuraEnabled(cacheable=true)
+    public static List<Leave_Request__c> getTeamRequestsHistory() {
+        Set<Id> subordinateIds = new Set<Id>();
+        for (User u : [SELECT Id FROM User WHERE ManagerId = :UserInfo.getUserId()]) {
+            subordinateIds.add(u.Id);
+        }
+
+        if (subordinateIds.isEmpty()) {
+            return new List<Leave_Request__c>();
+        }
+
+        Set<String> Statuses = new Set<String>{
+            'Pending HR Approval',
+            'Escalated to Senior Manager',
+            'Approved',
+            'Rejected',
+            'Cancellation Requested'
+        };
+
+        return [
+            SELECT Id, Name, Requester__c, Requester__r.Name, Requester__r.ManagerId, Requester__r.Manager.Name,
+                   Leave_Type__c, Start_Date__c, End_Date__c, Number_of_Days_Requested__c, Status__c, LastModifiedDate
+            FROM Leave_Request__c
+            WHERE Requester__c IN :subordinateIds
+            AND Status__c IN :Statuses
+            ORDER BY LastModifiedDate DESC
+            LIMIT 200
+        ];
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<Leave_Request__c> getTeamRequests() {
         Id currentUserId = UserInfo.getUserId();
@@ -47,10 +78,10 @@ public with sharing class TeamRequestsController {
             SELECT 
                 Id, Name, Start_Date__c, End_Date__c, Leave_Type__c,
                 Number_of_Days_Requested__c, Status__c, Requester__r.Name, Requester__c,
-                Requester__r.ManagerId, Requester__r.Manager.Name
+                Requester__r.ManagerId, Requester__r.Manager.Name, LastModifiedDate
             FROM Leave_Request__c
             WHERE Id IN :leaveRequestIds
-            ORDER BY CreatedDate DESC
+            ORDER BY LastModifiedDate DESC
         ];
     }
     
@@ -76,6 +107,13 @@ public with sharing class TeamRequestsController {
     @AuraEnabled
     public static void approveLeaveRequest(String leaveRequestId) {
         LeaveRequestUtils.validateRequestOnApproval(leaveRequestId);
+        try {
+            Leave_Request__c reqToUpdate = [SELECT Id, Last_Approver__c FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
+            reqToUpdate.Last_Approver__c = UserInfo.getUserId();
+            update reqToUpdate;
+        } catch (Exception e) {
+            throw new AuraHandledException('Could not find the leave request to update. Id: ' + leaveRequestId);
+        }
         processApprovalRequest(leaveRequestId, 'Approve', null);
     }
     
@@ -110,12 +148,6 @@ public with sharing class TeamRequestsController {
                 WHERE UserOrGroupId = :currentUserId
             ]) {
                 actorIds.add(gm.GroupId);
-            }
-            
-            if (action == 'Approve') {
-                Leave_Request__c reqToUpdate = [SELECT Id, Last_Approver__c FROM Leave_Request__c WHERE Id = :leaveRequestId LIMIT 1];
-                reqToUpdate.Last_Approver__c = currentUserId;
-                update reqToUpdate;
             }
             
             List<ProcessInstanceWorkitem> workItems = [

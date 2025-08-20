@@ -4,8 +4,12 @@
     <active>true</active>
     <description>Ensure that the leave start date is not in the past for all leave types except Sick Leave, which can have a start date in the past or today to allow retroactive sick leave requests.</description>
     <errorConditionFormula>AND(
-  NOT(ISPICKVAL(Leave_Type__c, &quot;Sick Leave&quot;)),
-  Start_Date__c &lt; TODAY()
+    NOT(ISPICKVAL(Leave_Type__c, &quot;Sick Leave&quot;)),
+    Start_Date__c &lt; TODAY(),
+    OR(
+        ISBLANK(TEXT(Status__c)),
+        ISPICKVAL(Status__c, &quot;Submitted&quot;)
+    )
 )</errorConditionFormula>
     <errorDisplayField>Start_Date__c</errorDisplayField>
     <errorMessage>Start date cannot be in the past for leave types other than Sick Leave.</errorMessage>

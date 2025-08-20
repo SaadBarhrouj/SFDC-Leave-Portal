@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSetGroup xmlns="http://soap.sforce.com/2006/04/metadata">
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>PSG LeavePortal Manager</label>
+    <permissionSets>PS_Holiday_Read</permissionSets>
+    <permissionSets>PS_LeaveBalance_Read</permissionSets>
+    <permissionSets>PS_LeavePortal_AppAccess</permissionSets>
+    <permissionSets>PS_LeaveRequest_Create_Edit_Cancel</permissionSets>
+    <permissionSets>PS_LeaveRequest_Read</permissionSets>
+    <permissionSets>PS_TeamRequests_Approve_Reject</permissionSets>
+    <permissionSets>PS_TeamRequests_View</permissionSets>
+    <status>Updated</status>
+</PermissionSetGroup>

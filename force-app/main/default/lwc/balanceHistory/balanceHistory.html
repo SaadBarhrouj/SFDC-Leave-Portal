@@ -1,7 +1,13 @@
 <template>
     <lightning-card title="Balance Transaction History" icon-name="utility:budget_period">
 
-        <div class="slds-grid slds-gutters" slot="actions">            
+        <div class="slds-grid slds-gutters" slot="actions"> 
+             <lightning-button
+                label="Download PDF"
+                variant="brand"
+                icon-name="utility:download"
+                onclick={handleExportPDF}>
+            </lightning-button>                
             <div class="slds-col">
                 <lightning-button label="Refresh" icon-name="utility:refresh" onclick={handleRefresh}></lightning-button>
             </div>

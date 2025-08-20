@@ -52,29 +52,31 @@ export default class LeaveRequestCalendar extends LightningElement {
     }
 
     handleRefresh() {
-        console.log('[LeaveRequestCalendar] Received leave request modified message, refreshing leave requests data.');            
+        console.log('[LeaveRequestCalendar] Received leave request modified message, refreshing leave requests data.');
         if (this._context === 'my') {
             this.loadMyRequestsData();
         } else if (this._context === 'team') {
             this.loadTeamRequestsData();
-        } else if (this._context === 'managerTeam' && this.managerId) {
-            this.loadManagerTeamRequestsData(this.managerId);
+        } else if (this._context === 'managerTeam') {
+            this.loadManagerTeamRequestsData();
         }
     }
 
     @api
     set managerId(value) {
-        if (value && value !== this._managerId) {
+        console.log('Setting managerId:', value);
+        if (value !== this._managerId) {
             this._managerId = value;
             if (this._context === 'managerTeam') {
-                this.loadManagerTeamRequestsData(value);
+                console.log('Reloading manager team data for managerId:', this._managerId);
+                this.loadManagerTeamRequestsData();
             }
         }
     }
     get managerId() {
         return this._managerId;
     }
-    
+
     @api
     set context(value) {
         if (value) {
@@ -84,8 +86,8 @@ export default class LeaveRequestCalendar extends LightningElement {
                 this.loadMyRequestsData();
             } else if (value === 'team') {
                 this.loadTeamRequestsData();
-            } else if (value === 'managerTeam' && this.managerId) {
-                this.loadManagerTeamRequestsData(this.managerId);
+            } else if (value === 'managerTeam') {
+                this.loadManagerTeamRequestsData();
             }
         }
     }
@@ -96,13 +98,19 @@ export default class LeaveRequestCalendar extends LightningElement {
     @wire(getHolidays)
     wiredHolidays({ error, data }) {
         if (data) {
-            this.holidays = data.map(h => ({
-                id: h.Id,
-                title: h.Name,
-                start: h.Holiday_Date__c,
-                allDay: true,
-                color: '#28b463'
-            }));
+            this.holidays = data.map(h => {
+                // Add 1 day to end date for FullCalendar to render it correctly
+                let endDate = new Date(h.End_Date__c);
+                endDate.setUTCDate(endDate.getUTCDate() + 1);
+                return {
+                    id: h.Id,
+                    title: h.Name,
+                    start: h.Start_Date__c,
+                    end: endDate.toISOString().slice(0,10),
+                    allDay: true,
+                    color: '#28b463'
+                };
+            });
             if (this.calendar) {
                 this.processAndDisplayEvents();
             }
@@ -110,7 +118,7 @@ export default class LeaveRequestCalendar extends LightningElement {
             console.error('Error loading holidays:', error);
         }
     }
-    
+
     loadMyRequestsData() {
         getMyLeavesForCalendar()
             .then(data => {
@@ -120,7 +128,7 @@ export default class LeaveRequestCalendar extends LightningElement {
             })
             .catch(error => console.error('Error loading My Leaves:', error));
     }
-    
+
     loadTeamRequestsData() {
         getApprovedLeavesByManager({ managerId: USER_ID })
             .then(data => {
@@ -131,11 +139,19 @@ export default class LeaveRequestCalendar extends LightningElement {
             .catch(error => console.error('Error loading Team Requests:', error));
     }
 
-    loadManagerTeamRequestsData(managerId) {
-        getApprovedLeavesByManager({ managerId })
+    loadManagerTeamRequestsData() {
+        if (!this.managerId) {
+            console.warn('Manager id is not set; skipping manager team load.');
+            return;
+        }
+        getApprovedLeavesByManager({ managerId: this.managerId })
             .then(data => {
+                console.log('Received Manager Team Data: ', data);
                 this.currentLeaveRequests = data;
                 this.handleDataLoaded();
+                if (this.calendar) {
+                    this.refreshCalendarViewForData();
+                }
             })
             .catch(error => console.error('Error loading Manager Team Requests:', error));
     }
@@ -162,12 +178,12 @@ export default class LeaveRequestCalendar extends LightningElement {
         if (this.scriptsLoaded) {
             return;
         }
-        this.scriptsLoaded = true;
 
         Promise.all([
             loadScript(this, fullCalendar + '/main.min.js'),
             loadStyle(this, fullCalendar + '/main.min.css')
         ]).then(() => {
+            this.scriptsLoaded = true;
             this.handleDataLoaded();
         }).catch(error => console.error('Error loading FullCalendar:', error));
     }
@@ -176,13 +192,7 @@ export default class LeaveRequestCalendar extends LightningElement {
         const calendarEl = this.template.querySelector('.calendar-container');
         if (!calendarEl) return;
 
-        let initialDate = new Date().toISOString().slice(0, 10);
-        if (this.selectedRequestId) {
-            const selectedReq = this.currentLeaveRequests.find(r => r.Id === this.selectedRequestId);
-            if (selectedReq && selectedReq.Start_Date__c) {
-                initialDate = selectedReq.Start_Date__c;
-            }
-        }
+        const initialDate = this.computeBestDateString();
 
         this.calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -196,7 +206,7 @@ export default class LeaveRequestCalendar extends LightningElement {
         });
         this.calendar.render();
     }
-    
+
     processAndDisplayEvents() {
         if (!this.calendar) return;
 
@@ -252,5 +262,37 @@ export default class LeaveRequestCalendar extends LightningElement {
         }
         this.calendar.removeAllEvents();
         this.calendar.addEventSource(allEvents);
+    }
+
+    computeBestDateString() {
+
+        if (this.selectedRequestId) {
+            const sel = this.currentLeaveRequests.find(r => r.Id === this.selectedRequestId);
+            if (sel?.Start_Date__c) {
+                return sel.Start_Date__c;
+            }
+        }
+
+        const requests = this.currentLeaveRequests || [];
+        if (requests.length > 0) {
+            const approved = requests.filter(
+                r => r.Status__c === 'Approved' || r.Status__c === 'Cancellation Requested'
+            );
+            const pool = approved.length ? approved : requests;
+            const earliest = pool
+                .filter(r => r.Start_Date__c)
+                .sort((a, b) => (a.Start_Date__c > b.Start_Date__c ? 1 : -1))[0];
+            if (earliest?.Start_Date__c) {
+                return earliest.Start_Date__c;
+            }
+        }
+
+        return new Date().toISOString().slice(0, 10);
+    }
+
+    refreshCalendarViewForData() {
+        if (!this.calendar) return;
+        const target = this.computeBestDateString();
+        this.calendar.gotoDate(target);
     }
 }

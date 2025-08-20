@@ -1,0 +1,14 @@
+<template>
+    <div class="slds-p-vertical_xx-small slds-p-horizontal_x-small">
+        <div class="slds-grid slds-grid_vertical-align-center">
+            <lightning-avatar
+                initials={typeAttributes.initials}
+                fallback-icon-name="standard:user" 
+                alternative-text={typeAttributes.name} 
+                size="small"
+                variant="circle">
+            </lightning-avatar>
+            <a class="slds-m-left_x-small" href={typeAttributes.url} onclick={handleNavigate}>{typeAttributes.name}</a>
+        </div>
+    </div>
+</template>

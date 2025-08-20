@@ -1,4 +1,4 @@
-public class LeaveRequestUtils {
+public without sharing class LeaveRequestUtils {
     
     public static Decimal calculateRequestedDays(Date startDate, Date endDate, String countryCode) {
         if (startDate == null || endDate == null || startDate > endDate) {
@@ -7,13 +7,17 @@ public class LeaveRequestUtils {
         
         Map<Date, Holiday__c> holidaysMap = new Map<Date, Holiday__c>();
         for (Holiday__c holiday : [
-            SELECT Holiday_Date__c, Deduction_Value__c 
+            SELECT Start_Date__c, End_Date__c, Deduction_Value__c 
             FROM Holiday__c
-            WHERE Holiday_Date__c >= :startDate 
-              AND Holiday_Date__c <= :endDate
+            WHERE End_Date__c >= :startDate 
+              AND Start_Date__c <= :endDate
               AND Country_Code__c = :countryCode
         ]) {
-            holidaysMap.put(holiday.Holiday_Date__c, holiday);
+            Date currentDateInHoliday = holiday.Start_Date__c;
+            while(currentDateInHoliday <= holiday.End_Date__c) {
+                holidaysMap.put(currentDateInHoliday, holiday);
+                currentDateInHoliday = currentDateInHoliday.addDays(1);
+            }
         }
         
         Decimal requestedDays = 0;
@@ -35,6 +39,56 @@ public class LeaveRequestUtils {
             currentDate = currentDate.addDays(1);
         }
         return requestedDays;
+    }
+
+    @future
+    public static void recalculateAffectedRequests(Set<Id> holidayIds) {
+        List<Holiday__c> holidays = [
+            SELECT Country_Code__c, Start_Date__c, End_Date__c 
+            FROM Holiday__c 
+            WHERE Id IN :holidayIds
+        ];
+        if (holidays.isEmpty()) {
+            return;
+        }
+        Set<String> countryCodes = new Set<String>();
+        Date minDate = Date.newInstance(9999, 1, 1);
+        Date maxDate = Date.newInstance(1000, 1, 1);
+        for (Holiday__c h : holidays) {
+            countryCodes.add(h.Country_Code__c);
+            if (h.Start_Date__c < minDate) minDate = h.Start_Date__c;
+            if (h.End_Date__c > maxDate) maxDate = h.End_Date__c;
+        }
+        recalcRequestsByRange(countryCodes, minDate, maxDate);
+    }
+    
+    public static void recalcRequestsByRange(Set<String> countryCodes, Date minDate, Date maxDate) {
+        if (countryCodes == null || countryCodes.isEmpty() || minDate == null || maxDate == null) return;
+        List<Leave_Request__c> requestsToUpdate = [
+            SELECT Id, Start_Date__c, End_Date__c, Requester__r.Work_Country__c, Number_of_Days_Requested__c
+            FROM Leave_Request__c
+            WHERE Status__c IN ('Submitted', 'Pending Manager Approval', 'Pending HR Approval', 'Escalated to Senior Manager')
+              AND Requester__r.Work_Country__c IN :countryCodes
+              AND Start_Date__c <= :maxDate
+              AND End_Date__c >= :minDate
+        ];
+        if (requestsToUpdate.isEmpty()) return;
+        List<Leave_Request__c> updatedRequests = new List<Leave_Request__c>();
+        for (Leave_Request__c request : requestsToUpdate) {
+            Decimal originalDays = request.Number_of_Days_Requested__c;
+            Decimal newDays = calculateRequestedDays(
+                request.Start_Date__c,
+                request.End_Date__c,
+                request.Requester__r.Work_Country__c
+            );
+            if (originalDays != newDays) {
+                request.Number_of_Days_Requested__c = newDays;
+                updatedRequests.add(request);
+            }
+        }
+        if (!updatedRequests.isEmpty()) {
+            update updatedRequests;
+        }
     }
     
     public static void updateUsedDays(Set<Id> leaveBalanceIds) {
@@ -137,4 +191,26 @@ public class LeaveRequestUtils {
             throw new AuraHandledException('This leave request cannot be approved because its start date is in the past.');
         }
     }
+
+    public static void validateNoticePeriod(List<Leave_Request__c> newRequests, Map<Id, Leave_Request__c> oldMap) {
+    Leave_Policy_Settings__c settings = Leave_Policy_Settings__c.getOrgDefaults();
+    Integer minNoticeDays = (settings.Minimum_Notice_Period_Days__c != null) ? 
+                           Integer.valueOf(settings.Minimum_Notice_Period_Days__c) : 5;
+    
+    for (Leave_Request__c request : newRequests) {
+        if (request.Leave_Type__c == 'Sick Leave' || request.Status__c != 'Submitted' ) continue;
+        
+        Boolean isNew = (oldMap == null);
+        Boolean dateChanged = !isNew && (request.Start_Date__c != oldMap.get(request.Id).Start_Date__c);
+        
+        if (isNew || dateChanged) {
+            Integer noticeDays = Date.today().daysBetween(request.Start_Date__c);
+            
+            if (noticeDays < minNoticeDays) {
+                request.Start_Date__c.addError('Leave requests must be submitted at least ' + 
+                                             minNoticeDays + ' days in advance according to company policy.');
+            }
+        }
+    }
+}
 }

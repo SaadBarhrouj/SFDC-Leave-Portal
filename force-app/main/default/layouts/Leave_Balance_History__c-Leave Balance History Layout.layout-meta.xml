@@ -38,6 +38,10 @@
                 <behavior>Required</behavior>
                 <field>Source_of_Movement__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Justification__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>

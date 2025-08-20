@@ -2,10 +2,11 @@ import { LightningElement, api, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import userId from '@salesforce/user/Id';
+
 import getNumberOfDaysRequested from '@salesforce/apex/LeaveRequestController.getNumberOfDaysRequested';
-import getLeaveBalanceId from '@salesforce/apex/LeaveRequestController.getLeaveBalanceId';
 import getRelatedFiles from '@salesforce/apex/LeaveRequestDetailController.getRelatedFiles';
 import deleteRelatedFile from '@salesforce/apex/LeaveRequestDetailController.deleteRelatedFile';
+import recallAndUpdate from '@salesforce/apex/LeaveRequestController.recallAndUpdate';
 
 export default class LeaveRequestFormModal extends NavigationMixin(LightningElement) {
     _recordId;
@@ -17,7 +18,11 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
     @track showUploadStep = false;
     @track relatedFiles = [];
     @track isSaving = false;
+    @track hasChanges = false;
     
+    originalValues = {};
+    originalStatus = '';
+
     acceptedFormats = ['.pdf', '.png', '.jpg', '.jpeg'];
 
     @api
@@ -28,36 +33,68 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
         } else {
             this.relatedFiles = [];
             this.selectedLeaveType = '';
+            this.hasChanges = false;
         }
     }
     get recordIdToEdit() {
         return this._recordId;
     }
 
+    get isSubmitButtonDisabled() {
+        return this.isSaving || !this.hasChanges;
+    }
+
+    get isLeaveTypeDisabled() {
+        return !this.isNewRecord;
+    }
+    
+    get isStartDateDisabled() {
+        return !this.isNewRecord && this.selectedLeaveType === 'Sick Leave';
+    }
+    get isEndDateDisabled() {
+        return !this.isNewRecord && this.selectedLeaveType === 'Sick Leave';
+    }
     @wire(getNumberOfDaysRequested, { startDate: '$startDate', endDate: '$endDate' })
     wiredDays({ error, data }) {
         if (data || data === 0) this.numberOfDaysRequested = data;
         else if (error) this.numberOfDaysRequested = 0;
     }
-    
+
     get currentUserId() { return userId; }
     get isNewRecord() { return !this.recordIdToEdit; }
+    
     get modalTitle() {
+        if (!this.isNewRecord && this.selectedLeaveType === 'Sick Leave') {
+        return 'Upload Medical Certificate';
+    }
         if (this.showUploadStep) return 'Upload Supporting Document';
         return this.isNewRecord ? 'New Leave Request' : 'Edit Leave Request';
     }
 
-    get submitButtonLabel() { if (this.isSaving) {return 'Saving...'; } return this.isNewRecord ? 'Submit Request' : 'Save Changes'; }
+    get submitButtonLabel() {
+        if (this.isSaving) { return 'Saving...'; }
+        return this.isNewRecord ? 'Submit Request' : 'Save Changes';
+    }
+
     get isDocumentRequired() { return this.selectedLeaveType === 'Training' || this.selectedLeaveType === 'Sick Leave'; }
     get hasRelatedFiles() { return this.relatedFiles && this.relatedFiles.length > 0; }
-    
+
     handleFormLoad(event) {
         if (!this.isNewRecord) {
-            const recordFields = event.detail.records[this.recordIdToEdit].fields;
-            const leaveType = recordFields.Leave_Type__c.value;
-            this.selectedLeaveType = leaveType;
-            this.startDate = recordFields.Start_Date__c.value;
-            this.endDate = recordFields.End_Date__c.value;
+            const fields = event.detail.records[this.recordIdToEdit].fields;
+            this.originalStatus = fields.Status__c.value;
+
+            this.originalValues = {
+                Leave_Type__c: fields.Leave_Type__c.value,
+                Start_Date__c: fields.Start_Date__c.value,
+                End_Date__c: fields.End_Date__c.value,
+                Employee_Comments__c: fields.Employee_Comments__c.value || ''
+            };
+
+            this.selectedLeaveType = fields.Leave_Type__c.value;
+            this.startDate = fields.Start_Date__c.value;
+            this.endDate = fields.End_Date__c.value;
+            this.hasChanges = false;
         }
     }
 
@@ -66,6 +103,19 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
         if (fieldName === 'Leave_Type__c') this.selectedLeaveType = value;
         else if (fieldName === 'Start_Date__c') this.startDate = value;
         else if (fieldName === 'End_Date__c') this.endDate = value;
+
+        if (this.isNewRecord) {
+            this.hasChanges = true;
+            return;
+        }
+
+        const currentValues = this.getValuesFromForm();
+        this.hasChanges = (
+            currentValues.Leave_Type__c !== this.originalValues.Leave_Type__c ||
+            currentValues.Start_Date__c !== this.originalValues.Start_Date__c ||
+            currentValues.End_Date__c !== this.originalValues.End_Date__c ||
+            (currentValues.Employee_Comments__c || '') !== this.originalValues.Employee_Comments__c
+        );
     }
     
     async handleSubmit(event) {
@@ -73,18 +123,24 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
         this.isSaving = true;
 
         const fields = { ...event.detail.fields }; 
-        try {
-            if (fields.Leave_Type__c !== 'Sick Leave' && fields.Leave_Type__c !== 'Training' && fields.Leave_Type__c !== 'Unpaid Leave') {
-                fields.Leave_Balance__c = await getLeaveBalanceId({ employeeId: userId, leaveType: fields.Leave_Type__c });
-            }
-            if (this.isNewRecord) {
-                fields.Status__c = 'Submitted';
-            }
-            this.refs.leaveRequestForm.submit(fields);
-        } catch (error) {
-            this.showToast('Error', 'Could not find leave balance for ' + fields.Leave_Type__c, 'error');
-            this.isSaving = false; 
+        const specialHandlingStatuses = ['Pending Manager Approval', 'Pending HR Approval', 'Escalated to Senior Manager'];
 
+        if (!this.isNewRecord && specialHandlingStatuses.includes(this.originalStatus)) {
+            try {
+                await recallAndUpdate({
+                    recordId: this.recordIdToEdit,
+                    startDate: fields.Start_Date__c,
+                    endDate: fields.End_Date__c,
+                    comments: fields.Employee_Comments__c
+                });
+                this.dispatchEvent(new CustomEvent('success', { detail: { recordId: this.recordIdToEdit } }));
+            } catch (error) {
+                this.showToast('Error', error.body?.message || 'An error occurred.', 'error');
+            } finally {
+                this.isSaving = false;
+            }
+        } else {
+            this.refs.leaveRequestForm.submit(fields);
         }
     }
 
@@ -105,19 +161,27 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
         this.showToast('Error saving request', message, 'error');
     }
 
+    triggerSubmit() {
+        this.template.querySelector('button[type="submit"]').click();
+    }
+    
+    getValuesFromForm() {
+        const fields = this.template.querySelectorAll('lightning-input-field');
+        const values = {};
+        fields.forEach(field => {
+            if (field.fieldName) {
+                values[field.fieldName] = field.value;
+            }
+        });
+        return values;
+    }
+
     handleClose() { this.dispatchEvent(new CustomEvent('close')); }
     
     handleFinish() {
         this.dispatchEvent(new CustomEvent('success', { detail: { recordId: this.recordIdToEdit } }));
     }
     
-    triggerSubmit() {
-        const submitButton = this.template.querySelector('button[type="submit"]');
-        if (submitButton) {
-            submitButton.click();
-        }
-    }
-
     async loadRelatedFiles(recordId) {
         try {
             const files = await getRelatedFiles({ recordId, refresh: Date.now() });
@@ -134,6 +198,7 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
             await deleteRelatedFile({ contentDocumentId, recordId: this.recordIdToEdit });
             this.showToast('Success', 'Document removed.', 'success');
             await this.loadRelatedFiles(this.recordIdToEdit);
+            this.hasChanges = true;
             this.dispatchEvent(new CustomEvent('filechange', { detail: { recordId: this.recordIdToEdit } }));
         } catch (error) {
             this.showToast('Error', 'Could not remove document.', 'error');
@@ -143,6 +208,7 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
     handleUploadFinished() {
         this.showToast('Success', 'File uploaded successfully.', 'success');
         this.loadRelatedFiles(this.recordIdToEdit);
+        this.hasChanges = true;
         this.dispatchEvent(new CustomEvent('filechange', { detail: { recordId: this.recordIdToEdit } }));
     }
 

@@ -49,7 +49,7 @@ public class HolidayAutomationTests {
     
     @isTest
     static void testSchedulable_SyncsNextYear() {
-        insert new Holiday__c(Name = 'Old Holiday', Country_Code__c = 'GB', Holiday_Date__c = Date.newInstance(Date.today().year(), 1, 1), Unique_ID__c = 'test1');
+        insert new Holiday__c(Name = 'Old Holiday', Country_Code__c = 'GB', Start_Date__c = Date.newInstance(Date.today().year(), 1, 1), Unique_ID__c = 'test1');
 
         Integer nextYear = Date.today().year() + 1; 
         String successJson = '[{"date": "' + nextYear + '-05-26", "localName": "Spring Bank Holiday", "countryCode": "GB"}]';
@@ -60,7 +60,7 @@ public class HolidayAutomationTests {
         sched.execute(null);
         Test.stopTest();
 
-        List<Holiday__c> nextYearHolidays = [SELECT Id FROM Holiday__c WHERE CALENDAR_YEAR(Holiday_Date__c) = :nextYear];
+        List<Holiday__c> nextYearHolidays = [SELECT Id FROM Holiday__c WHERE CALENDAR_YEAR(Start_Date__c) = :nextYear];
         System.assertEquals(1, nextYearHolidays.size(), 'The schedulable class should create a holiday for the next year.');
     }
 }
