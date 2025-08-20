@@ -45,10 +45,6 @@ trigger LeaveBalanceTrigger on Leave_Balance__c (before insert, before update, a
                 }
             }
         }
-
-        if (Trigger.isAfter && Trigger.isUpdate) {
-            BalanceHistoryHelper.createCorrectionHistory(Trigger.new, Trigger.oldMap);
-        }
     }
 
     if (Trigger.isDelete) {

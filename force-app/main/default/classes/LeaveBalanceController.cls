@@ -151,10 +151,7 @@ public without sharing class LeaveBalanceController {
             delete balanceToDelete;
 
         } catch (DmlException e) {
-            if (e.getMessage().contains('DELETE_FAILED')) {
-                 throw new AuraHandledException('This balance cannot be deleted because it is associated with existing leave requests.');
-            }
-            throw new AuraHandledException('Error deleting balance: ' + e.getMessage());
+            throw new AuraHandledException('This balance cannot be deleted because it is associated with existing leave requests.');
         } catch (Exception e) {
             throw new AuraHandledException('An error occurred during balance deletion: ' + e.getMessage());
         }
