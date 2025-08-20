@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Escalate My Leave Request</masterLabel>
+    <promptVersions>
+        <actionButtonLabel>Manage My Leave Requests</actionButtonLabel>
+        <actionButtonLink>/lightning/n/Leave_Requests</actionButtonLink>
+        <body>&lt;p&gt;Submit your leave requests in just a few clicks and track their status in real time.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;• See your available leave balances&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;p&gt;• Check your leave history and HR adjustments&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;p&gt;• View your approved leaves and public holidays on your calendar&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://youtu.be/t9s6_OeOAys?si=P6AM0xJB3W3c0alm&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;How to Manage My Requests&lt;/a&gt;&lt;/p&gt;</body>
+        <delayDays>1</delayDays>
+        <description>Prompt for employees explaining how to escalate a pending leave request to a senior manager and automatically synchronize the approval process using the new feature powered by FlowApprovalSynchronizer.</description>
+        <displayType>DockedComposer</displayType>
+        <experience>Lightning</experience>
+        <header>Welcome to Your Leave Portal!</header>
+        <image>employeeprompt</image>
+        <imageAltText>Screenshot of the employee leave request page and calendar</imageAltText>
+        <imageLocation>Top</imageLocation>
+        <isPublished>true</isPublished>
+        <masterLabel>Escalate My Leave Request</masterLabel>
+        <publishedDate>2025-08-15</publishedDate>
+        <shouldDisplayActionButton>true</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>false</shouldIgnoreGlobalDelay>
+        <startDate>2025-08-15</startDate>
+        <timesToDisplay>15</timesToDisplay>
+        <title>Request and Track Your Leave Easily</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+</Prompt>

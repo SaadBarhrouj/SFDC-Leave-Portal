@@ -22,8 +22,14 @@
                 <label>Deduction</label>
             </value>
             <value>
+                <fullName>Correction</fullName>
+                <default>false</default>
+                <label>Correction</label>
+            </value>
+            <value>
                 <fullName>Correctio</fullName>
                 <default>false</default>
+                <isActive>false</isActive>
                 <label>Correctio</label>
             </value>
         </valueSetDefinition>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSetGroup xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Permissions for a standard employee to manage their own leave.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>PSG LeavePortal Employee</label>
+    <permissionSets>PS_Holiday_Read</permissionSets>
+    <permissionSets>PS_LeaveBalance_Read</permissionSets>
+    <permissionSets>PS_LeavePortal_AppAccess</permissionSets>
+    <permissionSets>PS_LeaveRequest_Create_Edit_Cancel</permissionSets>
+    <permissionSets>PS_LeaveRequest_Read</permissionSets>
+    <status>Updated</status>
+</PermissionSetGroup>

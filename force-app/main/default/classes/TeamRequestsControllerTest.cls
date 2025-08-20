@@ -4,219 +4,222 @@ private class TeamRequestsControllerTest {
     @TestSetup
     static void makeData() {
         User manager = TestDataFactory.createTestUser('manag', 'MA');
-        User hrUser = TestDataFactory.createTestUser('hruser', 'HR');
-        User teamMember = TestDataFactory.createTestUser('tmemb', 'MA');
-        teamMember.ManagerId = manager.Id;
-        update teamMember;
+        User teamMember1 = TestDataFactory.createTestUser('tmemb1', 'MA');
+        teamMember1.ManagerId = manager.Id;
+        User teamMember2 = TestDataFactory.createTestUser('tmemb2', 'MA');
+        teamMember2.ManagerId = manager.Id;
+        update new List<User>{teamMember1, teamMember2};
+
+        List<PermissionSetGroup> psgs = [
+            SELECT Id, DeveloperName 
+            FROM PermissionSetGroup 
+            WHERE DeveloperName IN ('PSG_LeavePortal_Manager', 'PSG_LeavePortal_Employee')
+        ];
         
-        Leave_Balance__c paidLeaveBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Paid Leave', 50);
-        Leave_Balance__c rttBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'RTT', 10);
-        
-        Leave_Request__c pendingRequest1 = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Paid Leave', Date.today().addDays(10), Date.today().addDays(11), paidLeaveBalance.Id
-            );
-        Leave_Request__c pendingRequest2 = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'RTT', Date.today().addDays(12), Date.today().addDays(14), rttBalance.Id
-            );
-        Leave_Request__c pendingRequest3 = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'RTT', Date.today().addDays(15), Date.today().addDays(18), rttBalance.Id
-            );
-        Leave_Request__c approvedRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Paid Leave', Date.today().addDays(20), Date.today().addDays(21), paidLeaveBalance.Id
-            );
-        approvedRequest.Status__c = 'Approved';
-        pendingRequest1.Status__c = 'Submitted';
-        pendingRequest2.Status__c = 'Submitted';
-        pendingRequest3.Status__c = 'Submitted';
-        
-        Leave_Request__c paidLeave25DaysRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Paid Leave', Date.today().addDays(30), Date.today().addDays(55), paidLeaveBalance.Id
-            );
-        paidLeave25DaysRequest.Status__c = 'Submitted';
-        
-        insert new List<Leave_Request__c>{pendingRequest1, pendingRequest2,pendingRequest3, approvedRequest, paidLeave25DaysRequest};
-    }
-    
-    @isTest
-    static void testGetTeamRequests_Success() {
-        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Test.startTest();
-        System.runAs(manager) {
-            List<Leave_Request__c> requests = TeamRequestsController.getTeamRequests();
-            // Le manager doit voir les 4 demandes en attente de son approbation
-            System.assertEquals(4, requests.size(), 'Should return 4 pending requests for the manager.');
+        Map<String, Id> psgMap = new Map<String, Id>();
+        for (PermissionSetGroup psg : psgs) {
+            psgMap.put(psg.DeveloperName, psg.Id);
         }
-        Test.stopTest();
+
+        List<PermissionSetAssignment> assignments = new List<PermissionSetAssignment>();
+        assignments.add(new PermissionSetAssignment(
+            AssigneeId = manager.Id,
+            PermissionSetGroupId = psgMap.get('PSG_LeavePortal_Manager')
+        ));
+        assignments.add(new PermissionSetAssignment(
+            AssigneeId = teamMember1.Id,
+            PermissionSetGroupId = psgMap.get('PSG_LeavePortal_Employee')
+        ));
+        assignments.add(new PermissionSetAssignment(
+            AssigneeId = teamMember2.Id,
+            PermissionSetGroupId = psgMap.get('PSG_LeavePortal_Employee')
+        ));
+        
+        insert assignments;
+    }
+    
+    private static void createBalances() {
+        User teamMember1 = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
+        User teamMember2 = [SELECT Id FROM User WHERE Alias = 'tmemb2' LIMIT 1];
+        TestDataFactory.createLeaveBalance(teamMember1.Id, 'Paid Leave', 20);
+        TestDataFactory.createLeaveBalance(teamMember2.Id, 'Paid Leave', 20);
+    }
+
+    @isTest
+    static void testGetApprovedLeavesByManager() {
+        createBalances();
+        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
+        User teamMember1 = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
+        TestDataFactory.createLeaveRequest(teamMember1.Id, 'Paid Leave', Date.today().addDays(20), Date.today().addDays(21), null, 'Approved');
+        
+        List<Leave_Request__c> approvedLeaves = TeamRequestsController.getApprovedLeavesByManager(manager.Id);
+        System.assertEquals(1, approvedLeaves.size(), 'Should return one approved leave request.');
+        
+        List<Leave_Request__c> noLeaves = TeamRequestsController.getApprovedLeavesByManager(null);
+        System.assertEquals(0, noLeaves.size(), 'Should return an empty list for a null manager Id.');
     }
     
     @isTest
-    static void testGetTeamRequests_NoTeam() {
-        User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb' LIMIT 1];
-        Test.startTest();
+    static void testGetTeamRequestsHistory() {
+        createBalances();
+        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
+        User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
+        
+        TestDataFactory.createLeaveRequest(teamMember.Id, 'Paid Leave', Date.today().addDays(20), Date.today().addDays(21), null, 'Approved');
+        TestDataFactory.createLeaveRequest(teamMember.Id, 'Paid Leave', Date.today().addDays(30), Date.today().addDays(31), null, 'Rejected');
+        TestDataFactory.createLeaveRequest(teamMember.Id, 'Paid Leave', Date.today().addDays(40), Date.today().addDays(41), null, 'Cancellation Requested');
+
+        System.runAs(manager) {
+            List<Leave_Request__c> history = TeamRequestsController.getTeamRequestsHistory();
+            System.assertEquals(3, history.size(), 'Manager should see 3 historical requests (Approved, Rejected, Cancellation Requested).');
+        }
+        
         System.runAs(teamMember) {
-            List<Leave_Request__c> requests = TeamRequestsController.getTeamRequests();
-            System.assertEquals(true, requests.isEmpty(), 'Should return an empty list for a user with no pending approvals.');
+            List<Leave_Request__c> history = TeamRequestsController.getTeamRequestsHistory();
+            System.assertEquals(0, history.size(), 'User with no team should see no history.');
         }
-        Test.stopTest();
     }
     
     @isTest
-    static void testApproveLeaveRequest_Success() {
+    static void testGetTeamRequests() {
+        createBalances();
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' AND Leave_Type__c = 'Paid Leave' LIMIT 1];
+        User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
         
         Test.startTest();
-        System.runAs(manager) {
-            TeamRequestsController.approveLeaveRequest(request.Id);
-        }
+        Leave_Request__c req = TestDataFactory.createLeaveRequest(
+            teamMember.Id, 'Paid Leave', Date.today().addDays(60), Date.today().addDays(61), null, 'Submitted'
+        );
         Test.stopTest();
+            
+        System.runAs(manager) {
+            List<Leave_Request__c> pending = TeamRequestsController.getTeamRequests();
+            System.assertEquals(1, pending.size(), 'Manager should see 1 pending request.');
+        }
         
-        Leave_Request__c result = [SELECT Status__c FROM Leave_Request__c WHERE Id = :request.Id];
-        System.assertEquals('Approved', result.Status__c, 'Status should be updated to Approved.');
+        System.runAs(teamMember) {
+            List<Leave_Request__c> pending = TeamRequestsController.getTeamRequests();
+            System.assertEquals(0, pending.size(), 'User with no assigned items should see none.');
+        }
     }
     
     @isTest
-    static void testRejectLeaveRequest_Success() {
+    static void testGetTeamLeavesForRequester() {
+        createBalances();
+        User teamMember1 = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
+        User teamMember2 = [SELECT Id FROM User WHERE Alias = 'tmemb2' LIMIT 1];
+        User userNoManager = TestDataFactory.createTestUser('nomgr', 'MA');
+        
+        TestDataFactory.createLeaveRequest(teamMember1.Id, 'Paid Leave', Date.today().addDays(20), Date.today().addDays(21), null, 'Approved');
+        TestDataFactory.createLeaveRequest(teamMember1.Id, 'Paid Leave', Date.today().addDays(40), Date.today().addDays(41), null, 'Cancellation Requested');
+
+        List<Leave_Request__c> teamLeaves = TeamRequestsController.getTeamLeavesForRequester(teamMember2.Id);
+        System.assertEquals(2, teamLeaves.size(), 'Should return Approved and Cancellation Requested leaves for the team.');
+        
+        List<Leave_Request__c> noTeamLeaves = TeamRequestsController.getTeamLeavesForRequester(userNoManager.Id);
+        System.assertEquals(0, noTeamLeaves.size(), 'Should return empty list for user with no manager.');
+    }
+    
+    @isTest
+    static void testApproveLeaveRequest() {
+        createBalances();
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' AND Leave_Type__c = 'RTT' LIMIT 1];
-        String reason = 'Blackout Period';
-        String comment = 'Please reschedule.';
+        User requester = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
+        
+        Leave_Request__c toApprove = new Leave_Request__c(
+            Requester__c = requester.Id,
+            Leave_Type__c = 'Paid Leave',
+            Start_Date__c = Date.today().addDays(70),
+            End_Date__c = Date.today().addDays(71),
+            Status__c = 'Submitted'
+        );
         
         Test.startTest();
+        insert toApprove;
         System.runAs(manager) {
-            TeamRequestsController.rejectLeaveRequest(request.Id, reason, comment, false);
+            TeamRequestsController.approveLeaveRequest(toApprove.Id);
         }
         Test.stopTest();
         
-        Leave_Request__c result = [SELECT Status__c, Rejection_Reason__c, Approver_Comments__c FROM Leave_Request__c WHERE Id = :request.Id];
-        System.assertEquals('Rejected', result.Status__c, 'Status should be updated to Rejected.');
-        System.assertEquals(reason, result.Rejection_Reason__c, 'Rejection reason should be updated.');
-        System.assertEquals(comment, result.Approver_Comments__c, 'Approver comment should be updated.');
+        Leave_Request__c approvedReq = [SELECT Id, Status__c, Last_Approver__c FROM Leave_Request__c WHERE Id = :toApprove.Id];
+        System.assertEquals('Approved', approvedReq.Status__c, 'Status should be Approved.');
+        System.assertEquals(manager.Id, approvedReq.Last_Approver__c, 'Last Approver should be the manager.');
     }
 
     @isTest
-    static void testRejectLeaveRequest_NoReason() {
+    static void testRejectLeaveRequest() {
+        createBalances();
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Leave_Request__c request = [SELECT Id FROM Leave_Request__c WHERE Status__c != 'Approved' LIMIT 1];
-        
-        Test.startTest();
-        System.runAs(manager) {
-            try {
-                TeamRequestsController.rejectLeaveRequest(request.Id, '', 'some comment', true);
-                System.assert(false, 'An AuraHandledException should have been thrown for missing reason.');
-            } catch (AuraHandledException e) {
-                System.debug('Exception message: ' + e.getMessage());
-                System.assert(true);
-            }
-        }
-        Test.stopTest();
-    }
+        User requester = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
 
-    
-    @isTest
-    static void testApproveLeaveRequest_Error() {
-        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
+        Leave_Request__c reqToReject = new Leave_Request__c(
+            Requester__c = requester.Id,
+            Leave_Type__c = 'Paid Leave',
+            Start_Date__c = Date.today().addDays(80),
+            End_Date__c = Date.today().addDays(81),
+            Status__c = 'Submitted'
+        );
         
-        String invalidId = Id.valueOf('001000000000000AAA');
         Test.startTest();
+        insert reqToReject;
         System.runAs(manager) {
-            try {
-                TeamRequestsController.approveLeaveRequest(invalidId);
-                System.assert(false, 'An AuraHandledException should have been thrown.');
-            } catch (AuraHandledException e) {
-                System.debug('Exception message: ' + e.getMessage());
-                System.assert(true);
-            }
+            TeamRequestsController.rejectLeaveRequest(reqToReject.Id, 'Other', 'A Comment', false);
         }
         Test.stopTest();
+        
+        Leave_Request__c rejectedReq = [SELECT Status__c, Rejection_Reason__c, Approver_Comments__c FROM Leave_Request__c WHERE Id = :reqToReject.Id];
+        System.assertEquals('Rejected', rejectedReq.Status__c, 'Status should be Rejected.');
+        System.assertEquals('Other', rejectedReq.Rejection_Reason__c, 'Rejection reason should be set.');
+        System.assertEquals('A Comment', rejectedReq.Approver_Comments__c, 'Approver comment should be set.');
     }
     
     @isTest
-    static void testApproveLeaveRequest_Fails() {
+    static void testRejectLeaveRequest_ReasonRequired() {
+        createBalances();
         User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb' LIMIT 1];
+        User requester = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
         
-        Leave_Balance__c paidLeaveBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Paid Leave', 5);
-        Leave_Request__c request = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Paid Leave', Date.today().addDays(70), Date.today().addDays(71), paidLeaveBalance.Id
-            );
-        request.Status__c = 'Submitted';
-        insert request;
+        Leave_Request__c pendingReq = new Leave_Request__c(
+            Requester__c = requester.Id,
+            Leave_Type__c = 'Paid Leave',
+            Start_Date__c = Date.today().addDays(90),
+            End_Date__c = Date.today().addDays(91),
+            Status__c = 'Submitted'
+        );
         
-        // Première approbation (fonctionne)
+        Exception caughtException = null;
         Test.startTest();
-        System.runAs(manager) {
-            TeamRequestsController.approveLeaveRequest(request.Id);
-        }
-        Test.stopTest();
-        
-        // Deuxième approbation (échoue car plus de workitem "Pending")
+        insert pendingReq;
         System.runAs(manager) {
             try {
-                TeamRequestsController.approveLeaveRequest(request.Id);
-                System.assert(false, 'Une exception aurait dû être levée car il n\'y a plus de workitem en attente.');
+                TeamRequestsController.rejectLeaveRequest(pendingReq.Id, '', 'A Comment', true);
             } catch (AuraHandledException e) {
-                System.assert(true);
-            }
-        }
-    }
-    
-    @isTest
-    static void testGetTeamRequests_FromQueue() {
-        User hrUser = [SELECT Id FROM User WHERE Alias = 'hruser' LIMIT 1];
-        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
-        Group hrQueue = [SELECT Id FROM Group WHERE Name = 'HR Approvals' AND Type = 'Queue' LIMIT 1];
-        
-        GroupMember gm = new GroupMember(UserOrGroupId = hrUser.Id, GroupId = hrQueue.Id);
-        insert gm;
-        
-        Leave_Request__c paidLeave25DaysRequest = [
-            SELECT Id FROM Leave_Request__c 
-            WHERE Status__c != 'Approved' AND Number_of_Days_Requested__c > 15 LIMIT 1
-        ];
-        
-        Test.startTest();
-        System.runAs(manager) {
-            TeamRequestsController.approveLeaveRequest(paidLeave25DaysRequest.Id);
-        }
-        Test.stopTest();
-        
-        ProcessInstanceWorkitem hrWorkItem = [
-            SELECT Id, ActorId
-            FROM ProcessInstanceWorkitem
-            WHERE ProcessInstance.TargetObjectId = :paidLeave25DaysRequest.Id
-            LIMIT 1
-        ];
-        System.assertEquals(hrQueue.Id, hrWorkItem.ActorId, 'Le workitem doit être assigné à la queue HR Approvals.');
-        
-        System.runAs(hrUser) {
-            List<Leave_Request__c> requests = TeamRequestsController.getTeamRequests();
-            System.assertEquals(1, requests.size(), 'HR user should see the request from the queue.');
-        }
-    }
-    
-    @isTest
-    static void testApproveLeaveRequest_NotAssigned() {
-        User otherManager = TestDataFactory.createTestUser('other', 'OM');
-        
-        User teamMember = [SELECT Id FROM User WHERE Alias = 'tmemb' LIMIT 1];
-        Leave_Balance__c paidLeaveBalance = TestDataFactory.createLeaveBalance(teamMember.Id, 'Paid Leave', 5);
-        Leave_Request__c paidLeaveRequest = TestDataFactory.createLeaveRequest(
-            teamMember.Id, 'Paid Leave', Date.today().addDays(80), Date.today().addDays(81), paidLeaveBalance.Id
-            );
-        paidLeaveRequest.Status__c = 'Submitted';
-        insert paidLeaveRequest;
-        
-        Test.startTest();
-        System.runAs(otherManager) {
-            try {
-                TeamRequestsController.approveLeaveRequest(paidLeaveRequest.Id);
-                System.assert(false, 'An exception should have been thrown for an unauthorized user.');
-            } catch (AuraHandledException e) {
-                System.debug('Exception message: ' + e.getMessage());
-                System.assert(true);
+                caughtException = e;
             }
         }
         Test.stopTest();
+        
+        System.assertNotEquals(null, caughtException, 'An exception should be thrown when reason is required but blank.');
+    }
+    
+    @isTest
+    static void testProcessRequest_NoWorkItemFound() {
+        createBalances();
+        User manager = [SELECT Id FROM User WHERE Alias = 'manag' LIMIT 1];
+        User teamMember1 = [SELECT Id FROM User WHERE Alias = 'tmemb1' LIMIT 1];
+        Leave_Request__c approvedReq = TestDataFactory.createLeaveRequest(teamMember1.Id, 'Paid Leave', Date.today().addDays(20), Date.today().addDays(21), null, 'Approved');
+        
+        Exception caughtException = null;
+        Test.startTest();
+        System.runAs(manager) {
+            try {
+                TeamRequestsController.approveLeaveRequest(approvedReq.Id);
+            } catch (AuraHandledException e) {
+                caughtException = e;
+            }
+        }
+        Test.stopTest();
+        
+        System.assertNotEquals(null, caughtException, 'An exception should be thrown for a request with no pending work item.');
     }
 }

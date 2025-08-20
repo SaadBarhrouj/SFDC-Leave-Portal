@@ -103,14 +103,14 @@
             </value>
         </filters>
         <filters>
-            <field>Holiday_Date__c</field>
+            <field>Start_Date__c</field>
             <operator>GreaterThanOrEqualTo</operator>
             <value>
                 <elementReference>StartOfYear</elementReference>
             </value>
         </filters>
         <filters>
-            <field>Holiday_Date__c</field>
+            <field>End_Date__c</field>
             <operator>LessThanOrEqualTo</operator>
             <value>
                 <elementReference>EndOfYear</elementReference>

@@ -9,7 +9,8 @@ import syncHolidaysForCountry from '@salesforce/apex/HolidayController.syncHolid
 
 import HOLIDAY_OBJECT from '@salesforce/schema/Holiday__c';
 import HOLIDAY_NAME_FIELD from '@salesforce/schema/Holiday__c.Name';
-import HOLIDAY_DATE_FIELD from '@salesforce/schema/Holiday__c.Holiday_Date__c';
+import HOLIDAY_START_DATE_FIELD from '@salesforce/schema/Holiday__c.Start_Date__c';
+import HOLIDAY_END_DATE_FIELD from '@salesforce/schema/Holiday__c.End_Date__c';
 import HOLIDAY_DEDUCTION_FIELD from '@salesforce/schema/Holiday__c.Deduction_Value__c';
 import HOLIDAY_DESCRIPTION_FIELD from '@salesforce/schema/Holiday__c.Description__c';
 import bulkDeleteHolidays from '@salesforce/apex/HolidayController.bulkDeleteHolidays';
@@ -17,7 +18,8 @@ import bulkDeleteHolidays from '@salesforce/apex/HolidayController.bulkDeleteHol
 const ACTIONS = [{ label: 'Edit', name: 'edit' }, { label: 'Delete', name: 'delete' }];
 const COLUMNS = [
     { label: 'Holiday Name', fieldName: 'Name', type: 'text' },
-    { label: 'Date', fieldName: 'Holiday_Date__c', type: 'date-local' },
+    { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local' },
+    { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },
     { label: 'Country Code', fieldName: 'Country_Code__c', type: 'text' },
     { label: 'Deduction Value', fieldName: 'Deduction_Value__c', type: 'number', cellAttributes: { alignment: 'left' } },
     { label: 'Description', fieldName: 'Description__c', type: 'text' },
@@ -32,7 +34,8 @@ export default class HrHolidays extends LightningElement {
 
     holidayObjectApiName = HOLIDAY_OBJECT;
     holidayNameField = HOLIDAY_NAME_FIELD;
-    holidayDateField = HOLIDAY_DATE_FIELD;
+    holidayStartDateField = HOLIDAY_START_DATE_FIELD;
+    holidayEndDateField = HOLIDAY_END_DATE_FIELD;
     holidayDeductionField = HOLIDAY_DEDUCTION_FIELD;
     holidayDescriptionField = HOLIDAY_DESCRIPTION_FIELD;
     
@@ -123,14 +126,12 @@ export default class HrHolidays extends LightningElement {
     applyFilters() {
         this.activeFilters = { ...this.filterValues };
         let holidays = this.allHolidays;
-
         if (this.activeFilters.country) {
             holidays = holidays.filter(h => h.Country_Code__c === this.activeFilters.country);
         }
         if (this.activeFilters.year) {
-            holidays = holidays.filter(h => new Date(h.Holiday_Date__c).getFullYear() === parseInt(this.activeFilters.year, 10));
+            holidays = holidays.filter(h => new Date(h.Start_Date__c).getUTCFullYear() === parseInt(this.activeFilters.year, 10));
         }
-        
         this.filteredHolidays = holidays;
         this.showFilterPopover = false;
     }
@@ -198,6 +199,7 @@ export default class HrHolidays extends LightningElement {
                 })
                 .catch(error => {
                     this.showToast('Error', error.body.message, 'error');
+                    console.error('Error deleting holiday:', error);
                 })
                 .finally(() => {
                     this.isLoading = false;
@@ -239,26 +241,26 @@ export default class HrHolidays extends LightningElement {
         }
     }
 
-        handleBulkDelete() {
-            if (!this.yearToDelete) {
-                this.showToast('Error', 'Please select a year to proceed with the deletion.', 'error');
-                return;
-            }
-
-            this.isLoading = true;
-            bulkDeleteHolidays({ countryCode: this.countryToDelete, year: this.yearToDelete })
-                .then(result => {
-                    this.showToast('Success', `${result} holidays have been deleted successfully.`, 'success');
-                    this.closeBulkDeleteModal();
-                    return this.handleRefresh();
-                })
-                .catch(error => {
-                    this.showToast('Error', error.body.message, 'error');
-                })
-                .finally(() => {
-                    this.isLoading = false;
-                });
+    handleBulkDelete() {
+        if (!this.yearToDelete) {
+            this.showToast('Error', 'Please select a year to proceed with the deletion.', 'error');
+            return;
         }
+
+        this.isLoading = true;
+        bulkDeleteHolidays({ countryCode: this.countryToDelete, year: this.yearToDelete })
+            .then(result => {
+                this.showToast('Success', `${result}`, 'success');
+                this.closeBulkDeleteModal();
+                return this.handleRefresh();
+            })
+            .catch(error => {
+                this.showToast('Error', error.body.message, 'error');
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
+    }
 
     handleSubmit(event) {
         event.preventDefault();
@@ -269,7 +271,10 @@ export default class HrHolidays extends LightningElement {
             this.showToast('Error', 'Country is a required field.', 'error');
             return;
         }
-
+        if (fields.Start_Date__c && fields.End_Date__c && fields.End_Date__c < fields.Start_Date__c) {
+            this.showToast('Error', 'End Date cannot be before Start Date.', 'error');
+            return;
+        }
         this.template.querySelector('lightning-record-edit-form').submit(fields);
     }
 

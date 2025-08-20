@@ -18,15 +18,15 @@
                         onerror={handleError}
                         onsubmit={handleSubmit}
                         onload={handleFormLoad}>
-                        <lightning-input-field field-name="Requester__c" value={currentUserId} class="slds-hide"></lightning-input-field>
-                        <lightning-input-field field-name="Leave_Type__c" required onchange={handleFieldChange}></lightning-input-field>
+                        <lightning-input-field field-name="Requester__c"  class="slds-hide"></lightning-input-field>
+                        <lightning-input-field field-name="Leave_Type__c" required onchange={handleFieldChange} disabled={isLeaveTypeDisabled}></lightning-input-field>
                         
                         <div class="slds-grid slds-gutters">
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="Start_Date__c" required onchange={handleFieldChange}></lightning-input-field>
+                                <lightning-input-field field-name="Start_Date__c" required onchange={handleFieldChange} disabled={isStartDateDisabled}></lightning-input-field>
                             </div>
                             <div class="slds-col slds-size_1-of-2">
-                                <lightning-input-field field-name="End_Date__c" required onchange={handleFieldChange}></lightning-input-field>
+                                <lightning-input-field field-name="End_Date__c" required onchange={handleFieldChange} disabled={isEndDateDisabled}></lightning-input-field>
                             </div>
                         </div>
 
@@ -66,7 +66,7 @@
                             </template>
                         </template>
 
-                        <lightning-input-field field-name="Employee_Comments__c" variant="label-stacked" label="Comments"></lightning-input-field>
+                        <lightning-input-field field-name="Employee_Comments__c" variant="label-stacked" label="Comments" onchange={handleFieldChange}></lightning-input-field>
 
                         <button type="submit" class="slds-hide"></button>
                     </lightning-record-edit-form>
@@ -92,7 +92,7 @@
                      <lightning-button variant="brand" label="Finish" class="slds-m-left_x-small" onclick={handleFinish}></lightning-button>
                 </template>
                 <template if:false={showUploadStep}>
-                    <lightning-button variant="brand" label={submitButtonLabel} class="slds-m-left_x-small" onclick={triggerSubmit}  disabled={isSaving}></lightning-button>
+                    <lightning-button variant="brand" label={submitButtonLabel} class="slds-m-left_x-small" onclick={triggerSubmit}  disabled={isSubmitButtonDisabled}></lightning-button>
                 </template>
             </footer>
         </div>

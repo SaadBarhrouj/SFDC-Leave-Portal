@@ -3,15 +3,22 @@
     <apiVersion>64.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
-        <name>Add_Annual_Leave_to_Collection</name>
-        <label>Add Annual Leave to Collection</label>
+        <name>Add_Annual_Leaves_to_Collection</name>
+        <label>Add Annual Leaves to Collection</label>
         <locationX>0</locationX>
         <locationY>0</locationY>
         <assignmentItems>
             <assignToReference>leaveBalancesToCreate</assignToReference>
             <operator>Add</operator>
             <value>
-                <elementReference>tempLeaveBalance</elementReference>
+                <elementReference>PaidLeaveBalance</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>leaveBalancesToCreate</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>RTTLeaveBalance</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -19,47 +26,91 @@
         </connector>
     </assignments>
     <assignments>
-        <name>Assign_Annual_Leave_Values</name>
-        <label>Assign Annual Leave Values</label>
+        <name>Assign_Annual_Paid_Leave_Values</name>
+        <label>Assign Annual Paid Leave Values</label>
         <locationX>0</locationX>
         <locationY>0</locationY>
         <assignmentItems>
-            <assignToReference>tempLeaveBalance.Employee__c</assignToReference>
+            <assignToReference>PaidLeaveBalance.Employee__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>$Record.Id</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>tempLeaveBalance.Year__c</assignToReference>
+            <assignToReference>PaidLeaveBalance.Year__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>CurrentYear</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>tempLeaveBalance.Leave_Type__c</assignToReference>
+            <assignToReference>PaidLeaveBalance.Leave_Type__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <stringValue>Paid Leave</stringValue>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>tempLeaveBalance.Allocated_Days__c</assignToReference>
+            <assignToReference>PaidLeaveBalance.Allocated_Days__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>Get_Leave_Policy_Settings.Annual_Paid_Leave_Days__c</elementReference>
             </value>
         </assignmentItems>
         <assignmentItems>
-            <assignToReference>tempLeaveBalance.Used_Days__c</assignToReference>
+            <assignToReference>PaidLeaveBalance.Used_Days__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <numberValue>0.0</numberValue>
             </value>
         </assignmentItems>
         <connector>
-            <targetReference>Add_Annual_Leave_to_Collection</targetReference>
+            <targetReference>Assign_Annual_RTT_Values</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Assign_Annual_RTT_Values</name>
+        <label>Assign Annual RTT Values</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Employee__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Year__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>CurrentYear</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Leave_Type__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>RTT</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Allocated_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>ProratedRTTDays</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Used_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <numberValue>0.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_Annual_Leaves_to_Collection</targetReference>
         </connector>
     </assignments>
     <decisions>
@@ -90,6 +141,12 @@
         <dataType>Number</dataType>
         <expression>YEAR(TODAY())</expression>
         <scale>0</scale>
+    </formulas>
+    <formulas>
+        <name>ProratedRTTDays</name>
+        <dataType>Number</dataType>
+        <expression>ROUND(({!Get_Leave_Policy_Settings.Annual_RTT_Days__c} * (13 - MONTH(DATEVALUE({!$Record.CreatedDate})))) / 12,0)</expression>
+        <scale>2</scale>
     </formulas>
     <interviewLabel>User_Activation_Create_Leave_Balances {!$Flow.CurrentDateTime}</interviewLabel>
     <label>User_Activation_Create_Leave_Balances</label>
@@ -154,7 +211,7 @@
         <locationY>0</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Assign_Annual_Leave_Values</targetReference>
+            <targetReference>Assign_Annual_Paid_Leave_Values</targetReference>
         </connector>
         <getFirstRecordOnly>true</getFirstRecordOnly>
         <object>Leave_Policy_Settings__c</object>
@@ -163,17 +220,23 @@
     <start>
         <locationX>0</locationX>
         <locationY>0</locationY>
-        <connector>
-            <targetReference>Get_Existing_Balances</targetReference>
-        </connector>
         <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
         <filterLogic>and</filterLogic>
         <filters>
             <field>IsActive</field>
             <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
         </filters>
         <object>User</object>
         <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <scheduledPaths>
+            <connector>
+                <targetReference>Get_Existing_Balances</targetReference>
+            </connector>
+            <pathType>AsyncAfterCommit</pathType>
+        </scheduledPaths>
         <triggerType>RecordAfterSave</triggerType>
     </start>
     <status>Active</status>
@@ -186,7 +249,15 @@
         <objectType>Leave_Balance__c</objectType>
     </variables>
     <variables>
-        <name>tempLeaveBalance</name>
+        <name>PaidLeaveBalance</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Leave_Balance__c</objectType>
+    </variables>
+    <variables>
+        <name>RTTLeaveBalance</name>
         <dataType>SObject</dataType>
         <isCollection>false</isCollection>
         <isInput>false</isInput>

@@ -30,11 +30,14 @@ const COLUMNS = [
     {
         label: 'Requester',
         fieldName: 'requesterUrl',
-        type: 'url',
+        type: 'avatarType',
         typeAttributes: {
-            label: { fieldName: 'RequesterName' },
-            target: '_self'
+            name: { fieldName: 'RequesterName' },
+            url: { fieldName: 'requesterUrl' },
+            initials: { fieldName: 'RequesterInitials' }
         }
+        ,
+        initialWidth: 150
     },
     { label: 'Request Name', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestName' }, name: 'show_details', variant: 'base' } },
     { label: 'Leave Type', fieldName: 'Leave_Type__c' },
@@ -49,16 +52,22 @@ const COLUMNS = [
             value: { fieldName: 'Status__c' },
             class: { fieldName: 'statusBadgeClass' }
         },
-        initialWidth: 220
+        initialWidth: 200
     },
+    { label: 'Last Modified', fieldName: 'LastModifiedDate', initialWidth: 160,
+      type: 'date', typeAttributes: { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' } },
     {
         label: 'Manager',
         fieldName: 'managerUrl',
-        type: 'url',
+        type: 'avatarType',
         typeAttributes: {
-            label: { fieldName: 'ManagerName' },
-            target: '_self'
+            name: { fieldName: 'ManagerName' },
+            url: { fieldName: 'managerUrl' },
+            initials: { fieldName: 'ManagerInitials' }
         }
+        ,
+        initialWidth: 150
+
     },
     {
         type: 'action',
@@ -98,7 +107,9 @@ export default class TeamRequests extends LightningElement {
         { label: 'Pending Manager Approval', value: 'Pending Manager Approval' },
         { label: 'Pending HR Approval', value: 'Pending HR Approval' },
         { label: 'Escalated to Senior Manager', value: 'Escalated to Senior Manager' },
-        { label: 'Cancellation Requested', value: 'Cancellation Requested' }
+        { label: 'Cancellation Requested', value: 'Cancellation Requested' },
+        { label: 'Approved', value: 'Approved' },
+        { label: 'Rejected', value: 'Rejected' }
     ];
 
     leaveTypeOptions = [
@@ -153,20 +164,43 @@ export default class TeamRequests extends LightningElement {
                 }
                 let managerName = '';
                 let managerUrl = '';
+                let managerPhotoUrl = '';
+                let managerInitials = 'NM';
                 if (req.Requester__r && req.Requester__r.Manager && req.Requester__r.Manager.Name) {
                     managerName = req.Requester__r.Manager.Name;
                     managerUrl = `/lightning/r/User/${req.Requester__r.ManagerId}/view`;
+                    managerPhotoUrl = req.Requester__r.Manager.FullPhotoUrl;
+                    const nameParts = managerName.trim().split(' ').filter(part => part);
+                    if (nameParts.length > 1) {
+                        managerInitials = (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+                    } else if (nameParts.length === 1 && nameParts[0].length > 0) {
+                        managerInitials = nameParts[0].substring(0, 2).toUpperCase();
+                    }
                 } else {
                     managerName = 'No manager';
                     managerUrl = '';
                 }
-                const requesterName = req.Requester__r ? req.Requester__r.Name : '';
+                const requesterName = req.Requester__r ? req.Requester__r.Name : 'Unknown User';
+                let requesterInitials = 'UU';
+                if (requesterName && requesterName !== 'Unknown User') {
+                    const nameParts = requesterName.trim().split(' ').filter(part => part);
+                    if (nameParts.length > 1) {
+                        requesterInitials = (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+                    } else if (nameParts.length === 1 && nameParts[0].length > 0) {
+                        requesterInitials = requesterName.substring(0, 2).toUpperCase();
+                    }
+                }
+
                 return {
                     ...req,
                     RequesterName: requesterName,
                     requesterUrl: `/lightning/r/User/${req.Requester__c}/view`,
+                    RequesterFullPhotoUrl: req.Requester__r ? req.Requester__r.FullPhotoUrl : '',
+                    RequesterInitials: requesterInitials,
                     RequestName: req.Name,
                     ManagerName: managerName,
+                    ManagerFullPhotoUrl: managerPhotoUrl,
+                    ManagerInitials: managerInitials,
                     ManagerId: req.Requester__r ? req.Requester__r.ManagerId : '',
                     managerUrl,
                     rowActions,

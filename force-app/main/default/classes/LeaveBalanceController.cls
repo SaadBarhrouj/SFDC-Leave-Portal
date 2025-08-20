@@ -1,13 +1,12 @@
-public with sharing class LeaveBalanceController {
+public without sharing class LeaveBalanceController {
 
-    
     public class BalanceOverview {
         @AuraEnabled public String type { get; set; }
         @AuraEnabled public Decimal remaining { get; set; }
         @AuraEnabled public Decimal consumed { get; set; }
     }
 
-  
+
     @AuraEnabled
     public static List<BalanceOverview> getLeaveBalanceOverviews() {
         try {
@@ -69,25 +68,49 @@ public with sharing class LeaveBalanceController {
     }
 
     @AuraEnabled(cacheable=true)
-    public static List<Leave_Balance__c> getBalances() {
+    public static Leave_Policy_Settings__c getLeavePolicySettings() {
+        return Leave_Policy_Settings__c.getOrgDefaults();
+    }
+
+        @AuraEnabled(cacheable=true)
+        public static List<Leave_Balance__c> getBalances() {
+            try {
+                return [
+                    SELECT Id, Employee__c, Employee__r.Name, Employee__r.FullPhotoUrl, 
+                        Leave_Type__c, Allocated_Days__c, Used_Days__c, 
+                        Remaining_Days__c, Year__c, LastModifiedDate
+                    FROM Leave_Balance__c
+                    WHERE Leave_Type__c IN ('RTT', 'Paid Leave')
+                    ORDER BY Employee__r.Name, Leave_Type__c
+                ];
+            } catch (Exception e) {
+                throw new AuraHandledException('Error retrieving balances: ' + e.getMessage());
+            }
+        }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Leave_Balance_History__c> getAllBalanceHistory() {
         try {
             return [
-                SELECT Id, Employee__c, Employee__r.Name, Leave_Type__c, Allocated_Days__c, 
-                       Used_Days__c, Remaining_Days__c, Year__c, LastModifiedDate
-                FROM Leave_Balance__c
-                ORDER BY Employee__r.Name, Leave_Type__c
+                SELECT Name, Movement_Date__c, Movement_Type__c, Leave_Type__c,
+                       Source_of_Movement__c, Number_of_Days__c, New_Balance__c, Justification__c,
+                       Employee__c, Employee__r.Name, Employee__r.FullPhotoUrl
+                FROM Leave_Balance_History__c
+                ORDER BY Movement_Type__c DESC
+                LIMIT 2000
             ];
         } catch (Exception e) {
-            throw new AuraHandledException('Error retrieving balances: ' + e.getMessage());
+            throw new AuraHandledException('Error retrieving all balance history: ' + e.getMessage());
         }
     }
-    
+
     @AuraEnabled(cacheable=true)
     public static List<Leave_Balance_History__c> getBalanceHistoryForCurrentUser() {
         try {
             return [
                 SELECT Name, Movement_Date__c, Movement_Type__c, Leave_Type__c,
-                       Source_of_Movement__c, Number_of_Days__c, New_Balance__c
+                       Source_of_Movement__c, Number_of_Days__c, New_Balance__c, Justification__c,
+                       Employee__c, Employee__r.Name, Employee__r.FullPhotoUrl
                 FROM Leave_Balance_History__c
                 WHERE Employee__c = :UserInfo.getUserId()
                 ORDER BY Movement_Date__c DESC
@@ -98,18 +121,75 @@ public with sharing class LeaveBalanceController {
         }
     }
 
+   
     @AuraEnabled
-    public static void deleteBalance(Id balanceId) {
+    public static void deleteBalanceWithJustification(Id balanceId, String justification) {
+        if (String.isBlank(justification)) {
+            throw new AuraHandledException('Justification is mandatory for balance deletion.');
+        }
+
         try {
             Leave_Balance__c balanceToDelete = [
-                SELECT Id 
+                SELECT Id, Employee__c, Leave_Type__c, Remaining_Days__c 
                 FROM Leave_Balance__c 
                 WHERE Id = :balanceId
                 LIMIT 1
             ];
+
+            Leave_Balance_History__c history = new Leave_Balance_History__c(
+                Employee__c = balanceToDelete.Employee__c,
+                Leave_Type__c = balanceToDelete.Leave_Type__c,
+                Movement_Date__c = Date.today(),
+                Movement_Type__c = 'Correction',
+                Number_of_Days__c = -balanceToDelete.Remaining_Days__c,
+                New_Balance__c = 0,
+                Source_of_Movement__c = 'Balance record deleted by ' + UserInfo.getName(),
+                Justification__c = justification
+            );
+            insert history;
+
             delete balanceToDelete;
-        } catch (Exception e) {
+
+        } catch (DmlException e) {
+            if (e.getMessage().contains('DELETE_FAILED')) {
+                 throw new AuraHandledException('This balance cannot be deleted because it is associated with existing leave requests.');
+            }
             throw new AuraHandledException('Error deleting balance: ' + e.getMessage());
+        } catch (Exception e) {
+            throw new AuraHandledException('An error occurred during balance deletion: ' + e.getMessage());
         }
     }
+
+    @AuraEnabled
+public static void updateBalanceWithJustification(Id balanceId, Decimal newAllocatedDays, String justification) {
+    if (String.isBlank(justification)) {
+        throw new AuraHandledException('Justification is mandatory for any manual correction.');
+    }
+
+    Leave_Balance__c balance = [
+        SELECT Id, Allocated_Days__c, Remaining_Days__c, Employee__c, Leave_Type__c 
+        FROM Leave_Balance__c 
+        WHERE Id = :balanceId
+    ];
+    
+    Decimal oldRemainingBalance = balance.Remaining_Days__c;
+
+    balance.Allocated_Days__c = newAllocatedDays;
+    update balance;
+
+    Leave_Balance__c updatedBalance = [SELECT Remaining_Days__c FROM Leave_Balance__c WHERE Id = :balanceId];
+    Decimal daysChanged = updatedBalance.Remaining_Days__c - oldRemainingBalance;
+    
+    Leave_Balance_History__c history = new Leave_Balance_History__c(
+        Employee__c = balance.Employee__c,
+        Leave_Type__c = balance.Leave_Type__c,
+        Movement_Date__c = Date.today(),
+        Movement_Type__c = 'Correction',
+        Number_of_Days__c = daysChanged,
+        New_Balance__c = updatedBalance.Remaining_Days__c,
+        Source_of_Movement__c = 'Manual correction by ' + UserInfo.getName(),
+        Justification__c = justification
+    );
+    insert history;
+}
 }

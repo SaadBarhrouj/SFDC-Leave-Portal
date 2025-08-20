@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <content>Home</content>
+        <formFactor>Large</formFactor>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+        <pageOrSobjectType>standard-home</pageOrSobjectType>
+    </actionOverrides>
     <brand>
         <headerColor>#0070D2</headerColor>
         <logo>asset_2025_07_02_161235_jpg</logo>
@@ -15,13 +23,9 @@
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Leave Portal</label>
     <navType>Standard</navType>
-    <tabs>Leave_Balance__c</tabs>
     <tabs>Leave_Requests</tabs>
     <tabs>Team_Leave_Management</tabs>
     <tabs>HR_Leave_Administration</tabs>
-    <tabs>Leave_Request__c</tabs>
-    <tabs>Leave_Balance_History__c</tabs>
-    <tabs>Holiday__c</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>Leave_Portal_UtilityBar</utilityBar>
 </CustomApplication>

@@ -20,6 +20,7 @@ const COLUMNS = [
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },
     { label: 'Days Requested', fieldName: 'Number_of_Days_Requested__c', type: 'number', cellAttributes: { alignment: 'left' } },
     { label: 'Status', fieldName: 'Status__c', type: 'customBadge', typeAttributes: { value: { fieldName: 'Status__c' }, class: { fieldName: 'statusBadgeClass' } }, initialWidth: 220 },
+    { label: 'Last Modified', fieldName: 'LastModifiedDate', type: 'date', typeAttributes: { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' } },
     { type: 'action', typeAttributes: { rowActions: { fieldName: 'availableActions' } } }
 ];
 
@@ -269,9 +270,13 @@ export default class MyRequestContainer extends LightningElement {
             switch (request.Status__c) {
                 case 'Approved':
                     availableActions.push({ label: 'Show details', name: 'show_details' });
-                    if (request.Leave_Type__c !== 'Sick Leave') {
-                        availableActions.push({ label: 'Request cancellation', name: 'request_cancellation' });
-                    }
+                        if (request.Leave_Type__c === 'Sick Leave') {
+                            availableActions.push({ label: 'Add Medical Certificate', name: 'edit' });
+                        }
+                        if (request.Leave_Type__c !== 'Sick Leave') {
+                            availableActions.push({ label: 'Request cancellation', name: 'request_cancellation' });
+                        }
+
                     break;
 
                 case 'Cancellation Requested':
@@ -282,12 +287,6 @@ export default class MyRequestContainer extends LightningElement {
                     break;
 
                 case 'Pending HR Approval':
-                    availableActions.push(
-                        { label: 'Show details', name: 'show_details' },
-                        { label: 'Cancel', name: 'cancel' }
-                    );
-                    break;
-
                 case 'Submitted':
                 case 'Pending Manager Approval':
                 case 'Escalated to Senior Manager':

@@ -8,7 +8,7 @@
             <type>creator</type>
         </recipients>
         <senderType>CurrentUser</senderType>
-        <template>unfiled$public/Request_Approved_VF</template>
+        <template>unfiled$public/Request_Approved</template>
     </alerts>
     <alerts>
         <fullName>Leave_Request_Submission_Confirmation</fullName>

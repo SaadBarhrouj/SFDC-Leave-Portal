@@ -1,4 +1,4 @@
-public with sharing class HRAllBalancesHistoryExportController {
+public without sharing class HRAllBalancesHistoryExportController {
     public List<Leave_Balance_History__c> histories { get; set; }
 
     public HRAllBalancesHistoryExportController() {

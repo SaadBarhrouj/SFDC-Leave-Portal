@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Manager Escalation &amp; Sync Feature</masterLabel>
+    <promptVersions>
+        <actionButtonLabel>View Team Leave Dashboard</actionButtonLabel>
+        <actionButtonLink>/lightning/n/Team_Leave_Management</actionButtonLink>
+        <body>&lt;p&gt;Easily review and approve leave requests from your team—all in one place!&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;• Use filters to find requests by employee, status, or leave type&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;p&gt;• See approved leaves on the team calendar&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;p&gt;• Access full approval history for every request  &lt;/p&gt;&lt;p&gt;  &lt;a href=&quot;https://youtu.be/t9s6_OeOAys?si=P6AM0xJB3W3c0alm&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot;&gt;How to Manage Team Leaves&lt;/a&gt;&lt;/p&gt;</body>
+        <delayDays>1</delayDays>
+        <description>Prompt for managers announcing the new ability to escalate leave requests to a senior manager (N+2) and automatically synchronize approval tasks. Guides managers to use the new escalation and approval sync feature.</description>
+        <displayType>DockedComposer</displayType>
+        <experience>Lightning</experience>
+        <header>New for Managers!</header>
+        <image>managerprompt1</image>
+        <imageAltText>Screenshot of the manager dashboard showing team leave requests and calendar</imageAltText>
+        <imageLocation>Top</imageLocation>
+        <isPublished>true</isPublished>
+        <masterLabel>Manager Escalation &amp; Sync Feature</masterLabel>
+        <publishedDate>2025-08-15</publishedDate>
+        <shouldDisplayActionButton>true</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>false</shouldIgnoreGlobalDelay>
+        <startDate>2025-08-15</startDate>
+        <timesToDisplay>15</timesToDisplay>
+        <title>Approve Requests and Track Your Team</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+</Prompt>

@@ -70,7 +70,9 @@
                         </c-requests-datatable>
                     </template>
                     <template if:false={hasBalances}>
-                        <div class="slds-align_absolute-center slds-p-around_large">No balances found.</div>
+                        <div class="slds-align_absolute-center slds-p-around_medium">
+                            <c-no-data-svg message="No balances found. Please add a new balance or adjust your filters."></c-no-data-svg>
+                        </div>
                     </template>
                 </div>
             </div>

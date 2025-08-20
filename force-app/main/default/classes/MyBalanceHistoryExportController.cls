@@ -1,8 +1,7 @@
-public with sharing class MyBalanceHistoryExportController {
+public without sharing class MyBalanceHistoryExportController {
     public List<Leave_Balance_History__c> histories { get; set; }
 
     public MyBalanceHistoryExportController() {
-        
         String type = ApexPages.currentPage().getParameters().get('type');
         String movementType = ApexPages.currentPage().getParameters().get('movementType');
         String start = ApexPages.currentPage().getParameters().get('start');
@@ -18,8 +17,8 @@ public with sharing class MyBalanceHistoryExportController {
 
         if (type != null && type != '') query += ' AND Leave_Type__c = \'' + String.escapeSingleQuotes(type) + '\'';
         if (movementType != null && movementType != '') query += ' AND Movement_Type__c = \'' + String.escapeSingleQuotes(movementType) + '\'';
-        if (startDateVal != null) query += ' AND Movement_Date__c >= ' + startDateVal.format();
-        if (endDateVal != null) query += ' AND Movement_Date__c <= ' + endDateVal.format();
+        if (startDateVal != null) query += ' AND Movement_Date__c >= ' + String.valueOf(startDateVal);
+        if (endDateVal != null) query += ' AND Movement_Date__c <= ' + String.valueOf(endDateVal);
 
         query += ' ORDER BY Movement_Date__c DESC LIMIT 200';
 
