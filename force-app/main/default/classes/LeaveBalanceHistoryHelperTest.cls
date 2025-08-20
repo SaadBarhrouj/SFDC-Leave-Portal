@@ -1,5 +1,5 @@
 @isTest
-private class LeaveBalanaceHistoryHelperTest {
+private class LeaveBalanceHistoryHelperTest {
 
     @isTest
     static void testHistoryOnApproved() {

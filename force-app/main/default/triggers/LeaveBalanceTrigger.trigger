@@ -1,7 +1,7 @@
 trigger LeaveBalanceTrigger on Leave_Balance__c (before insert, before update, after insert, after update, before delete) {
 
     if (Trigger.isAfter && Trigger.isInsert) {
-        LeaveBalanaceHistoryHelper.createHistoryOnInsert(Trigger.new);
+        LeaveBalanceHistoryHelper.createHistoryOnInsert(Trigger.new);
     }
 
     if (Trigger.isInsert || Trigger.isUpdate) {

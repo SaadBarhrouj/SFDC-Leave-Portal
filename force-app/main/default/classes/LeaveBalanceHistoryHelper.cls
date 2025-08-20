@@ -1,9 +1,5 @@
-<<<<<<<< HEAD:force-app/main/default/classes/LeaveBalanaceHistoryHelper.cls
-public without sharing class LeaveBalanaceHistoryHelper {
-========
-public class BalanceHistoryHelper {
+public without sharing class LeaveBalanceHistoryHelper {
 
->>>>>>>> origin/main:force-app/main/default/classes/BalanceHistoryHelper.cls
     public static void createHistoryOnStatusChange(List<Leave_Request__c> newRequests, Map<Id, Leave_Request__c> oldRequestsMap) {
         
         List<Leave_Balance_History__c> historiesToCreate = new List<Leave_Balance_History__c>();
@@ -68,8 +64,6 @@ public class BalanceHistoryHelper {
         }
     }
 
-<<<<<<<< HEAD:force-app/main/default/classes/LeaveBalanaceHistoryHelper.cls
-
      public static void createHistoryOnInsert(List<Leave_Balance__c> newBalances) {
         List<Leave_Balance_History__c> historiesToCreate = new List<Leave_Balance_History__c>();
         
@@ -92,28 +86,6 @@ public class BalanceHistoryHelper {
                     Source_of_Movement__c = source,
                     Justification__c = 'Initial ' + String.valueOf(balance.Year__c) + ' balance allocation.'
                 ));
-========
-    public static void createCorrectionHistory(List<Leave_Balance__c> newBalances, Map<Id, Leave_Balance__c> oldBalancesMap) {
-        List<Leave_Balance_History__c> historiesToCreate = new List<Leave_Balance_History__c>();
-
-        for (Leave_Balance__c newBalance : newBalances) {
-            Leave_Balance__c oldBalance = oldBalancesMap.get(newBalance.Id);
-
-            if (newBalance.Allocated_Days__c != oldBalance.Allocated_Days__c || newBalance.Used_Days__c != oldBalance.Used_Days__c) {
-
-                Decimal changeInDays = (newBalance.Remaining_Days__c - oldBalance.Remaining_Days__c);
-
-                Leave_Balance_History__c history = new Leave_Balance_History__c(
-                    Employee__c = newBalance.Employee__c,
-                    Leave_Type__c = newBalance.Leave_Type__c,
-                    Movement_Date__c = Date.today(),
-                    Movement_Type__c = 'Correction',
-                    Number_of_Days__c = changeInDays,
-                    Source_of_Movement__c = 'Manual correction by HR. Old remaining balance: ' + oldBalance.Remaining_Days__c,
-                    New_Balance__c = newBalance.Remaining_Days__c
-                );
-                historiesToCreate.add(history);
->>>>>>>> origin/main:force-app/main/default/classes/BalanceHistoryHelper.cls
             }
         }
 

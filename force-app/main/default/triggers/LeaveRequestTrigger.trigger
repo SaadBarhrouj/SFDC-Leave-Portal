@@ -64,7 +64,7 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
         }
         
         if (Trigger.isUpdate) {
-            LeaveBalanaceHistoryHelper.createHistoryOnStatusChange(Trigger.new, Trigger.oldMap);
+            LeaveBalanceHistoryHelper.createHistoryOnStatusChange(Trigger.new, Trigger.oldMap);
         }
         
         Set<Id> leaveBalanceIds = new Set<Id>();
