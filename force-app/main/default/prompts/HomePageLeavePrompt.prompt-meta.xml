@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Prompt xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>HomePageLeavePrompt</masterLabel>
+    <promptVersions>
+        <actionButtonLabel>Go to Home</actionButtonLabel>
+        <actionButtonLink>/lightning/page/home</actionButtonLink>
+        <body>&lt;p&gt;On this Home page, you can:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Instantly view your current leave balances (RTT, Paid Leave, etc.)&lt;/li&gt;&lt;li&gt;See your latest leave requests and their status&lt;/li&gt;&lt;li&gt;Track your monthly leave trends and usage&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Click &lt;a href=&quot;https://youtu.be/jKvGz6u7Few?si=TNQE8O2bIX7-i0G_&quot; rel=&quot;noopener noreferrer&quot; target=&quot;_blank&quot; style=&quot;color: rgb(1, 118, 211);&quot;&gt;here&lt;/a&gt; to view a demo and discover how to manage your requests and balances easily!&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;</body>
+        <delayDays>1</delayDays>
+        <description>In-app guidance for the Leave Portal Home page. Shows users their balances, recent requests, and monthly leave trends, and provides a link to the demo.</description>
+        <displayType>DockedComposer</displayType>
+        <experience>Lightning</experience>
+        <header>Leave Portal Home</header>
+        <image>Leave_Portal_Dashboard_2</image>
+        <imageAltText>Screenshot of the Leave Portal home page showing leave balances, recent requests, and a monthly leave trend chart.</imageAltText>
+        <imageLocation>Top</imageLocation>
+        <isPublished>true</isPublished>
+        <masterLabel>HomePageLeavePrompt</masterLabel>
+        <publishedDate>2025-08-20</publishedDate>
+        <shouldDisplayActionButton>true</shouldDisplayActionButton>
+        <shouldIgnoreGlobalDelay>true</shouldIgnoreGlobalDelay>
+        <startDate>2025-08-20</startDate>
+        <timesToDisplay>15</timesToDisplay>
+        <title>Your Leave Overview at a Glance</title>
+        <userAccess>Everyone</userAccess>
+        <userProfileAccess>Everyone</userProfileAccess>
+        <versionNumber>1</versionNumber>
+    </promptVersions>
+</Prompt>
