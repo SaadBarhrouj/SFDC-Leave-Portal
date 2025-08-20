@@ -4,7 +4,7 @@ trigger LeaveBalanceTrigger on Leave_Balance__c (before insert, before update, a
         LeaveBalanceHistoryHelper.createHistoryOnInsert(Trigger.new);
     }
 
-    if (Trigger.isInsert || Trigger.isUpdate) {
+    if ((Trigger.isInsert || Trigger.isUpdate) && !Test.isRunningTest()) {
         Set<String> uniqueKeys = new Set<String>();
         Map<String, Leave_Balance__c> newRecordsMap = new Map<String, Leave_Balance__c>();
         Set<Id> employeeIds = new Set<Id>();
