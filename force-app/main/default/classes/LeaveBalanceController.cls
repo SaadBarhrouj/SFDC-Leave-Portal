@@ -96,7 +96,7 @@ public without sharing class LeaveBalanceController {
                        Source_of_Movement__c, Number_of_Days__c, New_Balance__c, Justification__c,
                        Employee__c, Employee__r.Name, Employee__r.FullPhotoUrl
                 FROM Leave_Balance_History__c
-                ORDER BY Movement_Type__c DESC
+                ORDER BY CreatedDate DESC
                 LIMIT 2000
             ];
         } catch (Exception e) {
