@@ -58,7 +58,7 @@
         </action>
     </initialSubmissionActions>
     <label>Escalated Leave Request without Manager</label>
-    <processOrder>1</processOrder>
+    <processOrder>2</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>

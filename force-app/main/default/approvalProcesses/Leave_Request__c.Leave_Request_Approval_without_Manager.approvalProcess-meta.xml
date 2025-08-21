@@ -58,7 +58,7 @@
         </action>
     </initialSubmissionActions>
     <label>Leave Request Approval without Manager</label>
-    <processOrder>3</processOrder>
+    <processOrder>4</processOrder>
     <recordEditability>AdminOrCurrentApprover</recordEditability>
     <showApprovalHistory>false</showApprovalHistory>
 </ApprovalProcess>
