@@ -49,10 +49,10 @@ export default class LeaveRequestFormModal extends NavigationMixin(LightningElem
     }
     
     get isStartDateDisabled() {
-        return !this.isNewRecord && this.selectedLeaveType === 'Sick Leave';
+        return !this.isNewRecord && (this.selectedLeaveType === 'Sick Leave' || this.selectedLeaveType === 'Training');
     }
     get isEndDateDisabled() {
-        return !this.isNewRecord && this.selectedLeaveType === 'Sick Leave';
+        return !this.isNewRecord && (this.selectedLeaveType === 'Sick Leave' || this.selectedLeaveType === 'Training');
     }
     @wire(getNumberOfDaysRequested, { startDate: '$startDate', endDate: '$endDate' })
     wiredDays({ error, data }) {

@@ -279,6 +279,9 @@ export default class MyRequestContainer extends LightningElement {
             switch (request.Status__c) {
                 case 'Approved':
                     availableActions.push({ label: 'Show details', name: 'show_details' });
+                        if (request.Leave_Type__c === 'Training') {
+                            availableActions.push({ label: 'Add Supporting Documents', name: 'edit' });
+                        }
                         if (request.Leave_Type__c === 'Sick Leave') {
                             availableActions.push({ label: 'Add Medical Certificate', name: 'edit' });
                         }

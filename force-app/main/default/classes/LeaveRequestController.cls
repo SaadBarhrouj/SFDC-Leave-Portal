@@ -60,10 +60,18 @@ public without sharing class LeaveRequestController {
                 WHERE Id = :recordId 
                 LIMIT 1
             ];
+
+            if (request.Status__c == 'Approved') {
+                update requestToUpdate;
+
+                return 'Request was successfully updated.';
+            }
+
             
             if (request.Status__c != 'Escalated to Senior Manager') {
                 requestToUpdate.Status__c = 'Submitted';
             }
+
             
             if (request.Status__c == 'Pending HR Approval') {
                 if (request.Last_Approver__c != null) {
