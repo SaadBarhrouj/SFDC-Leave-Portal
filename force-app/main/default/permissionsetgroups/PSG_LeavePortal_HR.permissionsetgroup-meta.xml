@@ -2,6 +2,7 @@
 <PermissionSetGroup xmlns="http://soap.sforce.com/2006/04/metadata">
     <hasActivationRequired>false</hasActivationRequired>
     <label>PSG LeavePortal HR</label>
+    <permissionSets>Nager_API_Access</permissionSets>
     <permissionSets>PS_Holiday_Read_All</permissionSets>
     <permissionSets>PS_LeaveAdministration_View</permissionSets>
     <permissionSets>PS_LeaveBalance_Manage_All</permissionSets>

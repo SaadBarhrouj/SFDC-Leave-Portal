@@ -12,7 +12,6 @@ public without sharing class TeamRequestsController {
             SELECT Id, Name, Start_Date__c, End_Date__c, Leave_Type__c, Status__c, Requester__r.Name
             FROM Leave_Request__c
             WHERE Requester__c IN :teamMemberIds
-            AND Status__c = 'Approved'
             ORDER BY Start_Date__c ASC
         ];
     }

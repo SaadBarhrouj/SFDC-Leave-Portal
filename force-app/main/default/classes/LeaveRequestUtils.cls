@@ -195,7 +195,7 @@ public without sharing class LeaveRequestUtils {
     public static void validateNoticePeriod(List<Leave_Request__c> newRequests, Map<Id, Leave_Request__c> oldMap) {
     Leave_Policy_Settings__c settings = Leave_Policy_Settings__c.getOrgDefaults();
     Integer minNoticeDays = (settings.Minimum_Notice_Period_Days__c != null) ? 
-                           Integer.valueOf(settings.Minimum_Notice_Period_Days__c) : 5;
+                           Integer.valueOf(settings.Minimum_Notice_Period_Days__c) : 0;
     
     for (Leave_Request__c request : newRequests) {
         if (request.Leave_Type__c == 'Sick Leave' || request.Status__c != 'Submitted' ) continue;

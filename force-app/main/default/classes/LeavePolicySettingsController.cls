@@ -7,7 +7,7 @@ public with sharing class LeavePolicySettingsController {
             settings = new Leave_Policy_Settings__c();
             settings.Name = 'Default';
             settings.Annual_Paid_Leave_Days__c = 25;
-            settings.Minimum_Notice_Period_Days__c = 5;
+            settings.Minimum_Notice_Period_Days__c = 0;
             settings.Annual_RTT_Days__c = 10;
         }
         return settings;

@@ -23,6 +23,7 @@
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>Leave Portal</label>
     <navType>Standard</navType>
+    <tabs>standard-home</tabs>
     <tabs>Leave_Requests</tabs>
     <tabs>Team_Leave_Management</tabs>
     <tabs>HR_Leave_Administration</tabs>

@@ -10,21 +10,21 @@ import LEAVE_BALANCE_OBJECT from '@salesforce/schema/Leave_Balance__c';
 import LEAVE_TYPE_FIELD from '@salesforce/schema/Leave_Balance__c.Leave_Type__c';
 
 const COLUMNS = [
-    { 
-        label: 'Employee Name', fieldName: 'employeeUrl', type: 'avatarType', 
-        typeAttributes: { 
+    {
+        label: 'Employee Name', fieldName: 'employeeUrl', type: 'avatarType',
+        typeAttributes: {
             avatarUrl: { fieldName: 'EmployeeFullPhotoUrl' },
             name: { fieldName: 'EmployeeName' },
             url: { fieldName: 'employeeUrl' },
             initials: { fieldName: 'EmployeeInitials' }
-        } 
+        }
     },
     { label: 'Leave Type', fieldName: 'Leave_Type__c', type: 'text' },
     { label: 'Allocated', fieldName: 'Allocated_Days__c', type: 'number', cellAttributes: { alignment: 'left' } },
     { label: 'Used', fieldName: 'Used_Days__c', type: 'number', cellAttributes: { alignment: 'left' } },
     { label: 'Remaining', fieldName: 'Remaining_Days__c', type: 'number', cellAttributes: { alignment: 'left' } },
     { label: 'Year', fieldName: 'Year__c', type: 'text' },
-    { type: 'action', typeAttributes: { rowActions: [{ label: 'Edit', name: 'edit' }, { label: 'Delete', name: 'delete' }]}}
+    { type: 'action', typeAttributes: { rowActions: [{ label: 'Edit', name: 'edit' }, { label: 'Delete', name: 'delete' }] } }
 ];
 
 const DEFAULT_FILTERS = { employeeName: '', leaveType: '' };
@@ -64,7 +64,7 @@ export default class HrBalances extends LightningElement {
     @wire(getPicklistValues, { recordTypeId: '$objectInfo.data.defaultRecordTypeId', fieldApiName: LEAVE_TYPE_FIELD })
     wiredPicklistValues({ error, data }) {
         if (data) {
-            this.leaveTypeOptions = data.values.filter(option => 
+            this.leaveTypeOptions = data.values.filter(option =>
                 option.value === 'RTT' || option.value === 'Paid Leave'
             );
         } else if (error) {
@@ -81,42 +81,42 @@ export default class HrBalances extends LightningElement {
         }
     }
 
-   @wire(getBalances)
-wiredBalances(result) {
-    this.isLoading = true;
-    this.wiredBalancesResult = result;
-    if (result.data) {
-        this.balances = result.data.map(balance => {
-            const empName = (balance.Employee__r && balance.Employee__r.Name) 
-                            ? balance.Employee__r.Name 
-                            : 'Unknown User';
+    @wire(getBalances)
+    wiredBalances(result) {
+        this.isLoading = true;
+        this.wiredBalancesResult = result;
+        if (result.data) {
+            this.balances = result.data.map(balance => {
+                const empName = (balance.Employee__r && balance.Employee__r.Name)
+                    ? balance.Employee__r.Name
+                    : 'Unknown User';
 
-            let initials = 'UU';
-            if (empName && empName !== 'Unknown User') {
-                const nameParts = empName.trim().split(' ').filter(part => part);
-                if (nameParts.length > 1) {
-                    initials = (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
-                } else if (nameParts.length === 1 && nameParts[0].length > 0) {
-                    initials = nameParts[0].substring(0, 2).toUpperCase();
+                let initials = 'UU';
+                if (empName && empName !== 'Unknown User') {
+                    const nameParts = empName.trim().split(' ').filter(part => part);
+                    if (nameParts.length > 1) {
+                        initials = (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+                    } else if (nameParts.length === 1 && nameParts[0].length > 0) {
+                        initials = nameParts[0].substring(0, 2).toUpperCase();
+                    }
                 }
-            }
 
-            return {
-                ...balance,
-                EmployeeName: empName,
-                employeeUrl: `/lightning/r/User/${balance.Employee__c}/view`,
-                EmployeeFullPhotoUrl: balance.Employee__r ? balance.Employee__r.FullPhotoUrl : '',
-                EmployeeInitials: initials
-            };
-        });
-        
-        this.applyFilters();
+                return {
+                    ...balance,
+                    EmployeeName: empName,
+                    employeeUrl: `/lightning/r/User/${balance.Employee__c}/view`,
+                    EmployeeFullPhotoUrl: balance.Employee__r ? balance.Employee__r.FullPhotoUrl : '',
+                    EmployeeInitials: initials
+                };
+            });
 
-    } else if (result.error) {
-        this.showToast('Error', 'Error loading balances.', 'error');
+            this.applyFilters();
+
+        } else if (result.error) {
+            this.showToast('Error', 'Error loading balances.', 'error');
+        }
+        this.isLoading = false;
     }
-    this.isLoading = false;
-}
 
     applyFilters() {
         const { employeeName, leaveType } = this.filterValues;
@@ -139,7 +139,7 @@ wiredBalances(result) {
         this.filterValues = { ...DEFAULT_FILTERS };
         this.applyFilters();
     }
-    
+
     handleRowAction(event) {
         const actionName = event.detail.action.name;
         const row = event.detail.row;
@@ -183,21 +183,21 @@ wiredBalances(result) {
 
     handleDeleteWithJustification() {
         this.isLoading = true;
-        deleteBalanceWithJustification({ 
-            balanceId: this.balanceToDelete.Id, 
-            justification: this.deleteJustification 
+        deleteBalanceWithJustification({
+            balanceId: this.balanceToDelete.Id,
+            justification: this.deleteJustification
         })
-        .then(() => {
-            this.showToast('Success', 'Balance deleted successfully.', 'success');
-            this.closeDeleteModal();
-            return this.handleRefresh();
-        })
-        .catch(error => {
-            this.showToast('Error', error.body.message, 'error');
-        })
-        .finally(() => {
-            this.isLoading = false;
-        });
+            .then(() => {
+                this.showToast('Success', 'Balance deleted successfully.', 'success');
+                this.closeDeleteModal();
+                return this.handleRefresh();
+            })
+            .catch(error => {
+                this.showToast('Error', error.body.message, 'error');
+            })
+            .finally(() => {
+                this.isLoading = false;
+            });
     }
 
     handleCorrectionChange(event) {
@@ -220,13 +220,13 @@ wiredBalances(result) {
             newAllocatedDays: this.correctionData.Allocated_Days__c,
             justification: this.correctionData.justification
         })
-        .then(() => {
-            this.showToast('Success', 'Balance modified successfully.', 'success');
-            this.closeCorrectionModal();
-            return this.handleRefresh();
-        })
-        .catch(error => this.showToast('Error', error.body.message, 'error'))
-        .finally(() => { this.isLoading = false; });
+            .then(() => {
+                this.showToast('Success', 'Balance modified successfully.', 'success');
+                this.closeCorrectionModal();
+                return this.handleRefresh();
+            })
+            .catch(error => this.showToast('Error', error.body.message, 'error'))
+            .finally(() => { this.isLoading = false; });
     }
 
     handleNewBalance() {
@@ -247,7 +247,7 @@ wiredBalances(result) {
         this.showToast('Success', message, 'success');
         this.handleRefresh();
     }
-    
+
     handleRefresh() {
         this.isLoading = true;
         return refreshApex(this.wiredBalancesResult).finally(() => { this.isLoading = false; });
@@ -257,10 +257,13 @@ wiredBalances(result) {
     get filterButtonVariant() { return this.showFilterPopover ? 'brand' : 'neutral'; }
     get hasBalances() { return this.filteredBalances && this.filteredBalances.length > 0; }
     showToast(title, message, variant) { this.dispatchEvent(new ShowToastEvent({ title, message, variant })); }
-    
+
     handleBalanceError(event) {
         let errorMessage = 'An error occurred while saving the balance.';
-        if (event.detail && event.detail.message) {
+        if (event.detail.output && event.detail.output.errors && event.detail.output.errors.length > 0) {
+            errorMessage = event.detail.output.errors.map(error => error.message).join(', ');
+        }
+        else if (event.detail && event.detail.message) {
             errorMessage = event.detail.message;
         }
         this.showToast('Error', errorMessage, 'error');

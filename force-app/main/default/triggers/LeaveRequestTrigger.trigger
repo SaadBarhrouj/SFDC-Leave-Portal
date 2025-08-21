@@ -59,13 +59,6 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
     }
     
     if (Trigger.isAfter) {
-        if (Trigger.isInsert || Trigger.isUpdate) {
-            LeaveRequestUtils.submitForApproval(Trigger.new);
-        }
-        
-        if (Trigger.isUpdate) {
-            LeaveBalanceHistoryHelper.createHistoryOnStatusChange(Trigger.new, Trigger.oldMap);
-        }
         
         Set<Id> leaveBalanceIds = new Set<Id>();
         List<Leave_Request__c> records = Trigger.isDelete ? Trigger.old : Trigger.new;
@@ -75,5 +68,13 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
             }
         }
         LeaveRequestUtils.updateUsedDays(leaveBalanceIds);
+
+        if (Trigger.isInsert || Trigger.isUpdate) {
+            LeaveRequestUtils.submitForApproval(Trigger.new);
+        }
+        
+        if (Trigger.isUpdate) {
+            LeaveBalanceHistoryHelper.createHistoryOnStatusChange(Trigger.new, Trigger.oldMap);
+        }
     }
 }

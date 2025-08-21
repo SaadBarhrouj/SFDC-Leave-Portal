@@ -3,5 +3,19 @@
     <hasActivationRequired>false</hasActivationRequired>
     <label>PSG_LeavePortal_Admin</label>
     <permissionSets>Nager_API_Access</permissionSets>
+    <permissionSets>PS_Holiday_Read</permissionSets>
+    <permissionSets>PS_Holiday_Read_All</permissionSets>
+    <permissionSets>PS_LeaveAdministration_View</permissionSets>
+    <permissionSets>PS_LeaveBalance_Manage_All</permissionSets>
+    <permissionSets>PS_LeaveBalance_Read</permissionSets>
+    <permissionSets>PS_LeavePolicy_Manage</permissionSets>
+    <permissionSets>PS_LeavePortal_AppAccess</permissionSets>
+    <permissionSets>PS_LeaveRequest_Create_Edit_Cancel</permissionSets>
+    <permissionSets>PS_LeaveRequest_Read</permissionSets>
+    <permissionSets>PS_LeaveRequest_Read_All</permissionSets>
+    <permissionSets>PS_TeamRequests_Approve_Reject</permissionSets>
+    <permissionSets>PS_TeamRequests_View</permissionSets>
+    <permissionSets>PS_User_Read_All</permissionSets>
+    <permissionSets>PS_WorkItem_Edit</permissionSets>
     <status>Updated</status>
 </PermissionSetGroup>

@@ -5,10 +5,19 @@
         <visible>true</visible>
     </applicationVisibilities>
     <description>Provides basic access to Leave Portal application and common tabs.</description>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>User.Work_Country__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
     <label>PS LeavePortal AppAccess</label>
     <tabSettings>
         <tab>Leave_Requests</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>standard-home</tab>
         <visibility>Visible</visibility>
     </tabSettings>
 </PermissionSet>
