@@ -66,7 +66,7 @@
             </value>
         </assignmentItems>
         <connector>
-            <targetReference>Assign_Annual_RTT_Values</targetReference>
+            <targetReference>If_RTT_Policy_exist</targetReference>
         </connector>
     </assignments>
     <assignments>
@@ -113,6 +113,94 @@
             <targetReference>Add_Annual_Leaves_to_Collection</targetReference>
         </connector>
     </assignments>
+    <assignments>
+        <name>Assign_Default_Annual_Paid_Leave_Values</name>
+        <label>Assign Default Annual Paid Leave Values</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>PaidLeaveBalance.Employee__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>PaidLeaveBalance.Year__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>CurrentYear</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>PaidLeaveBalance.Leave_Type__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>Paid Leave</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>PaidLeaveBalance.Allocated_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <numberValue>25.0</numberValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>PaidLeaveBalance.Used_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <numberValue>0.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>If_RTT_Policy_exist</targetReference>
+        </connector>
+    </assignments>
+    <assignments>
+        <name>Assign_Default_Annual_RTT_Values</name>
+        <label>Assign Default Annual RTT Values</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Employee__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Year__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>CurrentYear</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Leave_Type__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>RTT</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Allocated_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>ProratedDefaultRTTDays</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>RTTLeaveBalance.Used_Days__c</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <numberValue>0.0</numberValue>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Add_Annual_Leaves_to_Collection</targetReference>
+        </connector>
+    </assignments>
     <decisions>
         <name>Balances_Already_Exist</name>
         <label>Balances Already Exist?</label>
@@ -135,12 +223,68 @@
             <label>No (Create New Balances)</label>
         </rules>
     </decisions>
+    <decisions>
+        <name>Decision_2</name>
+        <label>If Paid Leave Policy exist</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Assign_Default_Annual_Paid_Leave_Values</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No</defaultConnectorLabel>
+        <rules>
+            <name>Yes</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Leave_Policy_Settings.Annual_Paid_Leave_Days__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Annual_Paid_Leave_Values</targetReference>
+            </connector>
+            <label>Yes</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>If_RTT_Policy_exist</name>
+        <label>If RTT Policy exist</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Assign_Default_Annual_RTT_Values</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>No</defaultConnectorLabel>
+        <rules>
+            <name>Yes_0</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Leave_Policy_Settings.Annual_RTT_Days__c</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Assign_Annual_RTT_Values</targetReference>
+            </connector>
+            <label>Yes</label>
+        </rules>
+    </decisions>
     <environments>Default</environments>
     <formulas>
         <name>CurrentYear</name>
         <dataType>Number</dataType>
         <expression>YEAR(TODAY())</expression>
         <scale>0</scale>
+    </formulas>
+    <formulas>
+        <name>ProratedDefaultRTTDays</name>
+        <dataType>Number</dataType>
+        <expression>ROUND((10 * (13 - MONTH(DATEVALUE({!$Record.CreatedDate})))) / 12,0)</expression>
+        <scale>2</scale>
     </formulas>
     <formulas>
         <name>ProratedRTTDays</name>
@@ -211,7 +355,7 @@
         <locationY>0</locationY>
         <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Assign_Annual_Paid_Leave_Values</targetReference>
+            <targetReference>Decision_2</targetReference>
         </connector>
         <getFirstRecordOnly>true</getFirstRecordOnly>
         <object>Leave_Policy_Settings__c</object>
