@@ -24,7 +24,6 @@ const COLUMNS = [
             initials: { fieldName: 'RequesterInitials' }
         }
     },
-    { label: 'Request Name', fieldName: 'Name', type: 'button', typeAttributes: { label: { fieldName: 'RequestName' }, name: 'show_details', variant: 'base' } },
     { label: 'Leave Type', fieldName: 'Leave_Type__c' },
     { label: 'Start Date', fieldName: 'Start_Date__c', type: 'date-local' },
     { label: 'End Date', fieldName: 'End_Date__c', type: 'date-local' },

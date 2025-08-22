@@ -96,8 +96,8 @@
                 <targetReference>Is_Supporting_Document_Still_Missing</targetReference>
             </connector>
             <label>2 Days After Creation</label>
-            <offsetNumber>1</offsetNumber>
-            <offsetUnit>Minutes</offsetUnit>
+            <offsetNumber>2</offsetNumber>
+            <offsetUnit>Days</offsetUnit>
             <timeSource>RecordTriggerEvent</timeSource>
         </scheduledPaths>
         <triggerType>RecordAfterSave</triggerType>

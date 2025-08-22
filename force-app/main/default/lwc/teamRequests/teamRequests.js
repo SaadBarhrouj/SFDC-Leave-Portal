@@ -54,8 +54,6 @@ const COLUMNS = [
         },
         initialWidth: 200
     },
-    { label: 'Last Modified', fieldName: 'LastModifiedDate', initialWidth: 160,
-      type: 'date', typeAttributes: { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' } },
     {
         label: 'Manager',
         fieldName: 'managerUrl',
