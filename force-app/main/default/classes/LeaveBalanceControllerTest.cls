@@ -91,7 +91,6 @@ private class LeaveBalanceControllerTest {
             List<LeaveBalanceController.BalanceOverview> overviews = LeaveBalanceController.getLeaveBalanceOverviews();
             System.assertEquals(5, overviews.size(), 'Should return 5 balance overviews.');
             
-            // Dynamically calculate the number of days requested for each leave request
             Decimal sickLeaveDays = LeaveRequestUtils.calculateRequestedDays(
                 Date.today().addDays(-10), Date.today().addDays(-9), 'US'
             );

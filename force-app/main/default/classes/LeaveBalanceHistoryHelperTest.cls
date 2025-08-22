@@ -17,8 +17,10 @@ private class LeaveBalanceHistoryHelperTest {
         Leave_Request__c req = TestDataFactory.createLeaveRequest(
             user.Id, 'Paid Leave', startDate, endDate, balance.Id, 'Submitted'
         );
+        
+        Decimal requestedDays = LeaveRequestUtils.calculateRequestedDays(startDate, endDate, user.Work_Country__c);
+        req.Number_of_Days_Requested__c = requestedDays;
         req.Status__c = 'Approved';
-        req.Number_of_Days_Requested__c = 3;
 
         Test.startTest();
         update req;
@@ -34,7 +36,7 @@ private class LeaveBalanceHistoryHelperTest {
         System.assertEquals(1, histories.size(), 'Should create one history for approval');
         System.assertEquals('Deduction', histories[0].Movement_Type__c);
         System.assertEquals('Leave Request Approved', histories[0].Source_of_Movement__c);
-        System.assertEquals(-3, histories[0].Number_of_Days__c);
+        System.assertEquals(-requestedDays, histories[0].Number_of_Days__c);
     }
 
     @isTest
@@ -53,8 +55,10 @@ private class LeaveBalanceHistoryHelperTest {
         Leave_Request__c req = TestDataFactory.createLeaveRequest(
             user.Id, 'RTT', startDate, endDate, balance.Id, 'Cancellation Requested'
         );
+        
+        Decimal requestedDays = LeaveRequestUtils.calculateRequestedDays(startDate, endDate, user.Work_Country__c);
+        req.Number_of_Days_Requested__c = requestedDays;
         req.Status__c = 'Cancelled';
-        req.Number_of_Days_Requested__c = 2;
 
         Test.startTest();
         update req;
@@ -70,7 +74,7 @@ private class LeaveBalanceHistoryHelperTest {
         System.assertEquals(1, histories.size(), 'Should create one history for cancellation');
         System.assertEquals('Accrual', histories[0].Movement_Type__c);
         System.assertEquals('Leave Request Cancelled', histories[0].Source_of_Movement__c);
-        System.assertEquals(2, histories[0].Number_of_Days__c);
+        System.assertEquals(requestedDays, histories[0].Number_of_Days__c);
     }
 
     @isTest
@@ -89,6 +93,7 @@ private class LeaveBalanceHistoryHelperTest {
         Leave_Request__c req = TestDataFactory.createLeaveRequest(
             user.Id, 'Paid Leave', startDate, endDate, balance.Id, 'Submitted'
         );
+        req.Number_of_Days_Requested__c = LeaveRequestUtils.calculateRequestedDays(startDate, endDate, user.Work_Country__c);
 
         Test.startTest();
         update req; 
@@ -117,6 +122,7 @@ private class LeaveBalanceHistoryHelperTest {
         Leave_Request__c req = TestDataFactory.createLeaveRequest(
             user.Id, 'Sick Leave', startDate, endDate, balance.Id, 'Submitted'
         );
+        req.Number_of_Days_Requested__c = LeaveRequestUtils.calculateRequestedDays(startDate, endDate, user.Work_Country__c);
         req.Status__c = 'Approved';
 
         Test.startTest();
