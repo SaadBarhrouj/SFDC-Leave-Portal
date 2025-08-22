@@ -37,7 +37,7 @@ trigger LeaveRequestTrigger on Leave_Request__c (before insert, before update, a
                 User theRequester = requesterMap.get(request.Requester__c);
                 String countryCode = (theRequester != null) ? theRequester.Work_Country__c : null;
                 
-                if (request.Start_Date__c != null && request.End_Date__c != null && countryCode != null) {
+                if (request.Start_Date__c != null && request.End_Date__c != null) {
                     Decimal days = LeaveRequestUtils.calculateRequestedDays(request.Start_Date__c, request.End_Date__c, countryCode);
                     request.Number_of_Days_Requested__c = days;
                 }

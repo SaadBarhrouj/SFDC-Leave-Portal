@@ -160,9 +160,7 @@ public without sharing class LeaveRequestController {
         }
         
         User u = [SELECT Work_Country__c FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
-        if (u.Work_Country__c == null || String.isBlank(u.Work_Country__c)) {
-            return 0;
-        }
+        
         return LeaveRequestUtils.calculateRequestedDays(startDate, endDate, u.Work_Country__c);
     }
     

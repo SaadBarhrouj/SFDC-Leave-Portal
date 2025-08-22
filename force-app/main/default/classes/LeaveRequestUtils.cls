@@ -6,17 +6,21 @@ public without sharing class LeaveRequestUtils {
         }
         
         Map<Date, Holiday__c> holidaysMap = new Map<Date, Holiday__c>();
-        for (Holiday__c holiday : [
+        
+        
+        if (countryCode != null) {
+            for (Holiday__c holiday : [
             SELECT Start_Date__c, End_Date__c, Deduction_Value__c 
             FROM Holiday__c
             WHERE End_Date__c >= :startDate 
               AND Start_Date__c <= :endDate
               AND Country_Code__c = :countryCode
         ]) {
-            Date currentDateInHoliday = holiday.Start_Date__c;
-            while(currentDateInHoliday <= holiday.End_Date__c) {
-                holidaysMap.put(currentDateInHoliday, holiday);
-                currentDateInHoliday = currentDateInHoliday.addDays(1);
+                Date currentDateInHoliday = holiday.Start_Date__c;
+                while(currentDateInHoliday <= holiday.End_Date__c) {
+                    holidaysMap.put(currentDateInHoliday, holiday);
+                    currentDateInHoliday = currentDateInHoliday.addDays(1);
+                }
             }
         }
         
@@ -40,7 +44,7 @@ public without sharing class LeaveRequestUtils {
         }
         return requestedDays;
     }
-
+    
     @future
     public static void recalculateAffectedRequests(Set<Id> holidayIds) {
         List<Holiday__c> holidays = [
@@ -78,9 +82,9 @@ public without sharing class LeaveRequestUtils {
             Decimal originalDays = request.Number_of_Days_Requested__c;
             Decimal newDays = calculateRequestedDays(
                 request.Start_Date__c,
-                request.End_Date__c,
-                request.Requester__r.Work_Country__c
-            );
+            request.End_Date__c,
+            request.Requester__r.Work_Country__c
+                );
             if (originalDays != newDays) {
                 request.Number_of_Days_Requested__c = newDays;
                 updatedRequests.add(request);
@@ -131,49 +135,49 @@ public without sharing class LeaveRequestUtils {
         }
     }
     
-   public static void validateNoOverlappingRequests(List<Leave_Request__c> newRequests, Map<Id, Leave_Request__c> oldMap) {
-    Set<Id> requesterIds = new Set<Id>();
-    for (Leave_Request__c req : newRequests) {
-        Boolean datesChanged = oldMap == null ||
-            (req.Start_Date__c != oldMap.get(req.Id).Start_Date__c ||
-             req.End_Date__c != oldMap.get(req.Id).End_Date__c);
-        
-        if (datesChanged) {
-            requesterIds.add(req.Requester__c);
+    public static void validateNoOverlappingRequests(List<Leave_Request__c> newRequests, Map<Id, Leave_Request__c> oldMap) {
+        Set<Id> requesterIds = new Set<Id>();
+        for (Leave_Request__c req : newRequests) {
+            Boolean datesChanged = oldMap == null ||
+                (req.Start_Date__c != oldMap.get(req.Id).Start_Date__c ||
+                req.End_Date__c != oldMap.get(req.Id).End_Date__c);
+            
+            if (datesChanged) {
+                requesterIds.add(req.Requester__c);
+            }
         }
-    }
-    
-    if (requesterIds.isEmpty()) {
-        return;
-    }
-    
-    List<Leave_Request__c> existingRequests = [
+        
+        if (requesterIds.isEmpty()) {
+            return;
+        }
+        
+        List<Leave_Request__c> existingRequests = [
         SELECT Id, Start_Date__c, End_Date__c, Requester__c
         FROM Leave_Request__c
         WHERE Requester__c IN :requesterIds
         AND Status__c NOT IN ('Rejected', 'Cancelled')
     ];
-    
-    for (Leave_Request__c newReq : newRequests) {
-        if (oldMap != null &&
-            newReq.Start_Date__c == oldMap.get(newReq.Id).Start_Date__c &&
-            newReq.End_Date__c == oldMap.get(newReq.Id).End_Date__c) {
-            continue;
-        }
         
-        for (Leave_Request__c existingReq : existingRequests) {
-            if (newReq.Id == existingReq.Id) {
+        for (Leave_Request__c newReq : newRequests) {
+            if (oldMap != null &&
+                newReq.Start_Date__c == oldMap.get(newReq.Id).Start_Date__c &&
+            newReq.End_Date__c == oldMap.get(newReq.Id).End_Date__c) {
                 continue;
             }
-          
-            if (newReq.Requester__c == existingReq.Requester__c) {
-                if (newReq.Start_Date__c <= existingReq.End_Date__c && newReq.End_Date__c >= existingReq.Start_Date__c) {
-                    newReq.addError('You already have a leave request that overlaps with the selected dates.');
+            
+            for (Leave_Request__c existingReq : existingRequests) {
+                if (newReq.Id == existingReq.Id) {
+                    continue;
+                }
+                
+                if (newReq.Requester__c == existingReq.Requester__c) {
+                    if (newReq.Start_Date__c <= existingReq.End_Date__c && newReq.End_Date__c >= existingReq.Start_Date__c) {
+                        newReq.addError('You already have a leave request that overlaps with the selected dates.');
+                    }
                 }
             }
         }
     }
-}
     
     public static void validateRequestOnApproval(Id leaveRequestId) {
         List<Leave_Request__c> requests = [
@@ -181,7 +185,7 @@ public without sharing class LeaveRequestUtils {
         FROM Leave_Request__c 
         WHERE Id = :leaveRequestId
         ];
-
+        
         if (requests.isEmpty()) {
             throw new AuraHandledException('Leave request not found.');
         }
@@ -191,26 +195,26 @@ public without sharing class LeaveRequestUtils {
             throw new AuraHandledException('This leave request cannot be approved because its start date is in the past.');
         }
     }
-
-    public static void validateNoticePeriod(List<Leave_Request__c> newRequests, Map<Id, Leave_Request__c> oldMap) {
-    Leave_Policy_Settings__c settings = Leave_Policy_Settings__c.getOrgDefaults();
-    Integer minNoticeDays = (settings.Minimum_Notice_Period_Days__c != null) ? 
-                           Integer.valueOf(settings.Minimum_Notice_Period_Days__c) : 0;
     
-    for (Leave_Request__c request : newRequests) {
-        if (request.Leave_Type__c == 'Sick Leave' || request.Status__c != 'Submitted' ) continue;
+    public static void validateNoticePeriod(List<Leave_Request__c> newRequests, Map<Id, Leave_Request__c> oldMap) {
+        Leave_Policy_Settings__c settings = Leave_Policy_Settings__c.getOrgDefaults();
+        Integer minNoticeDays = (settings.Minimum_Notice_Period_Days__c != null) ?
+            Integer.valueOf(settings.Minimum_Notice_Period_Days__c) : 0;
         
-        Boolean isNew = (oldMap == null);
-        Boolean dateChanged = !isNew && (request.Start_Date__c != oldMap.get(request.Id).Start_Date__c);
-        
-        if (isNew || dateChanged) {
-            Integer noticeDays = Date.today().daysBetween(request.Start_Date__c);
+        for (Leave_Request__c request : newRequests) {
+            if (request.Leave_Type__c == 'Sick Leave' || request.Status__c != 'Submitted' ) continue;
             
-            if (noticeDays < minNoticeDays) {
-                request.Start_Date__c.addError('Leave requests must be submitted at least ' + 
-                                             minNoticeDays + ' days in advance according to company policy.');
+            Boolean isNew = (oldMap == null);
+            Boolean dateChanged = !isNew && (request.Start_Date__c != oldMap.get(request.Id).Start_Date__c);
+            
+            if (isNew || dateChanged) {
+                Integer noticeDays = Date.today().daysBetween(request.Start_Date__c);
+                
+                if (noticeDays < minNoticeDays) {
+                    request.Start_Date__c.addError('Leave requests must be submitted at least ' +
+                        minNoticeDays + ' days in advance according to company policy.');
+                }
             }
         }
     }
-}
 }
