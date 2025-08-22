@@ -34,6 +34,7 @@ public without sharing class AnnualLeaveBalanceBatch implements Database.Batchab
         for (User u : userScope) {
             if (!usersWithExistingPaidLeaveBalance.contains(u.Id)) {
                 balancesToCreate.add(new Leave_Balance__c(
+                    OwnerId = u.Id,
                     Employee__c = u.Id,
                     Year__c = nextYear,
                     Leave_Type__c = 'Paid Leave',
@@ -44,6 +45,7 @@ public without sharing class AnnualLeaveBalanceBatch implements Database.Batchab
 
             if (!usersWithExistingRTTBalance.contains(u.Id)) {
                 balancesToCreate.add(new Leave_Balance__c(
+                    OwnerId = u.Id,
                     Employee__c = u.Id,
                     Year__c = nextYear,
                     Leave_Type__c = 'RTT',

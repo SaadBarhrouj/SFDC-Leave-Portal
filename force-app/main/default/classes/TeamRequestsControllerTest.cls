@@ -21,6 +21,10 @@ private class TeamRequestsControllerTest {
             psgMap.put(psg.DeveloperName, psg.Id);
         }
 
+        if (!psgMap.isEmpty()) {
+            System.Test.calculatePermissionSetGroup(psgMap.values());
+        }
+
         List<PermissionSetAssignment> assignments = new List<PermissionSetAssignment>();
         assignments.add(new PermissionSetAssignment(
             AssigneeId = manager.Id,

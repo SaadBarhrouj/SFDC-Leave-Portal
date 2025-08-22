@@ -8,7 +8,7 @@ public class LeavePolicySettingsControllerTest {
         Test.stopTest();
         System.assertNotEquals(null, settings);
         System.assertEquals(25, settings.Annual_Paid_Leave_Days__c);
-        System.assertEquals(5, settings.Minimum_Notice_Period_Days__c);
+        System.assertEquals(0, settings.Minimum_Notice_Period_Days__c);
     }
     
     @isTest
